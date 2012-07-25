@@ -1,0 +1,267 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		2B37E76E15BFC25B00D21E55 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B37E76D15BFC25B00D21E55 /* UIKit.framework */; };
+		2B37E77015BFC25B00D21E55 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B37E76F15BFC25B00D21E55 /* Foundation.framework */; };
+		2B37E77215BFC25B00D21E55 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B37E77115BFC25B00D21E55 /* CoreGraphics.framework */; };
+		2B37E77815BFC25B00D21E55 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 2B37E77615BFC25B00D21E55 /* InfoPlist.strings */; };
+		2B37E77A15BFC25C00D21E55 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B37E77915BFC25C00D21E55 /* main.m */; };
+		2B37E77E15BFC25C00D21E55 /* FMAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B37E77D15BFC25C00D21E55 /* FMAppDelegate.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		2B37E76915BFC25B00D21E55 /* fumi.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = fumi.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2B37E76D15BFC25B00D21E55 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		2B37E76F15BFC25B00D21E55 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		2B37E77115BFC25B00D21E55 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		2B37E77515BFC25B00D21E55 /* fumi-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "fumi-Info.plist"; sourceTree = "<group>"; };
+		2B37E77715BFC25B00D21E55 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		2B37E77915BFC25C00D21E55 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		2B37E77B15BFC25C00D21E55 /* fumi-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "fumi-Prefix.pch"; sourceTree = "<group>"; };
+		2B37E77C15BFC25C00D21E55 /* FMAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FMAppDelegate.h; sourceTree = "<group>"; };
+		2B37E77D15BFC25C00D21E55 /* FMAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FMAppDelegate.m; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		2B37E76615BFC25B00D21E55 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2B37E76E15BFC25B00D21E55 /* UIKit.framework in Frameworks */,
+				2B37E77015BFC25B00D21E55 /* Foundation.framework in Frameworks */,
+				2B37E77215BFC25B00D21E55 /* CoreGraphics.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		2B37E75E15BFC25B00D21E55 = {
+			isa = PBXGroup;
+			children = (
+				2B37E77315BFC25B00D21E55 /* fumi */,
+				2B37E76C15BFC25B00D21E55 /* Frameworks */,
+				2B37E76A15BFC25B00D21E55 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		2B37E76A15BFC25B00D21E55 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				2B37E76915BFC25B00D21E55 /* fumi.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		2B37E76C15BFC25B00D21E55 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				2B37E76D15BFC25B00D21E55 /* UIKit.framework */,
+				2B37E76F15BFC25B00D21E55 /* Foundation.framework */,
+				2B37E77115BFC25B00D21E55 /* CoreGraphics.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		2B37E77315BFC25B00D21E55 /* fumi */ = {
+			isa = PBXGroup;
+			children = (
+				2B37E77C15BFC25C00D21E55 /* FMAppDelegate.h */,
+				2B37E77D15BFC25C00D21E55 /* FMAppDelegate.m */,
+				2B37E77415BFC25B00D21E55 /* Supporting Files */,
+			);
+			path = fumi;
+			sourceTree = "<group>";
+		};
+		2B37E77415BFC25B00D21E55 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				2B37E77515BFC25B00D21E55 /* fumi-Info.plist */,
+				2B37E77615BFC25B00D21E55 /* InfoPlist.strings */,
+				2B37E77915BFC25C00D21E55 /* main.m */,
+				2B37E77B15BFC25C00D21E55 /* fumi-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		2B37E76815BFC25B00D21E55 /* fumi */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2B37E78115BFC25C00D21E55 /* Build configuration list for PBXNativeTarget "fumi" */;
+			buildPhases = (
+				2B37E76515BFC25B00D21E55 /* Sources */,
+				2B37E76615BFC25B00D21E55 /* Frameworks */,
+				2B37E76715BFC25B00D21E55 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = fumi;
+			productName = fumi;
+			productReference = 2B37E76915BFC25B00D21E55 /* fumi.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		2B37E76015BFC25B00D21E55 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				CLASSPREFIX = FM;
+				LastUpgradeCheck = 0450;
+				ORGANIZATIONNAME = "Vincent Wen";
+			};
+			buildConfigurationList = 2B37E76315BFC25B00D21E55 /* Build configuration list for PBXProject "fumi" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 2B37E75E15BFC25B00D21E55;
+			productRefGroup = 2B37E76A15BFC25B00D21E55 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				2B37E76815BFC25B00D21E55 /* fumi */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		2B37E76715BFC25B00D21E55 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2B37E77815BFC25B00D21E55 /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		2B37E76515BFC25B00D21E55 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2B37E77A15BFC25C00D21E55 /* main.m in Sources */,
+				2B37E77E15BFC25C00D21E55 /* FMAppDelegate.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		2B37E77615BFC25B00D21E55 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				2B37E77715BFC25B00D21E55 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		2B37E77F15BFC25C00D21E55 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 2;
+			};
+			name = Debug;
+		};
+		2B37E78015BFC25C00D21E55 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 2;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		2B37E78215BFC25C00D21E55 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "fumi/fumi-Prefix.pch";
+				INFOPLIST_FILE = "fumi/fumi-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		2B37E78315BFC25C00D21E55 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "fumi/fumi-Prefix.pch";
+				INFOPLIST_FILE = "fumi/fumi-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2B37E76315BFC25B00D21E55 /* Build configuration list for PBXProject "fumi" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2B37E77F15BFC25C00D21E55 /* Debug */,
+				2B37E78015BFC25C00D21E55 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		2B37E78115BFC25C00D21E55 /* Build configuration list for PBXNativeTarget "fumi" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2B37E78215BFC25C00D21E55 /* Debug */,
+				2B37E78315BFC25C00D21E55 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 2B37E76015BFC25B00D21E55 /* Project object */;
+}
