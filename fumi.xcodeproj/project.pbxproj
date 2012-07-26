@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		2B082CFB15C1094600A5ADA9 /* FMMainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B082CFA15C1094600A5ADA9 /* FMMainViewController.m */; };
+		2B082CFE15C10C4E00A5ADA9 /* UIColor+Fumi.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B082CFD15C10C4E00A5ADA9 /* UIColor+Fumi.m */; };
+		2B082D0115C1140800A5ADA9 /* FMMainView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B082D0015C1140800A5ADA9 /* FMMainView.m */; };
+		2B082D0415C1144500A5ADA9 /* FMCanvasView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B082D0315C1144500A5ADA9 /* FMCanvasView.m */; };
 		2B37E76E15BFC25B00D21E55 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B37E76D15BFC25B00D21E55 /* UIKit.framework */; };
 		2B37E77015BFC25B00D21E55 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B37E76F15BFC25B00D21E55 /* Foundation.framework */; };
 		2B37E77215BFC25B00D21E55 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B37E77115BFC25B00D21E55 /* CoreGraphics.framework */; };
@@ -19,6 +22,12 @@
 /* Begin PBXFileReference section */
 		2B082CF915C1094600A5ADA9 /* FMMainViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMMainViewController.h; sourceTree = "<group>"; };
 		2B082CFA15C1094600A5ADA9 /* FMMainViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMMainViewController.m; sourceTree = "<group>"; };
+		2B082CFC15C10C4E00A5ADA9 /* UIColor+Fumi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIColor+Fumi.h"; sourceTree = "<group>"; };
+		2B082CFD15C10C4E00A5ADA9 /* UIColor+Fumi.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIColor+Fumi.m"; sourceTree = "<group>"; };
+		2B082CFF15C1140800A5ADA9 /* FMMainView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMMainView.h; sourceTree = "<group>"; };
+		2B082D0015C1140800A5ADA9 /* FMMainView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMMainView.m; sourceTree = "<group>"; };
+		2B082D0215C1144500A5ADA9 /* FMCanvasView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMCanvasView.h; sourceTree = "<group>"; };
+		2B082D0315C1144500A5ADA9 /* FMCanvasView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMCanvasView.m; sourceTree = "<group>"; };
 		2B37E76915BFC25B00D21E55 /* fumi.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = fumi.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2B37E76D15BFC25B00D21E55 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		2B37E76F15BFC25B00D21E55 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -79,6 +88,12 @@
 				2B37E77D15BFC25C00D21E55 /* FMAppDelegate.m */,
 				2B082CF915C1094600A5ADA9 /* FMMainViewController.h */,
 				2B082CFA15C1094600A5ADA9 /* FMMainViewController.m */,
+				2B082CFF15C1140800A5ADA9 /* FMMainView.h */,
+				2B082D0015C1140800A5ADA9 /* FMMainView.m */,
+				2B082D0215C1144500A5ADA9 /* FMCanvasView.h */,
+				2B082D0315C1144500A5ADA9 /* FMCanvasView.m */,
+				2B082CFC15C10C4E00A5ADA9 /* UIColor+Fumi.h */,
+				2B082CFD15C10C4E00A5ADA9 /* UIColor+Fumi.m */,
 				2B37E77415BFC25B00D21E55 /* Supporting Files */,
 			);
 			path = fumi;
@@ -161,6 +176,9 @@
 				2B37E77A15BFC25C00D21E55 /* main.m in Sources */,
 				2B37E77E15BFC25C00D21E55 /* FMAppDelegate.m in Sources */,
 				2B082CFB15C1094600A5ADA9 /* FMMainViewController.m in Sources */,
+				2B082CFE15C10C4E00A5ADA9 /* UIColor+Fumi.m in Sources */,
+				2B082D0115C1140800A5ADA9 /* FMMainView.m in Sources */,
+				2B082D0415C1144500A5ADA9 /* FMCanvasView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

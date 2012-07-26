@@ -7,6 +7,7 @@
 //
 
 #import "FMMainViewController.h"
+#import "FMMainView.h"
 
 @interface FMMainViewController ()
 
@@ -18,16 +19,29 @@
 {
     self = [super init];
     if (self) {
-        // Custom initialization
     }
     return self;
+}
+
+- (void)dealloc
+{
+    [super dealloc];
+}
+
+#pragma mark -
+#pragma mark Accessors
+
+#pragma mark -
+#pragma mark View Life Cycle
+
+- (void)loadView
+{
+    self.view = [[[FMMainView alloc] initWithFrame:CGRectZero] autorelease];
 }
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-
-    self.view.backgroundColor = [UIColor whiteColor];
 }
 
 - (void)didReceiveMemoryWarning
