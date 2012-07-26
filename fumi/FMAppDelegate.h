@@ -3,7 +3,7 @@
 //  fumi
 //
 //  Created by Vincent Wen on 7/24/12.
-//  Copyright (c) 2012 Vincent Wen. All rights reserved.
+//  Copyright (c) 2012 fumi. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2B082CFB15C1094600A5ADA9 /* FMMainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B082CFA15C1094600A5ADA9 /* FMMainViewController.m */; };
 		2B37E76E15BFC25B00D21E55 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B37E76D15BFC25B00D21E55 /* UIKit.framework */; };
 		2B37E77015BFC25B00D21E55 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B37E76F15BFC25B00D21E55 /* Foundation.framework */; };
 		2B37E77215BFC25B00D21E55 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B37E77115BFC25B00D21E55 /* CoreGraphics.framework */; };
@@ -16,6 +17,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		2B082CF915C1094600A5ADA9 /* FMMainViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMMainViewController.h; sourceTree = "<group>"; };
+		2B082CFA15C1094600A5ADA9 /* FMMainViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMMainViewController.m; sourceTree = "<group>"; };
 		2B37E76915BFC25B00D21E55 /* fumi.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = fumi.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2B37E76D15BFC25B00D21E55 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		2B37E76F15BFC25B00D21E55 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -74,6 +77,8 @@
 			children = (
 				2B37E77C15BFC25C00D21E55 /* FMAppDelegate.h */,
 				2B37E77D15BFC25C00D21E55 /* FMAppDelegate.m */,
+				2B082CF915C1094600A5ADA9 /* FMMainViewController.h */,
+				2B082CFA15C1094600A5ADA9 /* FMMainViewController.m */,
 				2B37E77415BFC25B00D21E55 /* Supporting Files */,
 			);
 			path = fumi;
@@ -118,7 +123,7 @@
 			attributes = {
 				CLASSPREFIX = FM;
 				LastUpgradeCheck = 0450;
-				ORGANIZATIONNAME = "Vincent Wen";
+				ORGANIZATIONNAME = fumi;
 			};
 			buildConfigurationList = 2B37E76315BFC25B00D21E55 /* Build configuration list for PBXProject "fumi" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -155,6 +160,7 @@
 			files = (
 				2B37E77A15BFC25C00D21E55 /* main.m in Sources */,
 				2B37E77E15BFC25C00D21E55 /* FMAppDelegate.m in Sources */,
+				2B082CFB15C1094600A5ADA9 /* FMMainViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -260,6 +266,7 @@
 				2B37E78315BFC25C00D21E55 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

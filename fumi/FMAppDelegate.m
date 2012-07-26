@@ -3,10 +3,11 @@
 //  fumi
 //
 //  Created by Vincent Wen on 7/24/12.
-//  Copyright (c) 2012 Vincent Wen. All rights reserved.
+//  Copyright (c) 2012 fumi. All rights reserved.
 //
 
 #import "FMAppDelegate.h"
+#import "FMMainViewController.h"
 
 @implementation FMAppDelegate
 
@@ -19,8 +20,7 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     self.window = [[[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]] autorelease];
-    // Override point for customization after application launch.
-    self.window.backgroundColor = [UIColor whiteColor];
+    self.window.rootViewController = [[[FMMainViewController alloc] init] autorelease];
     [self.window makeKeyAndVisible];
     return YES;
 }
