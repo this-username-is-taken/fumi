@@ -1,5 +1,5 @@
 //
-//  FMRect.h
+//  FMGeometry.h
 //  fumi
 //
 //  Created by Vincent Wen on 7/26/12.
@@ -16,4 +16,14 @@ CG_INLINE CGRect FMRectMakeWithOrigin(CGPoint origin, CGSize size)
 CG_INLINE CGRect FMRectMakeWithSize(CGSize size)
 {
     return FMRectMakeWithOrigin(CGPointZero, size);
+}
+
+CG_INLINE CGPoint FMRectGetMid(CGRect rect)
+{
+    return CGPointMake(CGRectGetMidX(rect), CGRectGetMidY(rect));
+}
+
+CG_INLINE CGSize FMSizeIntegral(CGSize size)
+{
+    return CGSizeMake(ceilf(size.width), ceilf(size.height));
 }

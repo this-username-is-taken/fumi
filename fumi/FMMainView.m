@@ -9,7 +9,7 @@
 #import "FMMainView.h"
 #import "FMCanvasView.h"
 
-#import "FMRect.h"
+#import "FMGeometry.h"
 #import "FMSettings.h"
 
 @interface FMMainView ()
