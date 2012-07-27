@@ -9,6 +9,9 @@
 #import "FMMainView.h"
 #import "FMCanvasView.h"
 
+#import "FMRect.h"
+#import "FMSettings.h"
+
 @interface FMMainView ()
 
 @property (nonatomic, retain) FMCanvasView *canvasView;
@@ -21,7 +24,8 @@
 {
     self = [super initWithFrame:frame];
     if (self) {
-        _canvasView = [[FMCanvasView alloc] initWithFrame:CGRectZero];
+        _canvasView = [[FMCanvasView alloc] initWithFrame:FMRectMakeWithSize([FMSettings canvasDimensions])];
+        _canvasView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin|UIViewAutoresizingFlexibleRightMargin|UIViewAutoresizingFlexibleTopMargin|UIViewAutoresizingFlexibleBottomMargin;
         
         [self addSubview:_canvasView];
         
