@@ -42,11 +42,6 @@
 }
 
 #pragma mark -
-#pragma mark Accessors
-
-@synthesize canvasView = _canvasView;
-
-#pragma mark -
 #pragma mark View Layout
 
 - (void)layoutSubviews

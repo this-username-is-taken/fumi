@@ -29,9 +29,6 @@
 }
 
 #pragma mark -
-#pragma mark Accessors
-
-#pragma mark -
 #pragma mark View Life Cycle
 
 - (void)loadView
