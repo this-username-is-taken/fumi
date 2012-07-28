@@ -13,6 +13,10 @@
 		2B082D0415C1144500A5ADA9 /* FMCanvasView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B082D0315C1144500A5ADA9 /* FMCanvasView.m */; };
 		2B082D0B15C2540F00A5ADA9 /* FMSettings.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B082D0A15C2540F00A5ADA9 /* FMSettings.m */; };
 		2B082D0E15C2593F00A5ADA9 /* FMGeometry.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B082D0D15C2593F00A5ADA9 /* FMGeometry.m */; };
+		2B08309B15C44F9A00A5ADA9 /* DDLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B08309515C44D2C00A5ADA9 /* DDLog.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		2B08309C15C44F9D00A5ADA9 /* DDASLLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B08309115C44D2C00A5ADA9 /* DDASLLogger.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		2B08309D15C44FA000A5ADA9 /* DDFileLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B08309315C44D2C00A5ADA9 /* DDFileLogger.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		2B08309E15C44FA400A5ADA9 /* DDTTYLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B08309715C44D2C00A5ADA9 /* DDTTYLogger.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		2B37E76E15BFC25B00D21E55 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B37E76D15BFC25B00D21E55 /* UIKit.framework */; };
 		2B37E77015BFC25B00D21E55 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B37E76F15BFC25B00D21E55 /* Foundation.framework */; };
 		2B37E77215BFC25B00D21E55 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B37E77115BFC25B00D21E55 /* CoreGraphics.framework */; };
@@ -34,6 +38,14 @@
 		2B082D0A15C2540F00A5ADA9 /* FMSettings.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMSettings.m; sourceTree = "<group>"; };
 		2B082D0C15C2593F00A5ADA9 /* FMGeometry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMGeometry.h; sourceTree = "<group>"; };
 		2B082D0D15C2593F00A5ADA9 /* FMGeometry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMGeometry.m; sourceTree = "<group>"; };
+		2B08309015C44D2C00A5ADA9 /* DDASLLogger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DDASLLogger.h; sourceTree = "<group>"; };
+		2B08309115C44D2C00A5ADA9 /* DDASLLogger.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DDASLLogger.m; sourceTree = "<group>"; };
+		2B08309215C44D2C00A5ADA9 /* DDFileLogger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DDFileLogger.h; sourceTree = "<group>"; };
+		2B08309315C44D2C00A5ADA9 /* DDFileLogger.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DDFileLogger.m; sourceTree = "<group>"; };
+		2B08309415C44D2C00A5ADA9 /* DDLog.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DDLog.h; sourceTree = "<group>"; };
+		2B08309515C44D2C00A5ADA9 /* DDLog.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DDLog.m; sourceTree = "<group>"; };
+		2B08309615C44D2C00A5ADA9 /* DDTTYLogger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DDTTYLogger.h; sourceTree = "<group>"; };
+		2B08309715C44D2C00A5ADA9 /* DDTTYLogger.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DDTTYLogger.m; sourceTree = "<group>"; };
 		2B37E76915BFC25B00D21E55 /* fumi.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = fumi.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2B37E76D15BFC25B00D21E55 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		2B37E76F15BFC25B00D21E55 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -60,6 +72,29 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		2B08309915C44D3700A5ADA9 /* DDLog */ = {
+			isa = PBXGroup;
+			children = (
+				2B08309415C44D2C00A5ADA9 /* DDLog.h */,
+				2B08309515C44D2C00A5ADA9 /* DDLog.m */,
+				2B08309015C44D2C00A5ADA9 /* DDASLLogger.h */,
+				2B08309115C44D2C00A5ADA9 /* DDASLLogger.m */,
+				2B08309215C44D2C00A5ADA9 /* DDFileLogger.h */,
+				2B08309315C44D2C00A5ADA9 /* DDFileLogger.m */,
+				2B08309615C44D2C00A5ADA9 /* DDTTYLogger.h */,
+				2B08309715C44D2C00A5ADA9 /* DDTTYLogger.m */,
+			);
+			name = DDLog;
+			sourceTree = "<group>";
+		};
+		2B08309A15C44D4600A5ADA9 /* Third Parties */ = {
+			isa = PBXGroup;
+			children = (
+				2B08309915C44D3700A5ADA9 /* DDLog */,
+			);
+			name = "Third Parties";
+			sourceTree = "<group>";
+		};
 		2B37E75E15BFC25B00D21E55 = {
 			isa = PBXGroup;
 			children = (
@@ -104,6 +139,7 @@
 				2B082CFD15C10C4E00A5ADA9 /* UIColor+Fumi.m */,
 				2B082D0915C2540F00A5ADA9 /* FMSettings.h */,
 				2B082D0A15C2540F00A5ADA9 /* FMSettings.m */,
+				2B08309A15C44D4600A5ADA9 /* Third Parties */,
 				2B37E77415BFC25B00D21E55 /* Supporting Files */,
 			);
 			path = fumi;
@@ -191,6 +227,10 @@
 				2B082D0415C1144500A5ADA9 /* FMCanvasView.m in Sources */,
 				2B082D0B15C2540F00A5ADA9 /* FMSettings.m in Sources */,
 				2B082D0E15C2593F00A5ADA9 /* FMGeometry.m in Sources */,
+				2B08309B15C44F9A00A5ADA9 /* DDLog.m in Sources */,
+				2B08309C15C44F9D00A5ADA9 /* DDASLLogger.m in Sources */,
+				2B08309D15C44FA000A5ADA9 /* DDFileLogger.m in Sources */,
+				2B08309E15C44FA400A5ADA9 /* DDTTYLogger.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

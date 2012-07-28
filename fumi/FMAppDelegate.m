@@ -9,6 +9,12 @@
 #import "FMAppDelegate.h"
 #import "FMMainViewController.h"
 
+#import "DDLog.h"
+#import "DDTTYLogger.h"
+#import "DDFileLogger.h"
+
+static const int ddLogLevel = LOG_LEVEL_INFO;
+
 @implementation FMAppDelegate
 
 - (void)dealloc
@@ -19,9 +25,12 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+    [self configureLoggers];
+
     self.window = [[[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]] autorelease];
     self.window.rootViewController = [[[FMMainViewController alloc] init] autorelease];
     [self.window makeKeyAndVisible];
+    
     return YES;
 }
 
@@ -50,6 +59,22 @@
 - (void)applicationWillTerminate:(UIApplication *)application
 {
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+}
+
+#pragma mark -
+#pragma mark Logging Setup
+
+- (void)configureLoggers
+{
+    DDFileLogger *fileLogger = [[DDFileLogger alloc] init];
+    fileLogger.rollingFrequency = 60 * 60 * 24; // 24 hour rolling
+    fileLogger.logFileManager.maximumNumberOfLogFiles = 7; // keep a week's worth of log files
+    
+    [DDLog addLogger:fileLogger];
+    //[DDLog addLogger:[DDTTYLogger sharedInstance]];
+    
+    DDLogInfo(@"==================================================");
+    DDLogInfo(@"Launching application");
 }
 
 @end
