@@ -30,9 +30,8 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     if (self) {
         _canvasView = [[FMCanvasView alloc] initWithFrame:FMRectMakeWithSize([FMSettings canvasDimensions])];
         _canvasView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin|UIViewAutoresizingFlexibleRightMargin|UIViewAutoresizingFlexibleTopMargin|UIViewAutoresizingFlexibleBottomMargin;
-        DDLogInfo(@"Created canvas with size: %@", NSStringFromCGSize([FMSettings canvasDimensions]));
-        
         [self addSubview:_canvasView];
+        DDLogInfo(@"Created canvas with size: %@", NSStringFromCGSize([FMSettings canvasDimensions]));
         
         self.backgroundColor = [UIColor whiteColor];
     }

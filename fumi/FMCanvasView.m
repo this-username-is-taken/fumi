@@ -17,7 +17,7 @@
     if (self) {
         self.backgroundColor = [UIColor canvasColor];
         
-        [self createGestureRecognizers];
+        [self _createGestureRecognizers];
     }
     return self;
 }
@@ -38,11 +38,11 @@
 #pragma mark -
 #pragma mark Gesture Recognizers
 
-- (void)createGestureRecognizers
+- (void)_createGestureRecognizers
 {
-    UIPanGestureRecognizer *panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePanGesture:)];
-    UIPinchGestureRecognizer *pinchGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinchGesture:)];
-    UILongPressGestureRecognizer *pressGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handlePressGesture:)];
+    UIPanGestureRecognizer *panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(_handlePanGesture:)];
+    UIPinchGestureRecognizer *pinchGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(_handlePinchGesture:)];
+    UILongPressGestureRecognizer *pressGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(_handlePressGesture:)];
     
     [self addGestureRecognizer:panGesture];
     [self addGestureRecognizer:pinchGesture];
@@ -54,19 +54,19 @@
 }
 
 // Pan gestures are interpreted as free interactions with ink
-- (void)handlePanGesture:(UIPanGestureRecognizer *)gestureRecognizer
+- (void)_handlePanGesture:(UIPanGestureRecognizer *)gestureRecognizer
 {
     
 }
 
 // Pinch gestures are to zoom in/zoom out on canvas
-- (void)handlePinchGesture:(UIPinchGestureRecognizer *)gestureRecognizer
+- (void)_handlePinchGesture:(UIPinchGestureRecognizer *)gestureRecognizer
 {
     // TODO
 }
 
 // Long press gestures are interpreted as ink injection
-- (void)handlePressGesture:(UILongPressGestureRecognizer *)gestureRecognizer
+- (void)_handlePressGesture:(UILongPressGestureRecognizer *)gestureRecognizer
 {
     
 }

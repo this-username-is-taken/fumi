@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2B066F8915E9330500AF1122 /* EAGLView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B066F8815E9330500AF1122 /* EAGLView.m */; };
+		2B066F9015E9370700AF1122 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B066F8F15E9370700AF1122 /* OpenGLES.framework */; };
+		2B066F9215E9371E00AF1122 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B066F9115E9371E00AF1122 /* QuartzCore.framework */; };
 		2B082CFB15C1094600A5ADA9 /* FMMainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B082CFA15C1094600A5ADA9 /* FMMainViewController.m */; };
 		2B082CFE15C10C4E00A5ADA9 /* UIColor+Fumi.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B082CFD15C10C4E00A5ADA9 /* UIColor+Fumi.m */; };
 		2B082D0115C1140800A5ADA9 /* FMMainView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B082D0015C1140800A5ADA9 /* FMMainView.m */; };
@@ -26,6 +29,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		2B066F8715E9330500AF1122 /* EAGLView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EAGLView.h; sourceTree = "<group>"; };
+		2B066F8815E9330500AF1122 /* EAGLView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EAGLView.m; sourceTree = "<group>"; };
+		2B066F8F15E9370700AF1122 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
+		2B066F9115E9371E00AF1122 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		2B082CF915C1094600A5ADA9 /* FMMainViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMMainViewController.h; sourceTree = "<group>"; };
 		2B082CFA15C1094600A5ADA9 /* FMMainViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMMainViewController.m; sourceTree = "<group>"; };
 		2B082CFC15C10C4E00A5ADA9 /* UIColor+Fumi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIColor+Fumi.h"; sourceTree = "<group>"; };
@@ -63,6 +70,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2B066F9215E9371E00AF1122 /* QuartzCore.framework in Frameworks */,
+				2B066F9015E9370700AF1122 /* OpenGLES.framework in Frameworks */,
 				2B37E76E15BFC25B00D21E55 /* UIKit.framework in Frameworks */,
 				2B37E77015BFC25B00D21E55 /* Foundation.framework in Frameworks */,
 				2B37E77215BFC25B00D21E55 /* CoreGraphics.framework in Frameworks */,
@@ -115,6 +124,8 @@
 		2B37E76C15BFC25B00D21E55 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				2B066F9115E9371E00AF1122 /* QuartzCore.framework */,
+				2B066F8F15E9370700AF1122 /* OpenGLES.framework */,
 				2B37E76D15BFC25B00D21E55 /* UIKit.framework */,
 				2B37E76F15BFC25B00D21E55 /* Foundation.framework */,
 				2B37E77115BFC25B00D21E55 /* CoreGraphics.framework */,
@@ -133,6 +144,8 @@
 				2B082D0015C1140800A5ADA9 /* FMMainView.m */,
 				2B082D0215C1144500A5ADA9 /* FMCanvasView.h */,
 				2B082D0315C1144500A5ADA9 /* FMCanvasView.m */,
+				2B066F8715E9330500AF1122 /* EAGLView.h */,
+				2B066F8815E9330500AF1122 /* EAGLView.m */,
 				2B082D0C15C2593F00A5ADA9 /* FMGeometry.h */,
 				2B082D0D15C2593F00A5ADA9 /* FMGeometry.m */,
 				2B082CFC15C10C4E00A5ADA9 /* UIColor+Fumi.h */,
@@ -231,6 +244,7 @@
 				2B08309C15C44F9D00A5ADA9 /* DDASLLogger.m in Sources */,
 				2B08309D15C44FA000A5ADA9 /* DDFileLogger.m in Sources */,
 				2B08309E15C44FA400A5ADA9 /* DDTTYLogger.m in Sources */,
+				2B066F8915E9330500AF1122 /* EAGLView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

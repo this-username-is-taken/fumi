@@ -25,7 +25,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-    [self configureLoggers];
+    [self _configureLoggers];
 
     self.window = [[[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]] autorelease];
     self.window.rootViewController = [[[FMMainViewController alloc] init] autorelease];
@@ -64,14 +64,15 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 #pragma mark -
 #pragma mark Logging Setup
 
-- (void)configureLoggers
+- (void)_configureLoggers
 {
     DDFileLogger *fileLogger = [[DDFileLogger alloc] init];
-    fileLogger.rollingFrequency = 60 * 60 * 24; // 24 hour rolling
-    fileLogger.logFileManager.maximumNumberOfLogFiles = 7; // keep a week's worth of log files
+    fileLogger.rollingFrequency = 60 * 60 * 24;             // 24 hour rolling
+    fileLogger.logFileManager.maximumNumberOfLogFiles = 7;  // keep a week's worth of log files
     
     [DDLog addLogger:fileLogger];
-    //[DDLog addLogger:[DDTTYLogger sharedInstance]];
+    [fileLogger release];
+    [DDLog addLogger:[DDTTYLogger sharedInstance]];
     
     DDLogInfo(@"==================================================");
     DDLogInfo(@"Launching application");
