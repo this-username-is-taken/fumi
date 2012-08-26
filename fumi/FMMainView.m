@@ -7,14 +7,6 @@
 //
 
 #import "FMMainView.h"
-#import "FMCanvasView.h"
-
-#import "FMGeometry.h"
-#import "FMSettings.h"
-
-#import "DDLog.h"
-
-static const int ddLogLevel = LOG_LEVEL_INFO;
 
 @interface FMMainView ()
 
@@ -26,20 +18,13 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 {
     self = [super initWithFrame:frame];
     if (self) {
-        _canvasView = [[FMCanvasView alloc] initWithFrame:FMRectMakeWithSize([FMSettings canvasDimensions])];
-        _canvasView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin|UIViewAutoresizingFlexibleRightMargin|UIViewAutoresizingFlexibleTopMargin|UIViewAutoresizingFlexibleBottomMargin;
-        [self addSubview:_canvasView];
-        DDLogInfo(@"Created canvas with size: %@", NSStringFromCGSize([FMSettings canvasDimensions]));
-        
         self.backgroundColor = [UIColor whiteColor];
     }
     return self;
 }
 
 - (void)dealloc
-{
-    [_canvasView release];
-    
+{    
     [super dealloc];
 }
 

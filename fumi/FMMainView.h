@@ -8,10 +8,6 @@
 
 #import <UIKit/UIKit.h>
 
-@class FMCanvasView;
-
 @interface FMMainView : UIView
-
-@property (nonatomic, retain) FMCanvasView *canvasView;
 
 @end

@@ -8,8 +8,19 @@
 
 #import "FMMainViewController.h"
 #import "FMMainView.h"
+#import "FMCanvasView.h"
+
+#import "FMGeometry.h"
+#import "FMSettings.h"
+
+#import "DDLog.h"
+
+static const int ddLogLevel = LOG_LEVEL_INFO;
 
 @interface FMMainViewController ()
+{
+    FMCanvasView *_canvasView;
+}
 
 @end
 
@@ -19,12 +30,18 @@
 {
     self = [super init];
     if (self) {
+        _canvasView = [[FMCanvasView alloc] initWithFrame:FMRectMakeWithSize([FMSettings canvasDimensions])];
+        _canvasView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin|UIViewAutoresizingFlexibleRightMargin|UIViewAutoresizingFlexibleTopMargin|UIViewAutoresizingFlexibleBottomMargin;
+        [self.view addSubview:_canvasView];
+        DDLogInfo(@"Created canvas with size: %@", NSStringFromCGSize([FMSettings canvasDimensions]));
     }
     return self;
 }
 
 - (void)dealloc
 {
+    [_canvasView release];
+    
     [super dealloc];
 }
 
@@ -40,13 +57,7 @@
 {
     [super viewDidLoad];
     
-    [((FMMainView *)self.view).canvasView startAnimation];
-}
-
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+    [_canvasView startAnimation];
 }
 
 @end

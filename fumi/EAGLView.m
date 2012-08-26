@@ -16,7 +16,6 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 
 @interface EAGLView ()
 {
-    EAGLContext *_context;
     NSTimer *_animationTimer;
 }
 
@@ -84,7 +83,43 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 #pragma mark -
-#pragma mark Drawing
+#pragma mark Buffer Life Cycle
+
+- (BOOL)_createFramebuffer
+{
+    glGenFramebuffersOES(1, &viewFramebuffer);
+    glGenRenderbuffersOES(1, &viewRenderbuffer);
+    
+    glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
+    glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
+    [_context renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:(CAEAGLLayer *)self.layer];
+    glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_RENDERBUFFER_OES, viewRenderbuffer);
+    
+    glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
+    glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
+    
+    if (glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES)
+    {
+        DDLogError(@"Failed to create framebuffer %x", glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES));
+        return NO;
+    }
+    DDLogInfo(@"Created frame buffer: %@", self);
+    
+    return YES;
+}
+
+- (void)_destroyFramebuffer
+{
+    glDeleteFramebuffersOES(1, &viewFramebuffer);
+    viewFramebuffer = 0;
+    glDeleteRenderbuffersOES(1, &viewRenderbuffer);
+    viewRenderbuffer = 0;
+    
+    DDLogInfo(@"Destroyed frame buffer: %@", self);
+}
+
+#pragma mark -
+#pragma mark Layout Subviews
 
 - (void)layoutSubviews
 {
@@ -92,6 +127,9 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     [self _destroyFramebuffer];
     [self _createFramebuffer];
 }
+
+#pragma mark -
+#pragma mark Drawing
 
 // overriden by subclasses
 - (void)drawView
@@ -135,39 +173,6 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     
     glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
     [_context presentRenderbuffer:GL_RENDERBUFFER_OES];
-}
-
-- (BOOL)_createFramebuffer
-{
-    glGenFramebuffersOES(1, &viewFramebuffer);
-    glGenRenderbuffersOES(1, &viewRenderbuffer);
-    
-    glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
-    glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
-    [_context renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:(CAEAGLLayer *)self.layer];
-    glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_RENDERBUFFER_OES, viewRenderbuffer);
-    
-    glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
-    glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
-    
-    if (glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES)
-    {
-        DDLogError(@"Failed to create framebuffer %x", glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES));
-        return NO;
-    }
-    DDLogInfo(@"Created frame buffer: %@", self);
-    
-    return YES;
-}
-
-- (void)_destroyFramebuffer
-{
-    glDeleteFramebuffersOES(1, &viewFramebuffer);
-    viewFramebuffer = 0;
-    glDeleteRenderbuffersOES(1, &viewRenderbuffer);
-    viewRenderbuffer = 0;
-    
-    DDLogInfo(@"Destroyed frame buffer: %@", self);
 }
 
 @end
