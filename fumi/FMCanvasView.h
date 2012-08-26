@@ -7,7 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "EAGLView.h"
 
-@interface FMCanvasView : UIView
+@interface FMCanvasView : EAGLView
 
 @end

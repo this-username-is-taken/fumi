@@ -39,6 +39,8 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    
+    [((FMMainView *)self.view).canvasView startAnimation];
 }
 
 - (void)didReceiveMemoryWarning

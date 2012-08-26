@@ -18,8 +18,6 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 
 @interface FMMainView ()
 
-@property (nonatomic, retain) FMCanvasView *canvasView;
-
 @end
 
 @implementation FMMainView

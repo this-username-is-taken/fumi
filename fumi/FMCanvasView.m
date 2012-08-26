@@ -15,7 +15,7 @@
 {
     self = [super initWithFrame:frame];
     if (self) {
-        self.backgroundColor = [UIColor canvasColor];
+//        self.backgroundColor = [UIColor canvasColor];
         
         [self _createGestureRecognizers];
     }

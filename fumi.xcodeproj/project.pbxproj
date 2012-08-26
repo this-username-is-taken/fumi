@@ -10,6 +10,7 @@
 		2B066F8915E9330500AF1122 /* EAGLView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B066F8815E9330500AF1122 /* EAGLView.m */; };
 		2B066F9015E9370700AF1122 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B066F8F15E9370700AF1122 /* OpenGLES.framework */; };
 		2B066F9215E9371E00AF1122 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B066F9115E9371E00AF1122 /* QuartzCore.framework */; };
+		2B066FA215E9B2F700AF1122 /* UIView+Fumi.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B066FA115E9B2F700AF1122 /* UIView+Fumi.m */; };
 		2B082CFB15C1094600A5ADA9 /* FMMainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B082CFA15C1094600A5ADA9 /* FMMainViewController.m */; };
 		2B082CFE15C10C4E00A5ADA9 /* UIColor+Fumi.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B082CFD15C10C4E00A5ADA9 /* UIColor+Fumi.m */; };
 		2B082D0115C1140800A5ADA9 /* FMMainView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B082D0015C1140800A5ADA9 /* FMMainView.m */; };
@@ -33,6 +34,8 @@
 		2B066F8815E9330500AF1122 /* EAGLView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EAGLView.m; sourceTree = "<group>"; };
 		2B066F8F15E9370700AF1122 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		2B066F9115E9371E00AF1122 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		2B066FA015E9B2F700AF1122 /* UIView+Fumi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+Fumi.h"; sourceTree = "<group>"; };
+		2B066FA115E9B2F700AF1122 /* UIView+Fumi.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+Fumi.m"; sourceTree = "<group>"; };
 		2B082CF915C1094600A5ADA9 /* FMMainViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMMainViewController.h; sourceTree = "<group>"; };
 		2B082CFA15C1094600A5ADA9 /* FMMainViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMMainViewController.m; sourceTree = "<group>"; };
 		2B082CFC15C10C4E00A5ADA9 /* UIColor+Fumi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIColor+Fumi.h"; sourceTree = "<group>"; };
@@ -148,6 +151,8 @@
 				2B066F8815E9330500AF1122 /* EAGLView.m */,
 				2B082D0C15C2593F00A5ADA9 /* FMGeometry.h */,
 				2B082D0D15C2593F00A5ADA9 /* FMGeometry.m */,
+				2B066FA015E9B2F700AF1122 /* UIView+Fumi.h */,
+				2B066FA115E9B2F700AF1122 /* UIView+Fumi.m */,
 				2B082CFC15C10C4E00A5ADA9 /* UIColor+Fumi.h */,
 				2B082CFD15C10C4E00A5ADA9 /* UIColor+Fumi.m */,
 				2B082D0915C2540F00A5ADA9 /* FMSettings.h */,
@@ -245,6 +250,7 @@
 				2B08309D15C44FA000A5ADA9 /* DDFileLogger.m in Sources */,
 				2B08309E15C44FA400A5ADA9 /* DDTTYLogger.m in Sources */,
 				2B066F8915E9330500AF1122 /* EAGLView.m in Sources */,
+				2B066FA215E9B2F700AF1122 /* UIView+Fumi.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

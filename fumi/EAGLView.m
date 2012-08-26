@@ -96,6 +96,45 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 // overriden by subclasses
 - (void)drawView
 {
+    // Define the square vertices
+    const GLfloat squareVertices[] = {
+        0, 0,
+        0, backingHeight,
+        backingWidth, 0,
+        backingWidth, backingHeight
+    };
+    
+    // Define the colors of the square vertices
+    const GLubyte squareColors[] = {
+        255, 255,   0, 255,
+        0,   255, 255, 255,
+        0,     0,   0,   0,
+        255,   0, 255, 255,
+    };
+    
+    // Setting up drawing content
+    [EAGLContext setCurrentContext:_context];
+    glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
+    
+    // Matrix & viewport initialization
+    glLoadIdentity();
+    glMatrixMode(GL_PROJECTION);
+    glOrthof(0, backingWidth, 0, backingHeight, -1.0f, 1.0f);
+    glViewport(0, 0, backingWidth, backingHeight);
+
+    // Clear background color
+    glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    
+    // Drawing
+    glVertexPointer(2, GL_FLOAT, 0, squareVertices);
+    glColorPointer(4, GL_UNSIGNED_BYTE, 0, squareColors);
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    
+    glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
+    [_context presentRenderbuffer:GL_RENDERBUFFER_OES];
 }
 
 - (BOOL)_createFramebuffer
