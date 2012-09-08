@@ -1,13 +1,12 @@
 //
-//  FMCanvasView.m
+//  FMCompositionView.m
 //  fumi
 //
-//  Created by Vincent Wen on 7/25/12.
+//  Created by Vincent Wen on 8/26/12.
 //  Copyright (c) 2012 fumi. All rights reserved.
 //
 
 #import "FMCanvasView.h"
-#import "UIColor+Fumi.h"
 
 @implementation FMCanvasView
 
