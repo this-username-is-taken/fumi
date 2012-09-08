@@ -8,6 +8,11 @@
 
 #import "FMCanvasView.h"
 
+
+@interface FMCanvasView ()
+
+@end
+
 @implementation FMCanvasView
 
 - (id)initWithFrame:(CGRect)frame
@@ -69,11 +74,12 @@
 }
 
 #pragma mark -
-#pragma mark Drawing
+#pragma mark OpenGL Rendering
 
-// overriden by subclasses
 - (void)drawView
 {
+    NSTimeInterval startTime = CFAbsoluteTimeGetCurrent();
+    
     // Define the square vertices
     const GLfloat squareVertices[] = {
         0, 0,
@@ -113,6 +119,21 @@
     
     glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
     [self.context presentRenderbuffer:GL_RENDERBUFFER_OES];
+    
+    // Performance analysis
+    static NSTimeInterval lastTime;
+    FMBenchmark benchmark;
+    benchmark.elapsedTime = CFAbsoluteTimeGetCurrent() - startTime;
+    benchmark.runloopTime = [NSDate timeIntervalSinceReferenceDate] - lastTime;
+    lastTime = [NSDate timeIntervalSinceReferenceDate];
+    [_delegate updateBenchmark:benchmark];
+}
+
+#pragma mark -
+#pragma mark Helper Functions
+
+- (void)_updateBenchmark
+{
 }
 
 @end

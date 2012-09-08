@@ -7,7 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "FMCanvasView.h"
 
-@interface FMMainViewController : UIViewController
+@interface FMMainViewController : UIViewController <FMBenchmarkDelegate>
 
 @end

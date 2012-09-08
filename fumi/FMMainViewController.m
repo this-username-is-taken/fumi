@@ -7,7 +7,6 @@
 //
 
 #import "FMMainViewController.h"
-#import "FMCanvasView.h"
 #import "UIView+Fumi.h"
 
 #import "FMGeometry.h"
@@ -24,11 +23,13 @@ typedef enum {
 static const int ddLogLevel = LOG_LEVEL_INFO;
 
 static const CGRect kSegmentedControlFrame = {362, 50, 300, 30};
+static const CGRect kBenchmarkLabelFrame = {10, 10, 800, 30};
 
 @interface FMMainViewController ()
 {
     FMCanvasView *_canvasView;
     
+    UILabel *_benchmarkLabel;
     UISegmentedControl *_segmentedControl;
 }
 
@@ -46,6 +47,7 @@ static const CGRect kSegmentedControlFrame = {362, 50, 300, 30};
 
 - (void)dealloc
 {
+    [_benchmarkLabel release];
     [_segmentedControl release];
     
     [_canvasView release];
@@ -69,13 +71,16 @@ static const CGRect kSegmentedControlFrame = {362, 50, 300, 30};
     [_segmentedControl addTarget:self action:@selector(_segmentSelected:) forControlEvents:UIControlEventValueChanged];
     [self.view addSubview:_segmentedControl];
     
+    _benchmarkLabel = [[UILabel alloc] initWithFrame:kBenchmarkLabelFrame];
+    [self.view addSubview:_benchmarkLabel];
+    
     _canvasView = [[FMCanvasView alloc] initWithFrame:FMRectMakeWithSize([FMSettings canvasDimensions])];
+    _canvasView.delegate = self;
     _canvasView.position = FMRectGetMid(self.view.bounds);
     _canvasView.anchorPoint = kAnchorPointCenter;
     _canvasView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin|UIViewAutoresizingFlexibleRightMargin|UIViewAutoresizingFlexibleTopMargin|UIViewAutoresizingFlexibleBottomMargin;
-    DDLogInfo(@"Created canvas view: %@", _canvasView);
-    
     [self.view addSubview:_canvasView];
+    DDLogInfo(@"Created canvas view: %@", _canvasView);
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -97,5 +102,20 @@ static const CGRect kSegmentedControlFrame = {362, 50, 300, 30};
     _previousIndex = index;
      */
 }
+
+#pragma mark Benchmark Label Handler
+
+- (void)updateBenchmark:(FMBenchmark)benchmark
+{
+    // Goal: 24fps or 40ms elapsed time
+    _benchmarkLabel.text = [NSString stringWithFormat:@"FPS: %d, physics: %.2f, graphics: %.2f, elapsed: %.2f, loop: %.2f",
+                            (int)(1.0/benchmark.runloopTime),
+                            benchmark.physicsTime * 1000,
+                            benchmark.graphicsTime * 1000,
+                            benchmark.elapsedTime * 1000,
+                            benchmark.runloopTime * 1000];
+}
+
+#pragma mark -
 
 @end
