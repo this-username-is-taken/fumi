@@ -7,10 +7,12 @@
 //
 
 #import "FMCanvasView.h"
-
+#import "FMCanvas.h"
 
 @interface FMCanvasView ()
-
+{
+    FMCanvas *_canvas;
+}
 @end
 
 @implementation FMCanvasView
@@ -19,6 +21,8 @@
 {
     self = [super initWithFrame:frame];
     if (self) {
+        _canvas = [[FMCanvas alloc] init];
+        
         [self _createGestureRecognizers];
     }
     return self;
@@ -26,6 +30,8 @@
 
 - (void)dealloc
 {
+    [_canvas release];
+    
     [super dealloc];
 }
 

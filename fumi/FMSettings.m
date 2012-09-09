@@ -8,8 +8,11 @@
 
 #import "FMSettings.h"
 
-static const CGFloat kCanvasDimensionsHeight = 512.0;
-static const CGFloat kCanvasDimensionsWidth = 768.0;
+static const CGFloat kCanvasDimensionsHeight = 512.0;   // in pixels
+static const CGFloat kCanvasDimensionsWidth = 768.0;    // in pixels
+
+static const unsigned int kCanvasVelocityGridSize = 4;  // velocity grids are 4x4 pixels
+static const unsigned int kCanvasDensityGridSize = 2;   // density grids are 2x2 pixels
 
 @implementation FMSettings
 
@@ -22,10 +25,29 @@ static const CGFloat kCanvasDimensionsWidth = 768.0;
     return settings;
 }
 
-// Either dimension should be a multiple of 2^8 = 256
 + (CGSize)canvasDimensions
 {
     return CGSizeMake(kCanvasDimensionsWidth, kCanvasDimensionsHeight);
+}
+
++ (CGSize)velocityGridDimensions
+{
+    return CGSizeMake(kCanvasDimensionsWidth/(CGFloat)kCanvasVelocityGridSize + 2, kCanvasDimensionsHeight/(CGFloat)kCanvasVelocityGridSize + 2);
+}
+
++ (CGSize)densityGridDimensions
+{
+    return CGSizeMake(kCanvasDimensionsWidth/(CGFloat)kCanvasDensityGridSize + 2, kCanvasDimensionsHeight/(CGFloat)kCanvasDensityGridSize + 2);
+}
+
++ (CGSize)velocityCanvasDimensions
+{
+    return CGSizeMake(kCanvasDimensionsWidth/(CGFloat)kCanvasVelocityGridSize, kCanvasDimensionsHeight/(CGFloat)kCanvasVelocityGridSize);
+}
+
++ (CGSize)densityCanvasDimensions
+{
+    return CGSizeMake(kCanvasDimensionsWidth/(CGFloat)kCanvasDensityGridSize, kCanvasDimensionsHeight/(CGFloat)kCanvasDensityGridSize);
 }
 
 @end
