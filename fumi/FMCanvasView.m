@@ -9,9 +9,15 @@
 #import "FMCanvasView.h"
 #import "FMCanvas.h"
 
+#import "FMMacro.h"
+#import "FMSettings.h"
+
 @interface FMCanvasView ()
 {
     FMCanvas *_canvas;
+    
+    GLfloat *_vertices;
+    GLubyte *_colors;
 }
 @end
 
@@ -23,6 +29,27 @@
     if (self) {
         _canvas = [[FMCanvas alloc] init];
         
+        _vertices = (GLfloat *)calloc(kDensityDimensionsWidth * kDensityDimensionsHeight * 8, sizeof(GLfloat));
+        _colors = (GLubyte *)calloc(kDensityDimensionsWidth * kDensityDimensionsHeight * 16, sizeof(GLubyte));
+        memset(_colors, 0, kDensityDimensionsWidth * kDensityDimensionsHeight * 16);
+        
+        for (int i=0;i<kDensityDimensionsHeight;i++) {
+            for (int j=0;j<kDensityDimensionsWidth;j++) {
+                // (i, j)
+                _vertices[I_DEN_8(i,j,0)] = kCanvasDensityGridSize * j;
+                _vertices[I_DEN_8(i,j,1)] = kCanvasDensityGridSize * i;
+                // (i, j+1)
+                _vertices[I_DEN_8(i,j,2)] = kCanvasDensityGridSize * (j+1);
+                _vertices[I_DEN_8(i,j,3)] = kCanvasDensityGridSize * i;
+                // (i+1, j)
+                _vertices[I_DEN_8(i,j,4)] = kCanvasDensityGridSize * j;
+                _vertices[I_DEN_8(i,j,5)] = kCanvasDensityGridSize * (i+1);
+                // (i+1, j+1)
+                _vertices[I_DEN_8(i,j,6)] = kCanvasDensityGridSize * (j+1);
+                _vertices[I_DEN_8(i,j,7)] = kCanvasDensityGridSize * (i+1);
+            }
+        }
+        
         [self _createGestureRecognizers];
     }
     return self;
@@ -31,6 +58,9 @@
 - (void)dealloc
 {
     [_canvas release];
+    
+    free(_vertices);
+    free(_colors);
     
     [super dealloc];
 }
@@ -86,22 +116,6 @@
 {
     NSTimeInterval startTime = CFAbsoluteTimeGetCurrent();
     
-    // Define the square vertices
-    const GLfloat squareVertices[] = {
-        0, 0,
-        0, backingHeight,
-        backingWidth, 0,
-        backingWidth, backingHeight
-    };
-    
-    // Define the colors of the square vertices
-    const GLubyte squareColors[] = {
-        255,   0,   0, 255,
-        0,   255, 255, 255,
-        0,     0,   0,   0,
-        255,   0, 255, 255,
-    };
-    
     // Setting up drawing content
     [EAGLContext setCurrentContext:self.context];
     glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
@@ -119,11 +133,11 @@
     // Drawing
     [_canvas resetPrevGrids];
     
-    glVertexPointer(2, GL_FLOAT, 0, squareVertices);
-    glColorPointer(4, GL_UNSIGNED_BYTE, 0, squareColors);
+    glVertexPointer(2, GL_FLOAT, 0, _vertices);
+    glColorPointer(4, GL_UNSIGNED_BYTE, 0, _colors);
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_COLOR_ARRAY);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, kDensityDimensionsWidth * kDensityDimensionsHeight * 4);
     
     glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
     [self.context presentRenderbuffer:GL_RENDERBUFFER_OES];

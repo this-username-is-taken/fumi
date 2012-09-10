@@ -74,7 +74,7 @@ static const CGRect kBenchmarkLabelFrame = {10, 10, 800, 30};
     _benchmarkLabel = [[UILabel alloc] initWithFrame:kBenchmarkLabelFrame];
     [self.view addSubview:_benchmarkLabel];
     
-    _canvasView = [[FMCanvasView alloc] initWithFrame:FMRectMakeWithSize([FMSettings canvasDimensions])];
+    _canvasView = [[FMCanvasView alloc] initWithFrame:FMRectMakeWithSize(CGSizeMake(kCanvasDimensionsWidth, kCanvasDimensionsHeight))];
     _canvasView.delegate = self;
     _canvasView.position = FMRectGetMid(self.view.bounds);
     _canvasView.anchorPoint = kAnchorPointCenter;

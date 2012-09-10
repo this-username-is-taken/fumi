@@ -15,7 +15,6 @@
 		2B066FCE15EA953300AF1122 /* FMCanvasView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B066FCD15EA953300AF1122 /* FMCanvasView.m */; };
 		2B082CFB15C1094600A5ADA9 /* FMMainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B082CFA15C1094600A5ADA9 /* FMMainViewController.m */; };
 		2B082CFE15C10C4E00A5ADA9 /* UIColor+Fumi.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B082CFD15C10C4E00A5ADA9 /* UIColor+Fumi.m */; };
-		2B082D0B15C2540F00A5ADA9 /* FMSettings.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B082D0A15C2540F00A5ADA9 /* FMSettings.m */; };
 		2B082D0E15C2593F00A5ADA9 /* FMGeometry.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B082D0D15C2593F00A5ADA9 /* FMGeometry.m */; };
 		2B08309B15C44F9A00A5ADA9 /* DDLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B08309515C44D2C00A5ADA9 /* DDLog.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		2B08309C15C44F9D00A5ADA9 /* DDASLLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B08309115C44D2C00A5ADA9 /* DDASLLogger.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
@@ -32,6 +31,7 @@
 /* Begin PBXFileReference section */
 		2B06323815FCD3A30012B73A /* FMCanvas.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMCanvas.h; sourceTree = "<group>"; };
 		2B06323915FCD3A30012B73A /* FMCanvas.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMCanvas.m; sourceTree = "<group>"; };
+		2B06323B15FE218E0012B73A /* FMMacro.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FMMacro.h; sourceTree = "<group>"; };
 		2B066F8715E9330500AF1122 /* EAGLView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EAGLView.h; sourceTree = "<group>"; };
 		2B066F8815E9330500AF1122 /* EAGLView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EAGLView.m; sourceTree = "<group>"; };
 		2B066F8F15E9370700AF1122 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
@@ -45,7 +45,6 @@
 		2B082CFC15C10C4E00A5ADA9 /* UIColor+Fumi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIColor+Fumi.h"; sourceTree = "<group>"; };
 		2B082CFD15C10C4E00A5ADA9 /* UIColor+Fumi.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIColor+Fumi.m"; sourceTree = "<group>"; };
 		2B082D0915C2540F00A5ADA9 /* FMSettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMSettings.h; sourceTree = "<group>"; };
-		2B082D0A15C2540F00A5ADA9 /* FMSettings.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMSettings.m; sourceTree = "<group>"; };
 		2B082D0C15C2593F00A5ADA9 /* FMGeometry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMGeometry.h; sourceTree = "<group>"; };
 		2B082D0D15C2593F00A5ADA9 /* FMGeometry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMGeometry.m; sourceTree = "<group>"; };
 		2B08309015C44D2C00A5ADA9 /* DDASLLogger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DDASLLogger.h; sourceTree = "<group>"; };
@@ -180,7 +179,7 @@
 				2B066FC915EA760700AF1122 /* Canvas */,
 				2B066FCA15EA762100AF1122 /* Categories */,
 				2B082D0915C2540F00A5ADA9 /* FMSettings.h */,
-				2B082D0A15C2540F00A5ADA9 /* FMSettings.m */,
+				2B06323B15FE218E0012B73A /* FMMacro.h */,
 				2B08309A15C44D4600A5ADA9 /* Third Parties */,
 				2B37E77415BFC25B00D21E55 /* Supporting Files */,
 			);
@@ -265,7 +264,6 @@
 				2B37E77E15BFC25C00D21E55 /* FMAppDelegate.m in Sources */,
 				2B082CFB15C1094600A5ADA9 /* FMMainViewController.m in Sources */,
 				2B082CFE15C10C4E00A5ADA9 /* UIColor+Fumi.m in Sources */,
-				2B082D0B15C2540F00A5ADA9 /* FMSettings.m in Sources */,
 				2B082D0E15C2593F00A5ADA9 /* FMGeometry.m in Sources */,
 				2B08309B15C44F9A00A5ADA9 /* DDLog.m in Sources */,
 				2B08309C15C44F9D00A5ADA9 /* DDASLLogger.m in Sources */,
