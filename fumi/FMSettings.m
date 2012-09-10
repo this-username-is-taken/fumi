@@ -30,6 +30,16 @@ static const unsigned int kCanvasDensityGridSize = 2;   // density grids are 2x2
     return CGSizeMake(kCanvasDimensionsWidth, kCanvasDimensionsHeight);
 }
 
++ (CGSize)velocityCanvasDimensions
+{
+    return CGSizeMake(kCanvasDimensionsWidth/(CGFloat)kCanvasVelocityGridSize, kCanvasDimensionsHeight/(CGFloat)kCanvasVelocityGridSize);
+}
+
++ (CGSize)densityCanvasDimensions
+{
+    return CGSizeMake(kCanvasDimensionsWidth/(CGFloat)kCanvasDensityGridSize, kCanvasDimensionsHeight/(CGFloat)kCanvasDensityGridSize);
+}
+
 + (CGSize)velocityGridDimensions
 {
     return CGSizeMake(kCanvasDimensionsWidth/(CGFloat)kCanvasVelocityGridSize + 2, kCanvasDimensionsHeight/(CGFloat)kCanvasVelocityGridSize + 2);
@@ -40,14 +50,24 @@ static const unsigned int kCanvasDensityGridSize = 2;   // density grids are 2x2
     return CGSizeMake(kCanvasDimensionsWidth/(CGFloat)kCanvasDensityGridSize + 2, kCanvasDimensionsHeight/(CGFloat)kCanvasDensityGridSize + 2);
 }
 
-+ (CGSize)velocityCanvasDimensions
++ (unsigned int)nVelocityGrids
 {
-    return CGSizeMake(kCanvasDimensionsWidth/(CGFloat)kCanvasVelocityGridSize, kCanvasDimensionsHeight/(CGFloat)kCanvasVelocityGridSize);
+    static unsigned int nGrids = 0;
+    if (nGrids == 0) {
+        CGSize dimensions = [self velocityGridDimensions];
+        nGrids = dimensions.width * dimensions.height;
+    }
+    return nGrids;
 }
 
-+ (CGSize)densityCanvasDimensions
++ (unsigned int)nDensityGrids
 {
-    return CGSizeMake(kCanvasDimensionsWidth/(CGFloat)kCanvasDensityGridSize, kCanvasDimensionsHeight/(CGFloat)kCanvasDensityGridSize);
+    static unsigned int nGrids = 0;
+    if (nGrids == 0) {
+        CGSize dimensions = [self densityGridDimensions];
+        nGrids = dimensions.width * dimensions.height;
+    }
+    return nGrids;
 }
 
 @end

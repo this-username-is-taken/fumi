@@ -9,6 +9,10 @@
 #import "FMCanvas.h"
 #import "FMSettings.h"
 
+#import "DDLog.h"
+
+static const int ddLogLevel = LOG_LEVEL_INFO;
+
 @interface FMCanvas ()
 {
     CGFloat *velCurrX;
@@ -26,26 +30,26 @@
 {
     self = [super init];
     if (self) {
-        CGSize velGrid = [FMSettings velocityGridDimensions];
-        CGSize denGrid = [FMSettings densityGridDimensions];
-        unsigned int nVelGrids = velGrid.height * velGrid.width;
-        unsigned int nDenGrids = denGrid.height * denGrid.width;
+        unsigned int nVelGrids = [FMSettings nVelocityGrids];
+        unsigned int nDenGrids = [FMSettings nDensityGrids];
         
         // allocate memory for velocity
-        velCurrX    = (CGFloat *)malloc(nVelGrids * sizeof(CGFloat));
-        velCurrY	= (CGFloat *)malloc(nVelGrids * sizeof(CGFloat));
-        velPrevX	= (CGFloat *)malloc(nVelGrids * sizeof(CGFloat));
-        velPrevY	= (CGFloat *)malloc(nVelGrids * sizeof(CGFloat));
+        velCurrX    = (CGFloat *)calloc(nVelGrids, sizeof(CGFloat));
+        velCurrY	= (CGFloat *)calloc(nVelGrids, sizeof(CGFloat));
+        velPrevX	= (CGFloat *)calloc(nVelGrids, sizeof(CGFloat));
+        velPrevY	= (CGFloat *)calloc(nVelGrids, sizeof(CGFloat));
         
         // allocate memory for density
-        denCurr		= (CGFloat *)malloc(nDenGrids * sizeof(CGFloat));
-        denPrev     = (CGFloat *)malloc(nDenGrids * sizeof(CGFloat));
+        denCurr		= (CGFloat *)calloc(nDenGrids, sizeof(CGFloat));
+        denPrev     = (CGFloat *)calloc(nDenGrids, sizeof(CGFloat));
         
-        // initialize data
-        for (int i=0;i<nVelGrids;i++)
-            velCurrX[i] = velCurrY[i] = velPrevX[i] = velPrevY[i] = 0.0f;
-        for (int i=0;i<nDenGrids;i++)
-            denCurr[i] = denPrev[i] = 0.0f;
+        if (velCurrX == NULL || velCurrY == NULL ||
+            velPrevX == NULL || velCurrY == NULL ||
+            denCurr  == NULL || denPrev  == NULL) {
+            DDLogError(@"FMCanvas unable to allocate enough memory");
+        } else {
+            DDLogInfo(@"Initialized memory for velocity and density grids");
+        }
     }
     return self;
 }
@@ -53,14 +57,27 @@
 - (void)dealloc
 {
     // free allocated memory
-    if (velCurrX) free (velCurrX);
-	if (velCurrY) free (velCurrY);
-	if (velPrevX) free (velPrevX);
-	if (velPrevY) free (velPrevY);
-	if (denCurr) free (denCurr);
-	if (denPrev) free (denPrev);
+    free (velCurrX);
+	free (velCurrY);
+	free (velPrevX);
+	free (velPrevY);
+	free (denCurr);
+	free (denPrev);
     
     [super dealloc];
+}
+
+- (void)resetPrevGrids
+{
+    unsigned int nVelGrids = [FMSettings nVelocityGrids];
+    unsigned int nDenGrids = [FMSettings nDensityGrids];
+    
+    memset(velCurrX, 0, nVelGrids);
+    memset(velCurrY, 0, nVelGrids);
+    memset(velPrevX, 0, nVelGrids);
+    memset(velPrevY, 0, nVelGrids);
+    memset(denCurr, 0, nDenGrids);
+    memset(denPrev, 0, nDenGrids);
 }
 
 @end

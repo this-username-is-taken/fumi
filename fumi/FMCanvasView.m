@@ -117,6 +117,8 @@
     glClear(GL_COLOR_BUFFER_BIT);
     
     // Drawing
+    [_canvas resetPrevGrids];
+    
     glVertexPointer(2, GL_FLOAT, 0, squareVertices);
     glColorPointer(4, GL_UNSIGNED_BYTE, 0, squareColors);
     glEnableClientState(GL_VERTEX_ARRAY);

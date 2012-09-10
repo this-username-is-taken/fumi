@@ -10,7 +10,6 @@
 
 @interface FMCanvas : NSObject
 
-@property (nonatomic, assign) CGFloat *vertices;
-@property (nonatomic, assign) CGFloat *colors;
+- (void)resetPrevGrids;
 
 @end
