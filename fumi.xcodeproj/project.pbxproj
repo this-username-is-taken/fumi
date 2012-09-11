@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		2B06323A15FCD3A30012B73A /* FMCanvas.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B06323915FCD3A30012B73A /* FMCanvas.m */; };
+		2B06324215FFB4410012B73A /* UIGestureRecognizer+Fumi.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B06324115FFB4410012B73A /* UIGestureRecognizer+Fumi.m */; };
 		2B066F8915E9330500AF1122 /* EAGLView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B066F8815E9330500AF1122 /* EAGLView.m */; };
 		2B066F9015E9370700AF1122 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B066F8F15E9370700AF1122 /* OpenGLES.framework */; };
 		2B066F9215E9371E00AF1122 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B066F9115E9371E00AF1122 /* QuartzCore.framework */; };
@@ -32,6 +33,8 @@
 		2B06323815FCD3A30012B73A /* FMCanvas.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMCanvas.h; sourceTree = "<group>"; };
 		2B06323915FCD3A30012B73A /* FMCanvas.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMCanvas.m; sourceTree = "<group>"; };
 		2B06323B15FE218E0012B73A /* FMMacro.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FMMacro.h; sourceTree = "<group>"; };
+		2B06324015FFB4410012B73A /* UIGestureRecognizer+Fumi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIGestureRecognizer+Fumi.h"; sourceTree = "<group>"; };
+		2B06324115FFB4410012B73A /* UIGestureRecognizer+Fumi.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIGestureRecognizer+Fumi.m"; sourceTree = "<group>"; };
 		2B066F8715E9330500AF1122 /* EAGLView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EAGLView.h; sourceTree = "<group>"; };
 		2B066F8815E9330500AF1122 /* EAGLView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EAGLView.m; sourceTree = "<group>"; };
 		2B066F8F15E9370700AF1122 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
@@ -101,6 +104,8 @@
 				2B066FA115E9B2F700AF1122 /* UIView+Fumi.m */,
 				2B082CFC15C10C4E00A5ADA9 /* UIColor+Fumi.h */,
 				2B082CFD15C10C4E00A5ADA9 /* UIColor+Fumi.m */,
+				2B06324015FFB4410012B73A /* UIGestureRecognizer+Fumi.h */,
+				2B06324115FFB4410012B73A /* UIGestureRecognizer+Fumi.m */,
 			);
 			name = Categories;
 			sourceTree = "<group>";
@@ -273,6 +278,7 @@
 				2B066FA215E9B2F700AF1122 /* UIView+Fumi.m in Sources */,
 				2B066FCE15EA953300AF1122 /* FMCanvasView.m in Sources */,
 				2B06323A15FCD3A30012B73A /* FMCanvas.m in Sources */,
+				2B06324215FFB4410012B73A /* UIGestureRecognizer+Fumi.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

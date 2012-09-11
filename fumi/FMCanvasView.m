@@ -9,8 +9,15 @@
 #import "FMCanvasView.h"
 #import "FMCanvas.h"
 
+#import "FMGeometry.h"
 #import "FMMacro.h"
 #import "FMSettings.h"
+
+#import "UIGestureRecognizer+Fumi.h"
+
+#import "DDLog.h"
+
+static const int ddLogLevel = LOG_LEVEL_INFO;
 
 @interface FMCanvasView ()
 {
@@ -31,8 +38,9 @@
         
         _vertices = (GLfloat *)calloc(kDensityDimensionsWidth * kDensityDimensionsHeight * 8, sizeof(GLfloat));
         _colors = (GLubyte *)calloc(kDensityDimensionsWidth * kDensityDimensionsHeight * 16, sizeof(GLubyte));
-        memset(_colors, 0, kDensityDimensionsWidth * kDensityDimensionsHeight * 16);
+        memset(_colors, 200, kDensityDimensionsWidth * kDensityDimensionsHeight * 16);
         
+        // j ~ x, i ~ y
         for (int i=0;i<kDensityDimensionsHeight;i++) {
             for (int j=0;j<kDensityDimensionsWidth;j++) {
                 // (i, j)
@@ -106,7 +114,12 @@
 // Long press gestures are interpreted as ink injection
 - (void)_handlePressGesture:(UILongPressGestureRecognizer *)gestureRecognizer
 {
-    
+    FMPoint p = [gestureRecognizer locationInGLView:self];
+    _colors[I_CLR_16(p.y, p.x, 0)] = 255;
+    _colors[I_CLR_16(p.y, p.x, 1)] = 0;
+    _colors[I_CLR_16(p.y, p.x, 2)] = 0;
+    _colors[I_CLR_16(p.y, p.x, 3)] = 1;
+    DDLogInfo(@"%@ at %@", gestureRecognizer, NSStringFromFMPoint(p));
 }
 
 #pragma mark -
@@ -114,6 +127,7 @@
 
 - (void)drawView
 {
+    FMBenchmark benchmark;
     NSTimeInterval startTime = CFAbsoluteTimeGetCurrent();
     
     // Setting up drawing content
@@ -131,6 +145,7 @@
     glClear(GL_COLOR_BUFFER_BIT);
     
     // Drawing
+    benchmark.graphicsTime = CFAbsoluteTimeGetCurrent();
     [_canvas resetPrevGrids];
     
     glVertexPointer(2, GL_FLOAT, 0, _vertices);
@@ -141,10 +156,10 @@
     
     glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
     [self.context presentRenderbuffer:GL_RENDERBUFFER_OES];
+    benchmark.graphicsTime = CFAbsoluteTimeGetCurrent() - benchmark.graphicsTime;
     
     // Performance analysis
     static NSTimeInterval lastTime;
-    FMBenchmark benchmark;
     benchmark.elapsedTime = CFAbsoluteTimeGetCurrent() - startTime;
     benchmark.runloopTime = [NSDate timeIntervalSinceReferenceDate] - lastTime;
     lastTime = [NSDate timeIntervalSinceReferenceDate];
@@ -153,9 +168,5 @@
 
 #pragma mark -
 #pragma mark Helper Functions
-
-- (void)_updateBenchmark
-{
-}
 
 @end
