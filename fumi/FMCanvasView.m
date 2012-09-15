@@ -25,6 +25,8 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 
     GLuint _texture[1];
     GLubyte *_colors;
+    
+    FMBenchmark _benchmark;
 }
 @end
 
@@ -124,7 +126,6 @@ static const GLfloat _vertices[] = {
 
 - (void)drawView
 {
-    FMBenchmark benchmark;
     NSTimeInterval startTime = CFAbsoluteTimeGetCurrent();
     
     // Setting up drawing content
@@ -136,7 +137,7 @@ static const GLfloat _vertices[] = {
     glClear(GL_COLOR_BUFFER_BIT);
     
     // Drawing
-    benchmark.graphicsTime = CFAbsoluteTimeGetCurrent();
+    _benchmark.graphicsTime = CFAbsoluteTimeGetCurrent();
     [_canvas resetPrevGrids];
     
     glVertexPointer(2, GL_FLOAT, 0, _vertices);
@@ -149,14 +150,15 @@ static const GLfloat _vertices[] = {
     
     glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
     [self.context presentRenderbuffer:GL_RENDERBUFFER_OES];
-    benchmark.graphicsTime = CFAbsoluteTimeGetCurrent() - benchmark.graphicsTime;
+    _benchmark.graphicsTime = CFAbsoluteTimeGetCurrent() - _benchmark.graphicsTime;
     
     // Performance analysis
-    static NSTimeInterval lastTime;
-    benchmark.elapsedTime = CFAbsoluteTimeGetCurrent() - startTime;
-    benchmark.runloopTime = [NSDate timeIntervalSinceReferenceDate] - lastTime;
-    lastTime = [NSDate timeIntervalSinceReferenceDate];
-    [_delegate updateBenchmark:benchmark];
+    static NSTimeInterval lastTime = 0;
+    _benchmark.elapsedTime = CFAbsoluteTimeGetCurrent() - startTime;
+    _benchmark.runloopTime = (lastTime == 0) ? lastTime : CFAbsoluteTimeGetCurrent() - lastTime;
+    lastTime = CFAbsoluteTimeGetCurrent();
+    updateBenchmarkAvg(&_benchmark);
+    [_delegate updateBenchmark:&_benchmark];
 }
 
 #pragma mark -

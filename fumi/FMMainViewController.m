@@ -105,15 +105,17 @@ static const CGRect kBenchmarkLabelFrame = {10, 10, 800, 30};
 
 #pragma mark Benchmark Label Handler
 
-- (void)updateBenchmark:(FMBenchmark)benchmark
+- (void)updateBenchmark:(FMBenchmark *)benchmark
 {
     // Goal: 24fps or 40ms elapsed time
-    _benchmarkLabel.text = [NSString stringWithFormat:@"FPS: %d, physics: %.2f, graphics: %.2f, elapsed: %.2f, loop: %.2f",
-                            (int)(1.0/benchmark.runloopTime),
-                            benchmark.physicsTime * 1000,
-                            benchmark.graphicsTime * 1000,
-                            benchmark.elapsedTime * 1000,
-                            benchmark.runloopTime * 1000];
+    _benchmarkLabel.text = [NSString stringWithFormat:@"FPS: %d, physics: %.2f, graphics: %.2f, elapsed: %.2f, loop: %.2f | FPS: %d, average: %.2f",
+                            (int)(1.0/benchmark->runloopTime),
+                            benchmark->physicsTime * 1000,
+                            benchmark->graphicsTime * 1000,
+                            benchmark->elapsedTime * 1000,
+                            benchmark->runloopTime * 1000,
+                            (int)(1.0/benchmark->averageTime),
+                            benchmark->averageTime * 1000];
 }
 
 #pragma mark -

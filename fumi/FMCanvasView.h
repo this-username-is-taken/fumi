@@ -9,15 +9,24 @@
 #import "EAGLView.h"
 
 typedef struct {
+    unsigned long long frames;  // # of displayed frames
+    NSTimeInterval averageTime;
     NSTimeInterval elapsedTime; // time elapsed executing the drawView function
     NSTimeInterval runloopTime; // time for a full runloop (used to calculate fps)
     NSTimeInterval physicsTime;
     NSTimeInterval graphicsTime;
 } FMBenchmark;
 
+CG_INLINE CGFloat updateBenchmarkAvg(FMBenchmark *benchmark)
+{
+    benchmark->averageTime = (benchmark->averageTime * benchmark->frames + benchmark->runloopTime)/(benchmark->frames + 1);
+    benchmark->frames += 1;
+    return benchmark->averageTime;
+}
+
 @protocol FMBenchmarkDelegate <NSObject>
 @required
-- (void)updateBenchmark:(FMBenchmark)benchmark;
+- (void)updateBenchmark:(FMBenchmark *)benchmark;
 @end
 
 @interface FMCanvasView : EAGLView
