@@ -19,6 +19,7 @@ typedef struct {
 
 CG_INLINE CGFloat updateBenchmarkAvg(FMBenchmark *benchmark)
 {
+    // TODO: bug on pause/resume
     benchmark->averageTime = (benchmark->averageTime * benchmark->frames + benchmark->runloopTime)/(benchmark->frames + 1);
     benchmark->frames += 1;
     return benchmark->averageTime;

@@ -22,6 +22,7 @@ typedef enum {
 
 static const int ddLogLevel = LOG_LEVEL_INFO;
 
+static const CGRect kPauseSwitchFrame = {750, 52, 0, 0};
 static const CGRect kSegmentedControlFrame = {362, 50, 300, 30};
 static const CGRect kBenchmarkLabelFrame = {10, 10, 800, 30};
 
@@ -29,6 +30,7 @@ static const CGRect kBenchmarkLabelFrame = {10, 10, 800, 30};
 {
     FMCanvasView *_canvasView;
     
+    UISwitch *_pauseSwitch;
     UILabel *_benchmarkLabel;
     UISegmentedControl *_segmentedControl;
 }
@@ -47,6 +49,7 @@ static const CGRect kBenchmarkLabelFrame = {10, 10, 800, 30};
 
 - (void)dealloc
 {
+    [_pauseSwitch release];
     [_benchmarkLabel release];
     [_segmentedControl release];
     
@@ -64,11 +67,15 @@ static const CGRect kBenchmarkLabelFrame = {10, 10, 800, 30};
     
     self.view.backgroundColor = [UIColor whiteColor];
     
+    _pauseSwitch = [[UISwitch alloc] initWithFrame:kPauseSwitchFrame];
+    [_pauseSwitch addTarget:self action:@selector(_switchDidChange:) forControlEvents:UIControlEventValueChanged];
+    [self.view addSubview:_pauseSwitch];
+    
     _segmentedControl = [[UISegmentedControl alloc] initWithItems:[NSArray arrayWithObjects:@"Canvas", @"Velocity", @"Density", nil]];
     _segmentedControl.frame = kSegmentedControlFrame;
     _segmentedControl.segmentedControlStyle = UISegmentedControlStyleBar;
     _segmentedControl.selectedSegmentIndex = FMSegmentedControlIndexCanvas;
-    [_segmentedControl addTarget:self action:@selector(_segmentSelected:) forControlEvents:UIControlEventValueChanged];
+    [_segmentedControl addTarget:self action:@selector(_segmentDidChange:) forControlEvents:UIControlEventValueChanged];
     [self.view addSubview:_segmentedControl];
     
     _benchmarkLabel = [[UILabel alloc] initWithFrame:kBenchmarkLabelFrame];
@@ -91,7 +98,16 @@ static const CGRect kBenchmarkLabelFrame = {10, 10, 800, 30};
 #pragma mark -
 #pragma mark Segmented Control Handler
 
-- (void)_segmentSelected:(UISegmentedControl *)sender
+- (void)_switchDidChange:(UISwitch *)sender
+{
+    if (sender.on) {
+        [_canvasView stopAnimation];
+    } else {
+        [_canvasView startAnimation];
+    }
+}
+
+- (void)_segmentDidChange:(UISegmentedControl *)sender
 {
     /*
     FMSegmentedControlIndex index = _segmentedControl.selectedSegmentIndex;

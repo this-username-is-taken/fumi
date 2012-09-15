@@ -79,6 +79,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 
 - (void)stopAnimation
 {
+    [_animationTimer invalidate];
     _animationTimer = nil;
 }
 
