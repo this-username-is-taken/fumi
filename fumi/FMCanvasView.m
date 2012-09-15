@@ -22,8 +22,8 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 @interface FMCanvasView ()
 {
     FMCanvas *_canvas;
-    
-    GLfloat *_vertices;
+
+    GLuint _texture[1];
     GLubyte *_colors;
 }
 @end
@@ -36,27 +36,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     if (self) {
         _canvas = [[FMCanvas alloc] init];
         
-        _vertices = (GLfloat *)calloc(kDensityDimensionsWidth * kDensityDimensionsHeight * 8, sizeof(GLfloat));
-        _colors = (GLubyte *)calloc(kDensityDimensionsWidth * kDensityDimensionsHeight * 16, sizeof(GLubyte));
-        memset(_colors, 200, kDensityDimensionsWidth * kDensityDimensionsHeight * 16);
-        
-        // j ~ x, i ~ y
-        for (int i=0;i<kDensityDimensionsHeight;i++) {
-            for (int j=0;j<kDensityDimensionsWidth;j++) {
-                // (i, j)
-                _vertices[I_DEN_8(i,j,0)] = kCanvasDensityGridSize * j;
-                _vertices[I_DEN_8(i,j,1)] = kCanvasDensityGridSize * i;
-                // (i, j+1)
-                _vertices[I_DEN_8(i,j,2)] = kCanvasDensityGridSize * (j+1);
-                _vertices[I_DEN_8(i,j,3)] = kCanvasDensityGridSize * i;
-                // (i+1, j)
-                _vertices[I_DEN_8(i,j,4)] = kCanvasDensityGridSize * j;
-                _vertices[I_DEN_8(i,j,5)] = kCanvasDensityGridSize * (i+1);
-                // (i+1, j+1)
-                _vertices[I_DEN_8(i,j,6)] = kCanvasDensityGridSize * (j+1);
-                _vertices[I_DEN_8(i,j,7)] = kCanvasDensityGridSize * (i+1);
-            }
-        }
+        _colors = calloc(kDensityDimensionsWidth * kDensityDimensionsHeight * 4, sizeof(GLubyte));
         
         [self _createGestureRecognizers];
     }
@@ -67,7 +47,6 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 {
     [_canvas release];
     
-    free(_vertices);
     free(_colors);
     
     [super dealloc];
@@ -79,6 +58,8 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 - (void)layoutSubviews
 {
     [super layoutSubviews];
+    
+    [self _setupView];
 }
 
 #pragma mark -
@@ -125,6 +106,22 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 #pragma mark -
 #pragma mark OpenGL Rendering
 
+// Define the texture coordinates
+static const GLfloat _texCoords[] = {
+    0.0, 1.0,
+    1.0, 1.0,
+    0.0, 0.0,
+    1.0, 0.0
+};
+
+// Define the square vertices
+static const GLfloat _vertices[] = {
+    0, 0,
+    0, kCanvasDimensionsHeight,
+    kCanvasDimensionsWidth, 0,
+    kCanvasDimensionsWidth, kCanvasDimensionsHeight
+};
+
 - (void)drawView
 {
     FMBenchmark benchmark;
@@ -133,12 +130,6 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     // Setting up drawing content
     [EAGLContext setCurrentContext:self.context];
     glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
-    
-    // Matrix & viewport initialization
-    glLoadIdentity();
-    glMatrixMode(GL_PROJECTION);
-    glOrthof(0, backingWidth, 0, backingHeight, -1.0f, 1.0f);
-    glViewport(0, 0, backingWidth, backingHeight);
     
     // Clear background color
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
@@ -149,10 +140,12 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     [_canvas resetPrevGrids];
     
     glVertexPointer(2, GL_FLOAT, 0, _vertices);
-    glColorPointer(4, GL_UNSIGNED_BYTE, 0, _colors);
+    glTexCoordPointer(2, GL_FLOAT, 0, _texCoords);
     glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_COLOR_ARRAY);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, kDensityDimensionsWidth * kDensityDimensionsHeight * 4);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    
+    // Only need to draw the four corners of the rectangle
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     
     glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
     [self.context presentRenderbuffer:GL_RENDERBUFFER_OES];
@@ -168,5 +161,28 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 
 #pragma mark -
 #pragma mark Helper Functions
+
+- (void)_setupView
+{
+    // Matrix & viewport initialization
+    glLoadIdentity();
+    glMatrixMode(GL_PROJECTION);
+    glOrthof(0, kCanvasDimensionsWidth, 0, kCanvasDimensionsHeight, -1.0f, 1.0f);
+    glViewport(0, 0, kCanvasDimensionsWidth, kCanvasDimensionsHeight);
+    
+    // Enable texture mapping
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_SRC_COLOR);
+    
+    // Generate and bind texture
+    glGenTextures(1, &_texture[0]);
+    glBindTexture(GL_TEXTURE_2D, _texture[0]);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+    memset(_colors, 50, kDensityDimensionsWidth * kDensityDimensionsHeight * 4);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 16, 16, 0, GL_RGBA, GL_UNSIGNED_BYTE, _colors);
+}
 
 @end
