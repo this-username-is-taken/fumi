@@ -88,7 +88,26 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 // Pan gestures are interpreted as free interactions with ink
 - (void)_handlePanGesture:(UIPanGestureRecognizer *)gestureRecognizer
 {
+    static NSTimeInterval lastTime;
+    static FMPoint start;
     
+    // TODO: time diff bug when *starting*
+    NSTimeInterval diffTime = CFAbsoluteTimeGetCurrent() - lastTime;
+    lastTime = CFAbsoluteTimeGetCurrent();
+    FMPoint end = [gestureRecognizer locationInGLView:self forGridSize:kCanvasVelocityGridSize];
+
+    if (gestureRecognizer.state == UIGestureRecognizerStateBegan)
+    {
+        start = end;
+        return;
+    }
+    
+    if (fabsf(start.x - end.x) > 0.5 || fabsf(start.y - end.y) > 0.5)
+    {
+        //[self handleTineLine:start at:end after:diffTime];
+        NSLog(@"%.5f, %@, %@", diffTime, NSStringFromFMPoint(start), NSStringFromFMPoint(end));
+        start = end;
+    }
 }
 
 // Pinch gestures are to zoom in/zoom out on canvas
@@ -100,7 +119,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 // Long press gestures are interpreted as ink injection
 - (void)_handlePressGesture:(UILongPressGestureRecognizer *)gestureRecognizer
 {
-    FMPoint p = [gestureRecognizer locationInGLView:self];
+    FMPoint p = [gestureRecognizer locationInGLView:self forGridSize:kCanvasDensityGridSize];
     _colors[I_CLR_3(p.y, p.x, R)] = 255;
     _colors[I_CLR_3(p.y, p.x, G)] = 0;
     _colors[I_CLR_3(p.y, p.x, B)] = 0;

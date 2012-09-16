@@ -14,7 +14,7 @@
 #define kCanvasDimensionsHeight 576   // in pixels
 
 // Each grid will be nxn pixels
-#define kCanvasVelocityGridSize 4
+#define kCanvasVelocityGridSize 6
 #define kCanvasDensityGridSize  3
 
 // Total number of grids being used for rendering, excluding boundaries
