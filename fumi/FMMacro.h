@@ -9,6 +9,11 @@
 #ifndef fumi_FMMacro_h
 #define fumi_FMMacro_h
 
-#define I_CLR_3(i,j,k) (i*kDensityDimensionsWidth*3+j*3+k)
+#define R 0
+#define G 1
+#define B 2
+#define BITS_PER_PIXEL 3
+
+#define I_CLR_3(i,j,k) (i*kDensityDimensionsWidth*BITS_PER_PIXEL+j*BITS_PER_PIXEL+k)
 
 #endif

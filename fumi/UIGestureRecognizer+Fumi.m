@@ -14,8 +14,8 @@
 - (FMPoint)locationInGLView:(EAGLView *)view
 {
     CGPoint p = [self locationInView:view];
-    p.x = p.x/kCanvasDensityGridSize;
-    p.y = (kCanvasDimensionsHeight - p.y)/kCanvasDensityGridSize;
+    p.x = p.x/kCanvasDensityGridSize; // convert to grid size
+    p.y = (kCanvasDimensionsHeight - p.y)/kCanvasDensityGridSize; // flip coordinates
     return FMPointMakeWithCGPoint(p);
 }
 

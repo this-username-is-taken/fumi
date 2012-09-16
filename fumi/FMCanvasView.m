@@ -40,7 +40,8 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
         
         // The size of density array is 256x256. We map the density as a texture onto a 768x576
         // rectangle. Each grid occupies 3 pixels and the bottom 1/3 are not displayed.
-        _colors = calloc(kDensityDimensionsWidth * kDensityDimensionsWidth * 3, sizeof(GLubyte));
+        _colors = calloc(kDensityDimensionsWidth * kDensityDimensionsWidth * BITS_PER_PIXEL, sizeof(GLubyte));
+        memset(_colors, 100, kDensityDimensionsWidth * kDensityDimensionsWidth * BITS_PER_PIXEL);
         
         [self _createGestureRecognizers];
     }
@@ -100,10 +101,9 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 - (void)_handlePressGesture:(UILongPressGestureRecognizer *)gestureRecognizer
 {
     FMPoint p = [gestureRecognizer locationInGLView:self];
-    _colors[I_CLR_16(p.y, p.x, 0)] = 255;
-    _colors[I_CLR_16(p.y, p.x, 1)] = 0;
-    _colors[I_CLR_16(p.y, p.x, 2)] = 0;
-    _colors[I_CLR_16(p.y, p.x, 3)] = 1;
+    _colors[I_CLR_3(p.y, p.x, R)] = 255;
+    _colors[I_CLR_3(p.y, p.x, G)] = 0;
+    _colors[I_CLR_3(p.y, p.x, B)] = 0;
     DDLogInfo(@"%@ at %@", gestureRecognizer, NSStringFromFMPoint(p));
 }
 
@@ -141,6 +141,8 @@ static const GLfloat _vertices[] = {
     // Drawing
     _benchmark.graphicsTime = CFAbsoluteTimeGetCurrent();
     [_canvas resetPrevGrids];
+    
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, kDensityDimensionsWidth, kDensityDimensionsWidth, 0, GL_RGB, GL_UNSIGNED_BYTE, _colors);
     
     glVertexPointer(2, GL_FLOAT, 0, _vertices);
     glTexCoordPointer(2, GL_FLOAT, 0, _texCoords);
@@ -184,9 +186,6 @@ static const GLfloat _vertices[] = {
     glBindTexture(GL_TEXTURE_2D, _texture[0]);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    memset(_colors, 0, kDensityDimensionsWidth * kDensityDimensionsWidth * 3);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, kDensityDimensionsWidth, kDensityDimensionsWidth, 0, GL_RGB, GL_UNSIGNED_BYTE, _colors);
 }
 
 @end
