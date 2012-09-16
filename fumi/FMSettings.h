@@ -9,16 +9,19 @@
 #ifndef fumi_FMSettings_h
 #define fumi_FMSettings_h
 
-// Either dimension should be a multiple of 2^8 = 256
-#define kCanvasDimensionsHeight 512   // in pixels
+// Canvas ratio 4:3
 #define kCanvasDimensionsWidth  768   // in pixels
+#define kCanvasDimensionsHeight 576   // in pixels
 
-#define kCanvasVelocityGridSize 4     // velocity grids are 4x4 pixels
-#define kCanvasDensityGridSize  2     // density grids are 2x2 pixels
+// Each grid will be nxn pixels
+#define kCanvasVelocityGridSize 4
+#define kCanvasDensityGridSize  3
 
 // Total number of grids being used for rendering, excluding boundaries
 #define kVelocityDimensionsHeight   kCanvasDimensionsHeight/kCanvasVelocityGridSize
 #define kVelocityDimensionsWidth    kCanvasDimensionsWidth/kCanvasVelocityGridSize
+
+// 256x192
 #define kDensityDimensionsHeight    kCanvasDimensionsHeight/kCanvasDensityGridSize
 #define kDensityDimensionsWidth     kCanvasDimensionsWidth/kCanvasDensityGridSize
 

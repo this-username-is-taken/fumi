@@ -9,7 +9,6 @@
 #ifndef fumi_FMMacro_h
 #define fumi_FMMacro_h
 
-#define I_DEN_8(i,j,k) (i*kDensityDimensionsWidth*8+j*8+k)
-#define I_CLR_16(i,j,k) (i*kDensityDimensionsWidth*16+j*16+k)
+#define I_CLR_3(i,j,k) (i*kDensityDimensionsWidth*3+j*3+k)
 
 #endif

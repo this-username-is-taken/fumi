@@ -83,7 +83,9 @@ static const CGRect kBenchmarkLabelFrame = {10, 10, 800, 30};
     
     _canvasView = [[FMCanvasView alloc] initWithFrame:FMRectMakeWithSize(CGSizeMake(kCanvasDimensionsWidth, kCanvasDimensionsHeight))];
     _canvasView.delegate = self;
-    _canvasView.position = FMRectGetMid(self.view.bounds);
+    CGPoint midpoint = FMRectGetMid(self.view.bounds);
+    midpoint.y += 100;
+    _canvasView.position = midpoint;
     _canvasView.anchorPoint = kAnchorPointCenter;
     _canvasView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin|UIViewAutoresizingFlexibleRightMargin|UIViewAutoresizingFlexibleTopMargin|UIViewAutoresizingFlexibleBottomMargin;
     [self.view addSubview:_canvasView];

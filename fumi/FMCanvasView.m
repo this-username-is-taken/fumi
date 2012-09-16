@@ -38,7 +38,9 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     if (self) {
         _canvas = [[FMCanvas alloc] init];
         
-        _colors = calloc(kDensityDimensionsWidth * kDensityDimensionsHeight * 4, sizeof(GLubyte));
+        // The size of density array is 256x256. We map the density as a texture onto a 768x576
+        // rectangle. Each grid occupies 3 pixels and the bottom 1/3 are not displayed.
+        _colors = calloc(kDensityDimensionsWidth * kDensityDimensionsWidth * 3, sizeof(GLubyte));
         
         [self _createGestureRecognizers];
     }
@@ -110,10 +112,10 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 
 // Define the texture coordinates
 static const GLfloat _texCoords[] = {
-    0.0, 1.0,
-    1.0, 1.0,
     0.0, 0.0,
-    1.0, 0.0
+    0.0, 0.75,
+    1.0, 0.0,
+    1.0, 0.75
 };
 
 // Define the square vertices
@@ -180,11 +182,11 @@ static const GLfloat _vertices[] = {
     // Generate and bind texture
     glGenTextures(1, &_texture[0]);
     glBindTexture(GL_TEXTURE_2D, _texture[0]);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-    memset(_colors, 50, kDensityDimensionsWidth * kDensityDimensionsHeight * 4);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    memset(_colors, 0, kDensityDimensionsWidth * kDensityDimensionsWidth * 3);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 16, 16, 0, GL_RGBA, GL_UNSIGNED_BYTE, _colors);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, kDensityDimensionsWidth, kDensityDimensionsWidth, 0, GL_RGB, GL_UNSIGNED_BYTE, _colors);
 }
 
 @end
