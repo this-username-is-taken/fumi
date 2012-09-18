@@ -25,6 +25,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 
     GLuint _texture[1];
     GLubyte *_colors;
+    GLfloat *_velocity;
     
     FMBenchmark _benchmark;
 }
@@ -43,6 +44,14 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
         _colors = calloc(kDensityDimensionsWidth * kDensityDimensionsWidth * BITS_PER_PIXEL, sizeof(GLubyte));
         memset(_colors, 100, kDensityDimensionsWidth * kDensityDimensionsWidth * BITS_PER_PIXEL);
         
+        _velocity = calloc(kVelocityDimensionsWidth * kVelocityDimensionsHeight * 2, sizeof(GLfloat));
+        for (int i=0;i<kVelocityDimensionsHeight;i++) {
+            for (int j=0;j<kVelocityDimensionsWidth;j++) {
+                _velocity[I_VEL_2(i,j,0)] = 0.5;
+                _velocity[I_VEL_2(i,j,1)] = 0.5;
+            }
+        }
+        
         [self _createGestureRecognizers];
     }
     return self;
@@ -53,6 +62,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     [_canvas release];
     
     free(_colors);
+    free(_velocity);
     
     [super dealloc];
 }
@@ -65,6 +75,15 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     [super layoutSubviews];
     
     [self _setupView];
+}
+
+#pragma mark -
+#pragma mark Accessors
+
+- (void)setRenderingMode:(FMRenderingMode)mode
+{
+    DDLogInfo(@"Rendering mode: %d -> %d", _renderingMode, mode);
+    _renderingMode = mode;
 }
 
 #pragma mark -
@@ -161,15 +180,19 @@ static const GLfloat _vertices[] = {
     _benchmark.graphicsTime = CFAbsoluteTimeGetCurrent();
     [_canvas resetPrevGrids];
     
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, kDensityDimensionsWidth, kDensityDimensionsWidth, 0, GL_RGB, GL_UNSIGNED_BYTE, _colors);
-    
-    glVertexPointer(2, GL_FLOAT, 0, _vertices);
-    glTexCoordPointer(2, GL_FLOAT, 0, _texCoords);
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-    
-    // Only need to draw the four corners of the rectangle
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    switch (_renderingMode) {
+        case FMRenderingModeDensity:
+            [self _renderDensity];
+            break;
+        case FMRenderingModeVelocity:
+            [self _renderVelocity];
+            break;
+        case FMRenderingModeHeight:
+            [self _renderHeight];
+            break;
+        default:
+            break;
+    }
     
     glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
     [self.context presentRenderbuffer:GL_RENDERBUFFER_OES];
@@ -182,6 +205,47 @@ static const GLfloat _vertices[] = {
     lastTime = CFAbsoluteTimeGetCurrent();
     updateBenchmarkAvg(&_benchmark);
     [_delegate updateBenchmark:&_benchmark];
+}
+
+- (void)_renderDensity
+{
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, kDensityDimensionsWidth, kDensityDimensionsWidth, 0, GL_RGB, GL_UNSIGNED_BYTE, _colors);
+    
+    glVertexPointer(2, GL_FLOAT, 0, _vertices);
+    glTexCoordPointer(2, GL_FLOAT, 0, _texCoords);
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    
+    // Only need to draw the four corners of the rectangle
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+}
+
+- (void)_renderVelocity
+{    
+	float x, y;
+
+	glColor4f(1.0f, 1, 1, 1.0f);
+    
+    for (int i=1 ; i<=kVelocityDimensionsHeight ; i++ ) {
+        x = (i-0.5f) * kCanvasVelocityGridSize;
+        for (int j=1 ; j<=kVelocityDimensionsWidth ; j++ ) {
+            y = (j-0.5f) * kCanvasVelocityGridSize;
+            
+            CGFloat vertices[4];
+            vertices[0] = y;
+            vertices[1] = x;
+            vertices[2] = y + _velocity[I_VEL_2(i,j,1)] * kCanvasVelocityGridSize;
+            vertices[3] = x + _velocity[I_VEL_2(i,j,0)] * kCanvasVelocityGridSize;
+            
+            glVertexPointer(2, GL_FLOAT, 0, vertices);
+            glDrawArrays(GL_LINES, 0, 2);
+        }
+    }
+}
+
+- (void)_renderHeight
+{
+    
 }
 
 #pragma mark -

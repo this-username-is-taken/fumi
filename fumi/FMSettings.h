@@ -18,6 +18,7 @@
 #define kCanvasDensityGridSize  3
 
 // Total number of grids being used for rendering, excluding boundaries
+// 128x96
 #define kVelocityDimensionsHeight   kCanvasDimensionsHeight/kCanvasVelocityGridSize
 #define kVelocityDimensionsWidth    kCanvasDimensionsWidth/kCanvasVelocityGridSize
 

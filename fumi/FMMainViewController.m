@@ -14,12 +14,6 @@
 
 #import "DDLog.h"
 
-typedef enum {
-    FMSegmentedControlIndexCanvas = 0, // default
-    FMSegmentedControlIndexVelocity,
-    FMSegmentedControlIndexDensity,
-} FMSegmentedControlIndex;
-
 static const int ddLogLevel = LOG_LEVEL_INFO;
 
 static const CGRect kPauseSwitchFrame = {750, 52, 0, 0};
@@ -71,10 +65,10 @@ static const CGRect kBenchmarkLabelFrame = {10, 10, 800, 30};
     [_pauseSwitch addTarget:self action:@selector(_switchDidChange:) forControlEvents:UIControlEventValueChanged];
     [self.view addSubview:_pauseSwitch];
     
-    _segmentedControl = [[UISegmentedControl alloc] initWithItems:[NSArray arrayWithObjects:@"Canvas", @"Velocity", @"Density", nil]];
+    _segmentedControl = [[UISegmentedControl alloc] initWithItems:[NSArray arrayWithObjects:@"Density", @"Velocity", @"Height", nil]];
     _segmentedControl.frame = kSegmentedControlFrame;
     _segmentedControl.segmentedControlStyle = UISegmentedControlStyleBar;
-    _segmentedControl.selectedSegmentIndex = FMSegmentedControlIndexCanvas;
+    _segmentedControl.selectedSegmentIndex = FMRenderingModeDensity;
     [_segmentedControl addTarget:self action:@selector(_segmentDidChange:) forControlEvents:UIControlEventValueChanged];
     [self.view addSubview:_segmentedControl];
     
@@ -111,14 +105,7 @@ static const CGRect kBenchmarkLabelFrame = {10, 10, 800, 30};
 
 - (void)_segmentDidChange:(UISegmentedControl *)sender
 {
-    /*
-    FMSegmentedControlIndex index = _segmentedControl.selectedSegmentIndex;
-    NSLog(@"%@", [self.view viewWithTag:_previousIndex]);
-    [[self.view viewWithTag:_previousIndex] removeFromSuperview];
-    [self.view addSubview:[_segmentedControlViews objectAtIndex:index]];
-    DDLogInfo(@"Segmented control: %d -> %d", _previousIndex, index);
-    _previousIndex = index;
-     */
+    _canvasView.renderingMode = _segmentedControl.selectedSegmentIndex;
 }
 
 #pragma mark Benchmark Label Handler

@@ -17,6 +17,12 @@ typedef struct {
     NSTimeInterval graphicsTime;
 } FMBenchmark;
 
+typedef enum {
+    FMRenderingModeDensity = 0, // default
+    FMRenderingModeVelocity,
+    FMRenderingModeHeight,
+} FMRenderingMode;
+
 CG_INLINE CGFloat updateBenchmarkAvg(FMBenchmark *benchmark)
 {
     // TODO: bug on pause/resume
@@ -33,5 +39,6 @@ CG_INLINE CGFloat updateBenchmarkAvg(FMBenchmark *benchmark)
 @interface FMCanvasView : EAGLView
 
 @property (nonatomic, assign) id<FMBenchmarkDelegate> delegate;
+@property (nonatomic, assign) FMRenderingMode renderingMode;
 
 @end

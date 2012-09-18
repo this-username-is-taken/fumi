@@ -15,5 +15,6 @@
 #define BITS_PER_PIXEL 3
 
 #define I_CLR_3(i,j,k) (i*kDensityDimensionsWidth*BITS_PER_PIXEL+j*BITS_PER_PIXEL+k)
+#define I_VEL_2(i,j,k) (i*kVelocityDimensionsWidth*2+j*2+k)
 
 #endif
