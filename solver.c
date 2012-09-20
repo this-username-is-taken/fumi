@@ -1,7 +1,5 @@
 /*
  ======================================================================
- demo.c --- protoype to show off the simple solver
- ----------------------------------------------------------------------
  Author : Jos Stam (jstam@aw.sgi.com)
  Creation Date : Jan 9 2003
  
@@ -10,6 +8,8 @@
  This code is a simple prototype that demonstrates how to use the
  code provided in my GDC2003 paper entitles "Real-Time Fluid Dynamics
  for Games". This code uses OpenGL and GLUT for graphics and interface
+ 
+ To run: gcc solver.c fumi/FMSolver.c -framework OpenGL -framework GLUT
  
  =======================================================================
  */
@@ -21,13 +21,11 @@
 #include <OpenGL/glu.h>
 #include "fumi/FMSolver.h"
 
-/* macros */
-
-#define IX(i,j) ((i)+(N+2)*(j))
+#define IX(i,j) ((i)+(Nx+2)*(j))
 
 /* global variables */
 
-static int N;
+static int Nx, Ny;
 static float dt, diff, visc;
 static float force, source;
 static int dvel;
@@ -60,7 +58,7 @@ static void free_data ( void )
 
 static void clear_data ( void )
 {
-	int i, size=(N+2)*(N+2);
+	int i, size=(Nx+2)*(Ny+2);
     
 	for ( i=0 ; i<size ; i++ ) {
 		u[i] = v[i] = u_prev[i] = v_prev[i] = dens[i] = dens_prev[i] = 0.0f;
@@ -69,7 +67,7 @@ static void clear_data ( void )
 
 static int allocate_data ( void )
 {
-	int size = (N+2)*(N+2);
+	int size = (Nx+2)*(Ny+2);
     
 	u			= (float *) malloc ( size*sizeof(float) );
 	v			= (float *) malloc ( size*sizeof(float) );
@@ -77,7 +75,7 @@ static int allocate_data ( void )
 	v_prev		= (float *) malloc ( size*sizeof(float) );
 	dens		= (float *) malloc ( size*sizeof(float) );
 	dens_prev	= (float *) malloc ( size*sizeof(float) );
-    
+
 	if ( !u || !v || !u_prev || !v_prev || !dens || !dens_prev ) {
 		fprintf ( stderr, "cannot allocate data\n" );
 		return ( 0 );
@@ -111,19 +109,17 @@ static void post_display ( void )
 static void draw_velocity ( void )
 {
 	int i, j;
-	float x, y, h;
-    
-	h = 1.0f/N;
+	float x, y;
     
 	glColor3f ( 1.0f, 1.0f, 1.0f );
 	glLineWidth ( 1.0f );
     
 	glBegin ( GL_LINES );
     
-    for ( i=1 ; i<=N ; i++ ) {
-        x = (i-0.5f)*h;
-        for ( j=1 ; j<=N ; j++ ) {
-            y = (j-0.5f)*h;
+    for ( i=1 ; i<=Nx ; i++ ) {
+        x = (i-0.5f)/Nx;
+        for ( j=1 ; j<=Ny ; j++ ) {
+            y = (j-0.5f)/Ny;
             
             glVertex2f ( x, y );
             glVertex2f ( x+u[IX(i,j)], y+v[IX(i,j)] );
@@ -135,6 +131,7 @@ static void draw_velocity ( void )
 
 static void draw_density ( void )
 {
+    /*
 	int i, j;
 	float x, y, h, d00, d01, d10, d11;
     
@@ -160,6 +157,7 @@ static void draw_density ( void )
     }
     
 	glEnd ();
+     */
 }
 
 /*
@@ -170,18 +168,18 @@ static void draw_density ( void )
 
 static void get_from_UI ( float * d, float * u, float * v )
 {
-	int i, j, size = (N+2)*(N+2);
+	int i, j, size = (Nx+2)*(Ny+2);
     
 	for ( i=0 ; i<size ; i++ ) {
-		u[i] = v[i] = d[i] = 0.0f;
+//		u[i] = v[i] = d[i] = 0.0f;
 	}
     
 	if ( !mouse_down[0] && !mouse_down[2] ) return;
     
-	i = (int)((       mx /(float)win_x)*N+1);
-	j = (int)(((win_y-my)/(float)win_y)*N+1);
-    
-	if ( i<1 || i>N || j<1 || j>N ) return;
+	i = (int)((       mx /(float)win_x)*Nx+1);
+	j = (int)(((win_y-my)/(float)win_y)*Ny+1);
+
+	if ( i<1 || i>Nx || j<1 || j>Ny ) return;
     
 	if ( mouse_down[0] ) {
 		u[IX(i,j)] = force * (mx-omx);
@@ -249,11 +247,15 @@ static void reshape_func ( int width, int height )
 	win_y = height;
 }
 
+#define SWAP(x0,x) {float * tmp=x0;x0=x;x=tmp;}
+
 static void idle_func ( void )
 {
 	get_from_UI ( dens_prev, u_prev, v_prev );
-	vel_step ( N, u, v, u_prev, v_prev, visc, dt );
-	dens_step ( N, dens, dens_prev, u, v, diff, dt );
+    //SWAP ( u_prev, u );
+    //SWAP ( v_prev, v );
+	vel_step ( Nx, Ny, u, v, u_prev, v_prev, visc, dt );
+	//dens_step ( Ny, dens, dens_prev, u, v, diff, dt );
     
 	glutSetWindow ( win_id );
 	glutPostRedisplay ();
@@ -324,16 +326,17 @@ int main ( int argc, char ** argv )
 	}
     
 	if ( argc == 1 ) {
-		N = 64;
+        Nx = 64;
+		Ny = 48;
 		dt = 0.1f;
 		diff = 0.0f;
 		visc = 0.0f;
-		force = 5.0f;
+		force = 1.0f;
 		source = 100.0f;
 		fprintf ( stderr, "Using defaults : N=%d dt=%g diff=%g visc=%g force = %g source=%g\n",
-                 N, dt, diff, visc, force, source );
+                 Ny, dt, diff, visc, force, source );
 	} else {
-		N = atoi(argv[1]);
+		//N = atoi(argv[1]);
 		dt = atof(argv[2]);
 		diff = atof(argv[3]);
 		visc = atof(argv[4]);
@@ -354,7 +357,7 @@ int main ( int argc, char ** argv )
 	clear_data ();
     
 	win_x = 512;
-	win_y = 512;
+	win_y = 384;
 	open_glut_window ();
     
 	glutMainLoop ();
