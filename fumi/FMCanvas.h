@@ -9,6 +9,15 @@
 #import <Foundation/Foundation.h>
 
 @interface FMCanvas : NSObject
+{
+@public
+    CGFloat *velCurrX;
+    CGFloat *velCurrY;
+    CGFloat *velPrevX;
+    CGFloat *velPrevY;
+    CGFloat *denCurr;
+    CGFloat *denPrev;
+}
 
 - (void)resetPrevGrids;
 

@@ -9,16 +9,18 @@
 #ifndef fumi_FMSettings_h
 #define fumi_FMSettings_h
 
+/* ===== Dimension Settings ===== */
+
 // Canvas ratio 4:3
 #define kCanvasDimensionsWidth  768   // in pixels
 #define kCanvasDimensionsHeight 576   // in pixels
 
 // Each grid will be nxn pixels
-#define kCanvasVelocityGridSize 6
+#define kCanvasVelocityGridSize 12
 #define kCanvasDensityGridSize  3
 
 // Total number of grids being used for rendering, excluding boundaries
-// 128x96
+// 64x48
 #define kVelocityDimensionsHeight   kCanvasDimensionsHeight/kCanvasVelocityGridSize
 #define kVelocityDimensionsWidth    kCanvasDimensionsWidth/kCanvasVelocityGridSize
 
@@ -34,9 +36,16 @@
 // - + + + + -
 // - + + + + -
 // * - - - - *
-#define kVelocityGridCountHeight    kVelocityDimensionsHeight + 2
-#define kVelocityGridCountWidth     kVelocityDimensionsWidth + 2
-#define kDensityGridCountHeight     kDensityDimensionsHeight + 2
-#define kDensityGridCountWidth      kDensityDimensionsWidth + 2
+#define kVelocityGridCountHeight    (kVelocityDimensionsHeight + 2)
+#define kVelocityGridCountWidth     (kVelocityDimensionsWidth + 2)
+#define kDensityGridCountHeight     (kDensityDimensionsHeight + 2)
+#define kDensityGridCountWidth      (kDensityDimensionsWidth + 2)
+
+
+/* ===== Physics Settings ===== */
+
+#define kPhysicsForce 5.0f
+#define kPhysicsTimestep 0.01f
+#define kPhysicsViscosity 0.5f
 
 #endif

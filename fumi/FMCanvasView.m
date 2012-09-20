@@ -8,6 +8,7 @@
 
 #import "FMCanvasView.h"
 #import "FMCanvas.h"
+#import "FMSolver.h"
 
 #import "FMGeometry.h"
 #import "FMMacro.h"
@@ -25,7 +26,6 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 
     GLuint _texture[1];
     GLubyte *_colors;
-    GLfloat *_velocity;
     
     FMBenchmark _benchmark;
 }
@@ -41,17 +41,9 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
         
         // The size of density array is 256x256. We map the density as a texture onto a 768x576
         // rectangle. Each grid occupies 3 pixels and the bottom 1/3 are not displayed.
-        _colors = calloc(kDensityDimensionsWidth * kDensityDimensionsWidth * BITS_PER_PIXEL, sizeof(GLubyte));
-        memset(_colors, 100, kDensityDimensionsWidth * kDensityDimensionsWidth * BITS_PER_PIXEL);
-        
-        _velocity = calloc(kVelocityDimensionsWidth * kVelocityDimensionsHeight * 2, sizeof(GLfloat));
-        for (int i=0;i<kVelocityDimensionsHeight;i++) {
-            for (int j=0;j<kVelocityDimensionsWidth;j++) {
-                _velocity[I_VEL_2(i,j,0)] = 0.5;
-                _velocity[I_VEL_2(i,j,1)] = 0.5;
-            }
-        }
-        
+        _colors = calloc(kDensityDimensionsWidth * kDensityDimensionsWidth * kRGB, sizeof(GLubyte));
+        memset(_colors, 100, kDensityDimensionsWidth * kDensityDimensionsWidth * kRGB);
+
         [self _createGestureRecognizers];
     }
     return self;
@@ -62,7 +54,6 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     [_canvas release];
     
     free(_colors);
-    free(_velocity);
     
     [super dealloc];
 }
@@ -108,12 +99,13 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 - (void)_handlePanGesture:(UIPanGestureRecognizer *)gestureRecognizer
 {
     static NSTimeInterval lastTime;
-    static FMPoint start;
+    static CGPoint start;
     
     // TODO: time diff bug when *starting*
     NSTimeInterval diffTime = CFAbsoluteTimeGetCurrent() - lastTime;
     lastTime = CFAbsoluteTimeGetCurrent();
-    FMPoint end = [gestureRecognizer locationInGLView:self forGridSize:kCanvasVelocityGridSize];
+    CGPoint end = [gestureRecognizer locationInGLView:self forGridSize:kCanvasVelocityGridSize];
+    FMPoint index = FMPointMakeWithCGPoint(end);
 
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan)
     {
@@ -122,9 +114,12 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     }
     
     if (fabsf(start.x - end.x) > 0.5 || fabsf(start.y - end.y) > 0.5)
-    {
-        //[self handleTineLine:start at:end after:diffTime];
-        NSLog(@"%.5f, %@, %@", diffTime, NSStringFromFMPoint(start), NSStringFromFMPoint(end));
+    {        
+        _canvas->velCurrX[I_VEL(index.y, index.x)] += kPhysicsForce * (float)(end.x - start.x);
+        _canvas->velCurrY[I_VEL(index.y, index.x)] += kPhysicsForce * (float)(end.y - start.y);
+        
+        DDLogInfo(@"CGPoint: %.5f, %@, %@", diffTime, NSStringFromCGPoint(start), NSStringFromCGPoint(end));
+        DDLogInfo(@"%f, %f", _canvas->velCurrX[I_VEL(index.y, index.x)], _canvas->velCurrY[I_VEL(index.y, index.x)]);
         start = end;
     }
 }
@@ -138,7 +133,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 // Long press gestures are interpreted as ink injection
 - (void)_handlePressGesture:(UILongPressGestureRecognizer *)gestureRecognizer
 {
-    FMPoint p = [gestureRecognizer locationInGLView:self forGridSize:kCanvasDensityGridSize];
+    FMPoint p = FMPointMakeWithCGPoint([gestureRecognizer locationInGLView:self forGridSize:kCanvasDensityGridSize]);
     _colors[I_CLR_3(p.y, p.x, R)] = 255;
     _colors[I_CLR_3(p.y, p.x, G)] = 0;
     _colors[I_CLR_3(p.y, p.x, B)] = 0;
@@ -175,6 +170,13 @@ static const GLfloat _vertices[] = {
     // Clear background color
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
+    
+    // Physics
+    [_canvas resetPrevGrids];
+//    vel_step(kVelocityDimensionsWidth * kVelocityDimensionsHeight,
+//             _canvas->velCurrX, _canvas->velCurrY,
+//             _canvas->velPrevX, _canvas->velPrevY,
+//             kPhysicsViscosity, kPhysicsTimestep);
     
     // Drawing
     _benchmark.graphicsTime = CFAbsoluteTimeGetCurrent();
@@ -221,21 +223,19 @@ static const GLfloat _vertices[] = {
 }
 
 - (void)_renderVelocity
-{    
-	float x, y;
-
-	glColor4f(1.0f, 1, 1, 1.0f);
+{
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
     
-    for (int i=1 ; i<=kVelocityDimensionsHeight ; i++ ) {
-        x = (i-0.5f) * kCanvasVelocityGridSize;
-        for (int j=1 ; j<=kVelocityDimensionsWidth ; j++ ) {
-            y = (j-0.5f) * kCanvasVelocityGridSize;
+    for (int i=1; i<=kVelocityDimensionsHeight; i++) {
+        GLfloat y = (i-0.5f) * kCanvasVelocityGridSize;
+        for (int j=1; j<=kVelocityDimensionsWidth; j++) {
+            GLfloat x = (j-0.5f) * kCanvasVelocityGridSize;
             
             CGFloat vertices[4];
-            vertices[0] = y;
-            vertices[1] = x;
-            vertices[2] = y + _velocity[I_VEL_2(i,j,1)] * kCanvasVelocityGridSize;
-            vertices[3] = x + _velocity[I_VEL_2(i,j,0)] * kCanvasVelocityGridSize;
+            vertices[0] = x;
+            vertices[1] = y;
+            vertices[2] = x + _canvas->velCurrX[I_VEL(i, j)] * kCanvasVelocityGridSize;
+            vertices[3] = y + _canvas->velCurrY[I_VEL(i, j)] * kCanvasVelocityGridSize;
             
             glVertexPointer(2, GL_FLOAT, 0, vertices);
             glDrawArrays(GL_LINES, 0, 2);

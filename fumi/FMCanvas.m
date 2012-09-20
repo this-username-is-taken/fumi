@@ -8,6 +8,7 @@
 
 #import "FMCanvas.h"
 #import "FMSettings.h"
+#import "FMMacro.h"
 
 #import "DDLog.h"
 
@@ -15,12 +16,6 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 
 @interface FMCanvas ()
 {
-    CGFloat *velCurrX;
-    CGFloat *velCurrY;
-    CGFloat *velPrevX;
-    CGFloat *velPrevY;
-    CGFloat *denCurr;
-    CGFloat *denPrev;
 }
 @end
 
@@ -30,8 +25,8 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 {
     self = [super init];
     if (self) {
-        unsigned int nVelGrids = kVelocityGridCountWidth * kVelocityGridCountHeight;
-        unsigned int nDenGrids = kDensityGridCountWidth * kDensityGridCountHeight;
+        int nVelGrids = kVelocityGridCountWidth * kVelocityGridCountHeight;
+        int nDenGrids = kDensityGridCountWidth * kDensityGridCountHeight;
         
         // allocate memory for velocity
         velCurrX    = (CGFloat *)calloc(nVelGrids, sizeof(CGFloat));
@@ -73,11 +68,8 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     unsigned int nVelGrids = kVelocityGridCountWidth * kVelocityGridCountHeight;
     unsigned int nDenGrids = kDensityGridCountWidth * kDensityGridCountHeight;
     
-    memset(velCurrX, 0, nVelGrids);
-    memset(velCurrY, 0, nVelGrids);
     memset(velPrevX, 0, nVelGrids);
     memset(velPrevY, 0, nVelGrids);
-    memset(denCurr, 0, nDenGrids);
     memset(denPrev, 0, nDenGrids);
 }
 
