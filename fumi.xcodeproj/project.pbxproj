@@ -61,6 +61,7 @@
 		2B08309715C44D2C00A5ADA9 /* DDTTYLogger.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DDTTYLogger.m; sourceTree = "<group>"; };
 		2B1B770E16096697002A3A50 /* FMSolver.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FMSolver.h; sourceTree = "<group>"; };
 		2B1B7711160966BF002A3A50 /* FMSolver.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = FMSolver.c; sourceTree = "<group>"; };
+		2B1B7719160AA3F5002A3A50 /* solver.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = solver.c; path = ../solver.c; sourceTree = "<group>"; };
 		2B37E76915BFC25B00D21E55 /* fumi.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = fumi.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2B37E76D15BFC25B00D21E55 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		2B37E76F15BFC25B00D21E55 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -210,6 +211,7 @@
 				2B37E77515BFC25B00D21E55 /* fumi-Info.plist */,
 				2B37E77615BFC25B00D21E55 /* InfoPlist.strings */,
 				2B37E77915BFC25C00D21E55 /* main.m */,
+				2B1B7719160AA3F5002A3A50 /* solver.c */,
 				2B37E77B15BFC25C00D21E55 /* fumi-Prefix.pch */,
 			);
 			name = "Supporting Files";
