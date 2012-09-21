@@ -102,6 +102,7 @@ void project(int Nx, int Ny, float *u, float *v, float *p, float *div)
 {
 	int i, j;
     
+    // Compute the divergence (and initialize the pressure term)
 	for (i=1;i<Nx;i++) {
         for (j=1;j<Ny;j++) {
             div[IX(i,j)] = -0.5f*(u[IX(i+1,j)]-u[IX(i-1,j)]+v[IX(i,j+1)]-v[IX(i,j-1)])/Ny;
@@ -111,8 +112,10 @@ void project(int Nx, int Ny, float *u, float *v, float *p, float *div)
 	set_bnd(Nx, Ny, 0, div);
     set_bnd(Nx, Ny, 0, p);
     
-	lin_solve ( Nx, Ny, 0, p, div, 1, 4 );
+    // Solve for the pressure term (Poisson equation)
+	lin_solve(Nx, Ny, 0, p, div, 1, 4);
 
+    // Subtract the pressure from velocity field
 	for (i=1;i<Nx;i++) {
         for (j=1;j<Ny;j++) {
             u[IX(i,j)] -= 0.5f*Ny*(p[IX(i+1,j)]-p[IX(i-1,j)]);
