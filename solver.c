@@ -11,6 +11,23 @@
  
  To run: gcc solver.c fumi/FMSolver.c -framework OpenGL -framework GLUT
  
+ Arguments:
+ 
+ - N      : grid resolution
+ - dt     : time step
+ - diff   : diffusion rate of the density
+ - visc   : viscosity of the fluid
+ - force  : scales the mouse movement that generate a force
+ - source : amount of density that will be deposited
+ 
+ While running:
+ 
+ - right: Add densities
+ - left: Add velocities
+ - v: Toggle density/velocity display
+ - c: Clear the simulation
+ - q: Quit
+ 
  =======================================================================
  */
 
@@ -38,13 +55,31 @@ static int win_x, win_y;
 static int mouse_down[3];
 static int omx, omy, mx, my;
 
+/*
+ ----------------------------------------------------------------------
+ time-related functions
+ ----------------------------------------------------------------------
+ */
+
+struct timeval timeval_subtract(struct timeval *t2, struct timeval *t1)
+{
+    struct timeval result;
+    long int diff = (t2->tv_usec + 1000000 * t2->tv_sec) - (t1->tv_usec + 1000000 * t1->tv_sec);
+    result.tv_sec = diff / 1000000;
+    result.tv_usec = diff % 1000000;
+    return result;
+}
+
+void timeval_print(struct timeval *tv)
+{
+    printf("%ld.%06d\n", tv->tv_sec, tv->tv_usec);
+}
 
 /*
  ----------------------------------------------------------------------
  free/clear/allocate simulation data
  ----------------------------------------------------------------------
  */
-
 
 static void free_data ( void )
 {
@@ -131,18 +166,15 @@ static void draw_velocity ( void )
 
 static void draw_density ( void )
 {
-    /*
 	int i, j;
-	float x, y, h, d00, d01, d10, d11;
-    
-	h = 1.0f/N;
-    
+	float x, y, d00, d01, d10, d11;
+        
 	glBegin ( GL_QUADS );
     
-    for ( i=0 ; i<=N ; i++ ) {
-        x = (i-0.5f)*h;
-        for ( j=0 ; j<=N ; j++ ) {
-            y = (j-0.5f)*h;
+    for ( i=0 ; i<=Nx ; i++ ) {
+        x = (i-0.5f)/Nx;
+        for ( j=0 ; j<=Ny ; j++ ) {
+            y = (j-0.5f)/Ny;
             
             d00 = dens[IX(i,j)];
             d01 = dens[IX(i,j+1)];
@@ -150,14 +182,13 @@ static void draw_density ( void )
             d11 = dens[IX(i+1,j+1)];
             
             glColor3f ( d00, d00, d00 ); glVertex2f ( x, y );
-            glColor3f ( d10, d10, d10 ); glVertex2f ( x+h, y );
-            glColor3f ( d11, d11, d11 ); glVertex2f ( x+h, y+h );
-            glColor3f ( d01, d01, d01 ); glVertex2f ( x, y+h );
+            glColor3f ( d10, d10, d10 ); glVertex2f ( x+1.0/Nx, y );
+            glColor3f ( d11, d11, d11 ); glVertex2f ( x+1.0/Nx, y+1.0/Ny );
+            glColor3f ( d01, d01, d01 ); glVertex2f ( x, y+1.0/Ny );
         }
     }
     
 	glEnd ();
-     */
 }
 
 /*
@@ -171,7 +202,7 @@ static void get_from_UI ( float * d, float * u, float * v )
 	int i, j, size = (Nx+2)*(Ny+2);
     
 	for ( i=0 ; i<size ; i++ ) {
-//		u[i] = v[i] = d[i] = 0.0f;
+		u[i] = v[i] = d[i] = 0.0f;
 	}
     
 	if ( !mouse_down[0] && !mouse_down[2] ) return;
@@ -247,18 +278,21 @@ static void reshape_func ( int width, int height )
 	win_y = height;
 }
 
-#define SWAP(x0,x) {float * tmp=x0;x0=x;x=tmp;}
-
 static void idle_func ( void )
 {
+    struct timeval tvStart, tvEnd, tvDiff;
+    gettimeofday(&tvStart, NULL);
+    
 	get_from_UI ( dens_prev, u_prev, v_prev );
-    //SWAP ( u_prev, u );
-    //SWAP ( v_prev, v );
 	vel_step ( Nx, Ny, u, v, u_prev, v_prev, visc, dt );
-	//dens_step ( Ny, dens, dens_prev, u, v, diff, dt );
+	dens_step ( Nx, Ny, dens, dens_prev, u, v, diff, dt );
     
 	glutSetWindow ( win_id );
 	glutPostRedisplay ();
+    
+    gettimeofday(&tvEnd, NULL);
+    tvDiff = timeval_subtract(&tvEnd, &tvStart);
+    timeval_print(&tvDiff);
 }
 
 static void display_func ( void )
@@ -270,7 +304,6 @@ static void display_func ( void )
     
 	post_display ();
 }
-
 
 /*
  ----------------------------------------------------------------------
@@ -284,7 +317,7 @@ static void open_glut_window ( void )
     
 	glutInitWindowPosition ( 0, 0 );
 	glutInitWindowSize ( win_x, win_y );
-	win_id = glutCreateWindow ( "Alias | wavefront" );
+	win_id = glutCreateWindow ( "fumi" );
     
 	glClearColor ( 0.0f, 0.0f, 0.0f, 1.0f );
 	glClear ( GL_COLOR_BUFFER_BIT );
@@ -302,65 +335,38 @@ static void open_glut_window ( void )
 	glutDisplayFunc ( display_func );
 }
 
-
 /*
  ----------------------------------------------------------------------
  main --- main routine
  ----------------------------------------------------------------------
  */
 
-int main ( int argc, char ** argv )
+int main(int argc, char **argv)
 {
-	glutInit ( &argc, argv );
+    glutInit(&argc, argv);
     
-	if ( argc != 1 && argc != 6 ) {
-		fprintf ( stderr, "usage : %s N dt diff visc force source\n", argv[0] );
-		fprintf ( stderr, "where:\n" );\
-		fprintf ( stderr, "\t N      : grid resolution\n" );
-		fprintf ( stderr, "\t dt     : time step\n" );
-		fprintf ( stderr, "\t diff   : diffusion rate of the density\n" );
-		fprintf ( stderr, "\t visc   : viscosity of the fluid\n" );
-		fprintf ( stderr, "\t force  : scales the mouse movement that generate a force\n" );
-		fprintf ( stderr, "\t source : amount of density that will be deposited\n" );
-		exit ( 1 );
-	}
-    
-	if ( argc == 1 ) {
-        Nx = 64;
-		Ny = 48;
-		dt = 0.1f;
-		diff = 0.0f;
-		visc = 0.0f;
-		force = 1.0f;
-		source = 100.0f;
-		fprintf ( stderr, "Using defaults : N=%d dt=%g diff=%g visc=%g force = %g source=%g\n",
-                 Ny, dt, diff, visc, force, source );
-	} else {
-		//N = atoi(argv[1]);
-		dt = atof(argv[2]);
-		diff = atof(argv[3]);
-		visc = atof(argv[4]);
-		force = atof(argv[5]);
-		source = atof(argv[6]);
-	}
-    
-	printf ( "\n\nHow to use this demo:\n\n" );
-	printf ( "\t Add densities with the right mouse button\n" );
-	printf ( "\t Add velocities with the left mouse button and dragging the mouse\n" );
-	printf ( "\t Toggle density/velocity display with the 'v' key\n" );
-	printf ( "\t Clear the simulation by pressing the 'c' key\n" );
-	printf ( "\t Quit by pressing the 'q' key\n" );
+    Nx = 64;
+    Ny = 48;
+    dt = 0.1f;
+    diff = 0.0f;
+    visc = 0.0f;
+    force = 1.0f;
+    source = 100.0f;
+    printf ("Using defaults : N=%dx%d dt=%g diff=%g visc=%g force = %g source=%g\n",
+            Nx, Ny, dt, diff, visc, force, source );
     
 	dvel = 0;
     
-	if ( !allocate_data () ) exit ( 1 );
-	clear_data ();
+	if (!allocate_data())
+        exit (1);
+    
+	clear_data();
     
 	win_x = 512;
 	win_y = 384;
-	open_glut_window ();
+	open_glut_window();
     
-	glutMainLoop ();
+	glutMainLoop();
     
-	exit ( 0 );
+	exit(0);
 }

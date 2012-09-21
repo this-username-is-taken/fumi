@@ -93,11 +93,9 @@ void project ( int Nx, int Ny, float * u, float * v, float * p, float * div )
 
 void dens_step ( int Nx, int Ny, float * x, float * x0, float * u, float * v, float diff, float dt )
 {
-    /*
 	add_source ( Nx, Ny, x, x0, dt );
-	SWAP ( x0, x ); diffuse ( N, 0, x, x0, diff, dt );
-	SWAP ( x0, x ); advect ( N, 0, x, x0, u, v, dt );
-     */
+	SWAP ( x0, x ); diffuse ( Nx, Ny, 0, x, x0, diff, dt );
+	SWAP ( x0, x ); advect ( Nx, Ny, 0, x, x0, u, v, dt );
 }
 
 void vel_step ( int Nx, int Ny, float * u, float * v, float * u0, float * v0, float visc, float dt )
