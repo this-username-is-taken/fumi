@@ -38,6 +38,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     self = [super initWithFrame:frame];
     if (self) {
         _canvas = [[FMCanvas alloc] init];
+        start_solver(kVelocityGridCountHeight * kVelocityGridCountWidth);
         
         // The size of density array is 256x256. We map the density as a texture onto a 768x576
         // rectangle. Each grid occupies 3 pixels and the bottom 1/3 are not displayed.
@@ -52,6 +53,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 - (void)dealloc
 {
     [_canvas release];
+    end_solver();
     
     free(_colors);
     
@@ -172,15 +174,13 @@ static const GLfloat _vertices[] = {
     glClear(GL_COLOR_BUFFER_BIT);
     
     // Physics
-    [_canvas resetPrevGrids];
-//    vel_step(kVelocityDimensionsWidth * kVelocityDimensionsHeight,
-//             _canvas->velCurrX, _canvas->velCurrY,
-//             _canvas->velPrevX, _canvas->velPrevY,
-//             kPhysicsViscosity, kPhysicsTimestep);
+    _benchmark.physicsTime = CFAbsoluteTimeGetCurrent();
+    vel_step(kVelocityDimensionsWidth, kVelocityDimensionsHeight, _canvas->velCurrX, _canvas->velCurrY, kPhysicsViscosity, kPhysicsTimestep);
+    //dens_step(kDensityDimensionsHeight, kDensityDimensionsHeight, _canvas->denCurr, _canvas->velCurrX, _canvas->velCurrY, kPhysicsTimestep);
+    _benchmark.physicsTime = CFAbsoluteTimeGetCurrent() - _benchmark.physicsTime;
     
     // Drawing
     _benchmark.graphicsTime = CFAbsoluteTimeGetCurrent();
-    [_canvas resetPrevGrids];
     
     switch (_renderingMode) {
         case FMRenderingModeDensity:
@@ -212,7 +212,7 @@ static const GLfloat _vertices[] = {
 - (void)_renderDensity
 {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, kDensityDimensionsWidth, kDensityDimensionsWidth, 0, GL_RGB, GL_UNSIGNED_BYTE, _colors);
-    
+
     glVertexPointer(2, GL_FLOAT, 0, _vertices);
     glTexCoordPointer(2, GL_FLOAT, 0, _texCoords);
     glEnableClientState(GL_VERTEX_ARRAY);
@@ -234,8 +234,8 @@ static const GLfloat _vertices[] = {
             CGFloat vertices[4];
             vertices[0] = x;
             vertices[1] = y;
-            vertices[2] = x + _canvas->velCurrX[I_VEL(i, j)] * kCanvasVelocityGridSize;
-            vertices[3] = y + _canvas->velCurrY[I_VEL(i, j)] * kCanvasVelocityGridSize;
+            vertices[2] = x + _canvas->velCurrX[I_VEL(i, j)] * kCanvasVelocityGridSize * 100;
+            vertices[3] = y + _canvas->velCurrY[I_VEL(i, j)] * kCanvasVelocityGridSize * 100;
             
             glVertexPointer(2, GL_FLOAT, 0, vertices);
             glDrawArrays(GL_LINES, 0, 2);

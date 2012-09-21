@@ -31,16 +31,11 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
         // allocate memory for velocity
         velCurrX    = (CGFloat *)calloc(nVelGrids, sizeof(CGFloat));
         velCurrY	= (CGFloat *)calloc(nVelGrids, sizeof(CGFloat));
-        velPrevX	= (CGFloat *)calloc(nVelGrids, sizeof(CGFloat));
-        velPrevY	= (CGFloat *)calloc(nVelGrids, sizeof(CGFloat));
         
         // allocate memory for density
         denCurr		= (CGFloat *)calloc(nDenGrids, sizeof(CGFloat));
-        denPrev     = (CGFloat *)calloc(nDenGrids, sizeof(CGFloat));
         
-        if (velCurrX == NULL || velCurrY == NULL ||
-            velPrevX == NULL || velCurrY == NULL ||
-            denCurr  == NULL || denPrev  == NULL) {
+        if (velCurrX == NULL || velCurrY == NULL || denCurr  == NULL) {
             DDLogError(@"FMCanvas unable to allocate enough memory");
         } else {
             DDLogInfo(@"Initialized memory for velocity at dimension: %dx%d", kVelocityDimensionsWidth, kVelocityDimensionsHeight);
@@ -55,22 +50,9 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     // free allocated memory
     free (velCurrX);
 	free (velCurrY);
-	free (velPrevX);
-	free (velPrevY);
 	free (denCurr);
-	free (denPrev);
     
     [super dealloc];
-}
-
-- (void)resetPrevGrids
-{
-    unsigned int nVelGrids = kVelocityGridCountWidth * kVelocityGridCountHeight;
-    unsigned int nDenGrids = kDensityGridCountWidth * kDensityGridCountHeight;
-    
-    memset(velPrevX, 0, nVelGrids);
-    memset(velPrevY, 0, nVelGrids);
-    memset(denPrev, 0, nDenGrids);
 }
 
 @end

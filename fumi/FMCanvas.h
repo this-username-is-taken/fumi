@@ -13,12 +13,7 @@
 @public
     CGFloat *velCurrX;
     CGFloat *velCurrY;
-    CGFloat *velPrevX;
-    CGFloat *velPrevY;
     CGFloat *denCurr;
-    CGFloat *denPrev;
 }
-
-- (void)resetPrevGrids;
 
 @end
