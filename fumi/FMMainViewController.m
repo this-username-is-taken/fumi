@@ -17,6 +17,7 @@
 static const int ddLogLevel = LOG_LEVEL_INFO;
 
 static const CGRect kPauseSwitchFrame = {750, 52, 0, 0};
+static const CGRect kNextFrameButtonFrame = {750, 85, 100, 30};
 static const CGRect kSegmentedControlFrame = {362, 50, 300, 30};
 static const CGRect kBenchmarkLabelFrame = {10, 10, 800, 30};
 
@@ -26,6 +27,7 @@ static const CGRect kBenchmarkLabelFrame = {10, 10, 800, 30};
     
     UISwitch *_pauseSwitch;
     UILabel *_benchmarkLabel;
+    UIButton *_nextFrameButton;
     UISegmentedControl *_segmentedControl;
 }
 
@@ -45,6 +47,7 @@ static const CGRect kBenchmarkLabelFrame = {10, 10, 800, 30};
 {
     [_pauseSwitch release];
     [_benchmarkLabel release];
+    [_nextFrameButton release];
     [_segmentedControl release];
     
     [_canvasView release];
@@ -72,6 +75,13 @@ static const CGRect kBenchmarkLabelFrame = {10, 10, 800, 30};
     [_segmentedControl addTarget:self action:@selector(_segmentDidChange:) forControlEvents:UIControlEventValueChanged];
     [self.view addSubview:_segmentedControl];
     
+    _nextFrameButton = [[UIButton buttonWithType:UIButtonTypeRoundedRect] retain];
+    _nextFrameButton.frame = kNextFrameButtonFrame;
+    _nextFrameButton.enabled = NO;
+    [_nextFrameButton setTitle:@"Next Frame" forState:UIControlStateNormal];
+    [_nextFrameButton addTarget:self action:@selector(_buttonDidPress:) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:_nextFrameButton];
+    
     _benchmarkLabel = [[UILabel alloc] initWithFrame:kBenchmarkLabelFrame];
     [self.view addSubview:_benchmarkLabel];
     
@@ -97,10 +107,17 @@ static const CGRect kBenchmarkLabelFrame = {10, 10, 800, 30};
 - (void)_switchDidChange:(UISwitch *)sender
 {
     if (sender.on) {
+        _nextFrameButton.enabled = YES;
         [_canvasView stopAnimation];
     } else {
+        _nextFrameButton.enabled = NO;
         [_canvasView startAnimation];
     }
+}
+
+- (void)_buttonDidPress:(UIButton *)sender
+{
+    [_canvasView drawView];
 }
 
 - (void)_segmentDidChange:(UISegmentedControl *)sender
