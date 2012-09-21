@@ -9,6 +9,9 @@
 #ifndef fumi_FMSolver_h
 #define fumi_FMSolver_h
 
+void start_solver(int size);
+void end_solver();
+
 void add_source ( int Nx, int Ny, float * x, float * s, float dt );
 void set_bnd ( int Nx, int Ny, int b, float * x );
 
@@ -19,7 +22,7 @@ void advect ( int Nx, int Ny, int b, float * d, float * d0, float * u, float * v
 
 void project ( int Nx, int Ny, float * u, float * v, float * p, float * div );
 
-void dens_step ( int Nx, int Ny, float * x, float * x0, float * u, float * v, float diff, float dt );
-void vel_step ( int Nx, int Ny, float * u, float * v, float * u0, float * v0, float visc, float dt );
+void dens_step ( int Nx, int Ny, float * x, float * u, float * v, float dt );
+void vel_step ( int Nx, int Ny, float * u, float * v, float visc, float dt );
 
 #endif

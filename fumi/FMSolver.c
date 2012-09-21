@@ -7,19 +7,36 @@
 //
 
 #include "FMSolver.h"
+#include <stdlib.h>
 
 #define IX(i,j) ((i)+(Nx+2)*(j))
 #define SWAP(x0,x) {float * tmp=x0;x0=x;x=tmp;}
 #define FOR_EACH_CELL for ( i=1 ; i<=Nx ; i++ ) { for ( j=1 ; j<=Ny ; j++ ) {
 #define END_FOR }}
 
-void add_source ( int Nx, int Ny, float * x, float * s, float dt )
+float *u_tmp, *v_tmp, *d_tmp;
+
+void start_solver(int size)
+{
+	u_tmp = (float *)calloc(size, sizeof(float));
+	v_tmp = (float *)calloc(size, sizeof(float));
+	d_tmp = (float *)calloc(size, sizeof(float));
+}
+
+void end_solver()
+{
+    free(u_tmp);
+    free(v_tmp);
+    free(d_tmp);
+}
+
+void add_source(int Nx, int Ny, float *x, float *s, float dt)
 {
 	int i, size=(Nx+2)*(Ny+2);
 	for ( i=0 ; i<size ; i++ ) x[i] += dt*s[i];
 }
 
-void set_bnd ( int Nx, int Ny, int b, float * x )
+void set_bnd(int Nx, int Ny, int b, float *x)
 {
 	int i;
     
@@ -38,7 +55,7 @@ void set_bnd ( int Nx, int Ny, int b, float * x )
 	x[IX(Nx+1,Ny+1)] = 0.5f*(x[IX(Nx,Ny+1)]+x[IX(Nx+1,Ny)]);
 }
 
-void lin_solve ( int Nx, int Ny, int b, float * x, float * x0, float a, float c )
+void lin_solve(int Nx, int Ny, int b, float *x, float *x0, float a, float c)
 {
 	int i, j, k;
     
@@ -50,13 +67,13 @@ void lin_solve ( int Nx, int Ny, int b, float * x, float * x0, float a, float c 
 	}
 }
 
-void diffuse ( int Nx, int Ny, int b, float * x, float * x0, float diff, float dt )
+void diffuse(int Nx, int Ny, int b, float *x, float *x0, float diff, float dt)
 {
 	float a=dt*diff*Nx*Ny;
-	lin_solve ( Nx, Ny, b, x, x0, a, 1+4*a );
+	lin_solve(Nx, Ny, b, x, x0, a, 1+4*a);
 }
 
-void advect ( int Nx, int Ny, int b, float * d, float * d0, float * u, float * v, float dt )
+void advect(int Nx, int Ny, int b, float *d, float *d0, float *u, float *v, float dt)
 {
 	int i, j, i0, j0, i1, j1;
 	float x, y, s0, t0, s1, t1;
@@ -72,7 +89,7 @@ void advect ( int Nx, int Ny, int b, float * d, float * d0, float * u, float * v
 	set_bnd ( Nx, Ny, b, d );
 }
 
-void project ( int Nx, int Ny, float * u, float * v, float * p, float * div )
+void project(int Nx, int Ny, float *u, float *v, float *p, float *div)
 {
 	int i, j;
     
@@ -91,20 +108,23 @@ void project ( int Nx, int Ny, float * u, float * v, float * p, float * div )
 	set_bnd ( Nx, Ny, 1, u ); set_bnd ( Nx, Ny, 2, v );
 }
 
-void dens_step ( int Nx, int Ny, float * x, float * x0, float * u, float * v, float diff, float dt )
+void dens_step(int Nx, int Ny, float *d, float *u, float *v, float dt)
 {
-	add_source ( Nx, Ny, x, x0, dt );
-	SWAP ( x0, x ); diffuse ( Nx, Ny, 0, x, x0, diff, dt );
-	SWAP ( x0, x ); advect ( Nx, Ny, 0, x, x0, u, v, dt );
+    SWAP(d, d_tmp);
+    advect(Nx, Ny, 0, d, d_tmp, u, v, dt);
 }
 
-void vel_step ( int Nx, int Ny, float * u, float * v, float * u0, float * v0, float visc, float dt )
+void vel_step(int Nx, int Ny, float *u, float *v, float visc, float dt)
 {
-	add_source ( Nx, Ny, u, u0, dt ); add_source ( Nx, Ny, v, v0, dt );
-	SWAP ( u0, u ); diffuse ( Nx, Ny, 1, u, u0, visc, dt );
-	SWAP ( v0, v ); diffuse ( Nx, Ny, 2, v, v0, visc, dt );
-	project ( Nx, Ny, u, v, u0, v0 );
-	SWAP ( u0, u ); SWAP ( v0, v );
-	advect ( Nx, Ny, 1, u, u0, u0, v0, dt ); advect ( Nx, Ny, 2, v, v0, u0, v0, dt );
-	project ( Nx, Ny, u, v, u0, v0 );
+    SWAP(u, u_tmp);
+    SWAP(v, v_tmp);
+	diffuse(Nx, Ny, 1, u, u_tmp, visc, dt);
+	diffuse(Nx, Ny, 2, v, v_tmp, visc, dt);
+	project(Nx, Ny, u, v, u_tmp, v_tmp);
+    
+	SWAP(u_tmp, u);
+    SWAP(v_tmp, v);
+	advect(Nx, Ny, 1, u, u_tmp, u_tmp, v_tmp, dt);
+    advect(Nx, Ny, 2, v, v_tmp, u_tmp, v_tmp, dt);
+	project(Nx, Ny, u, v, u_tmp, v_tmp);
 }
