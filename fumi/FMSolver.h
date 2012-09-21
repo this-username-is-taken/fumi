@@ -9,20 +9,28 @@
 #ifndef fumi_FMSolver_h
 #define fumi_FMSolver_h
 
+// Allocates memory for tmp variables used by the solver.
+// Must be called before any other function can be used.
 void start_solver(int size);
+// Frees allocated memory. Must be called when the solver is no longer used.
 void end_solver();
 
-void add_source ( int Nx, int Ny, float * x, float * s, float dt );
-void set_bnd ( int Nx, int Ny, int b, float * x );
+// Advances one timestep for the velocity field, computed in place.
+// - Nx:    width of the grid
+// - Ny:    height of the grid
+// - u:     the x component of the vector field
+// - v:     the y component of the vector field
+// - visc:  the viscosity of the fluid
+// - dt:    the change in time between timesteps
+void vel_step(int Nx, int Ny, float *u, float *v, float visc, float dt);
 
-void lin_solve ( int Nx, int Ny, int b, float * x, float * x0, float a, float c );
-
-void diffuse ( int Nx, int Ny, int b, float * x, float * x0, float diff, float dt );
-void advect ( int Nx, int Ny, int b, float * d, float * d0, float * u, float * v, float dt );
-
-void project ( int Nx, int Ny, float * u, float * v, float * p, float * div );
-
-void dens_step ( int Nx, int Ny, float * x, float * u, float * v, float dt );
-void vel_step ( int Nx, int Ny, float * u, float * v, float visc, float dt );
+// Advances one timestep for the density field, computed in place.
+// - Nx:    width of the grid
+// - Ny:    height of the grid
+// - d:     the density (scalar) field
+// - u:     the x component of the vector field
+// - v:     the y component of the vector field
+// - dt:    the change in time between timesteps
+void dens_step(int Nx, int Ny, float *d, float *u, float *v, float dt);
 
 #endif

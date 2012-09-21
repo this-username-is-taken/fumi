@@ -342,7 +342,7 @@ int main(int argc, char **argv)
     Nx = 128;
     Ny = 96;
     dt = 0.1f;
-    visc = 0.001f;
+    visc = 0.01f;
     force = 1.0f;
     source = 100.0f;
     printf("Settings: N=%dx%d dt=%g visc=%g force = %g source=%g\n", Nx, Ny, dt, visc, force, source);
