@@ -11,9 +11,9 @@
 @interface FMCanvas : NSObject
 {
 @public
-    CGFloat *velCurrX;
-    CGFloat *velCurrY;
-    CGFloat *denCurr;
+    CGFloat *velX;
+    CGFloat *velY;
+    CGFloat *den;
 }
 
 @end

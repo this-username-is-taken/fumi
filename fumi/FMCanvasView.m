@@ -9,6 +9,7 @@
 #import "FMCanvasView.h"
 #import "FMCanvas.h"
 #import "FMSolver.h"
+#import "FMReplay.h"
 
 #import "FMGeometry.h"
 #import "FMMacro.h"
@@ -117,11 +118,11 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     
     if (fabsf(start.x - end.x) > 0.5 || fabsf(start.y - end.y) > 0.5)
     {        
-        _canvas->velCurrX[I_VEL(index.y, index.x)] += kPhysicsForce * (float)(end.x - start.x);
-        _canvas->velCurrY[I_VEL(index.y, index.x)] += kPhysicsForce * (float)(end.y - start.y);
+        _canvas->velX[I_VEL(index.x, index.y)] += kPhysicsForce * (float)(end.x - start.x);
+        _canvas->velY[I_VEL(index.x, index.y)] += kPhysicsForce * (float)(end.y - start.y);
         
         DDLogInfo(@"CGPoint: %.5f, %@, %@", diffTime, NSStringFromCGPoint(start), NSStringFromCGPoint(end));
-        DDLogInfo(@"%f, %f", _canvas->velCurrX[I_VEL(index.y, index.x)], _canvas->velCurrY[I_VEL(index.y, index.x)]);
+        DDLogInfo(@"%f, %f", _canvas->velX[I_VEL(index.x, index.y)], _canvas->velY[I_VEL(index.x, index.y)]);
         start = end;
     }
 }
@@ -138,17 +139,17 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     FMPoint p = FMPointMakeWithCGPoint([gestureRecognizer locationInGLView:self forGridSize:kCanvasDensityGridSize]);
     
     int radius = 20;
-    for (float y=-radius; y<=radius; y++) {
-        for (float x=-radius; x<=radius; x++) {
+    for (float x=-radius; x<=radius; x++) {
+        for (float y=-radius; y<=radius; y++) {
             float dist = x*x+y*y;
-            int index = I_DEN(p.y+(int)x, p.x+(int)y);
+            int index = I_DEN(p.x+(int)x, p.y+(int)y);
             if (dist > radius*radius) {
                 continue;
             } else if (dist == 0) {
-                _canvas->denCurr[index] = 255.0;
+                _canvas->den[index] = 255.0;
             } else {
                 float amount = 255.0/dist*20.0;
-                _canvas->denCurr[index] = (amount > 255.0) ? 255.0 : amount;
+                _canvas->den[index] = (amount > 255.0) ? 255.0 : amount;
             }
         }
     }
@@ -189,8 +190,8 @@ static const GLfloat _vertices[] = {
     
     // Physics
     _benchmark.physicsTime = CFAbsoluteTimeGetCurrent();
-    vel_step(kVelocityDimensionsWidth, kVelocityDimensionsHeight, _canvas->velCurrX, _canvas->velCurrY, kPhysicsViscosity, kPhysicsTimestep);
-    dens_step(kDensityDimensionsWidth, kDensityDimensionsHeight, _canvas->denCurr, _canvas->velCurrX, _canvas->velCurrY, kPhysicsTimestep);
+    vel_step(kVelocityDimensionsWidth, kVelocityDimensionsHeight, _canvas->velX, _canvas->velY, kPhysicsViscosity, kPhysicsTimestep);
+    dens_step(kDensityDimensionsWidth, kDensityDimensionsHeight, _canvas->den, _canvas->velX, _canvas->velY, kPhysicsTimestep);
     _benchmark.physicsTime = CFAbsoluteTimeGetCurrent() - _benchmark.physicsTime;
     
     // Drawing
@@ -225,9 +226,9 @@ static const GLfloat _vertices[] = {
 
 - (void)_renderDensity
 {
-    for (int i=0;i<kDensityDimensionsHeight;i++) {
-        for (int j=0;j<kDensityDimensionsWidth;j++) {
-            float density = _canvas->denCurr[I_DEN(i, j)];
+    for (int i=0;i<kDensityDimensionsWidth;i++) {
+        for (int j=0;j<kDensityDimensionsHeight;j++) {
+            float density = _canvas->den[I_DEN(i, j)];
             if (density > 255.0) density = 255.0;
             if (density > 0) {
                 _colors[I_CLR_3(i, j, 0)] = density;
@@ -250,16 +251,16 @@ static const GLfloat _vertices[] = {
 {
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
     
-    for (int i=1; i<=kVelocityDimensionsHeight; i++) {
-        GLfloat y = (i-0.5f) * kCanvasVelocityGridSize;
-        for (int j=1; j<=kVelocityDimensionsWidth; j++) {
-            GLfloat x = (j-0.5f) * kCanvasVelocityGridSize;
+    for (int i=1; i<=kVelocityDimensionsWidth; i++) {
+        GLfloat x = (i-0.5f) * kCanvasVelocityGridSize;
+        for (int j=1; j<=kVelocityDimensionsHeight; j++) {
+            GLfloat y = (j-0.5f) * kCanvasVelocityGridSize;
             
             CGFloat vertices[4];
             vertices[0] = x;
             vertices[1] = y;
-            vertices[2] = x + _canvas->velCurrX[I_VEL(i, j)] * kCanvasVelocityGridSize * 100;
-            vertices[3] = y + _canvas->velCurrY[I_VEL(i, j)] * kCanvasVelocityGridSize * 100;
+            vertices[2] = x + _canvas->velX[I_VEL(i, j)] * kCanvasVelocityGridSize * 100;
+            vertices[3] = y + _canvas->velY[I_VEL(i, j)] * kCanvasVelocityGridSize * 100;
             
             glVertexPointer(2, GL_FLOAT, 0, vertices);
             glDrawArrays(GL_LINES, 0, 2);
