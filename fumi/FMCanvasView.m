@@ -136,7 +136,23 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 - (void)_handlePressGesture:(UILongPressGestureRecognizer *)gestureRecognizer
 {
     FMPoint p = FMPointMakeWithCGPoint([gestureRecognizer locationInGLView:self forGridSize:kCanvasDensityGridSize]);
-    _canvas->denCurr[I_DEN(p.y, p.x)] = 1000;
+    
+    int radius = 20;
+    for (float y=-radius; y<=radius; y++) {
+        for (float x=-radius; x<=radius; x++) {
+            float dist = x*x+y*y;
+            int index = I_DEN(p.y+(int)x, p.x+(int)y);
+            if (dist > radius*radius) {
+                continue;
+            } else if (dist == 0) {
+                _canvas->denCurr[index] = 255.0;
+            } else {
+                float amount = 255.0/dist*20.0;
+                _canvas->denCurr[index] = (amount > 255.0) ? 255.0 : amount;
+            }
+        }
+    }
+    
     DDLogInfo(@"%@ at %@", gestureRecognizer, NSStringFromFMPoint(p));
 }
 

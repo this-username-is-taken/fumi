@@ -32,6 +32,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 #include <GLUT/glut.h>
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
@@ -339,10 +340,10 @@ int main(int argc, char **argv)
 {
     glutInit(&argc, argv);
     
-    Nx = 128;
-    Ny = 96;
+    Nx = 256;
+    Ny = 192;
     dt = 0.1f;
-    visc = 0.01f;
+    visc = 0.002f;
     force = 1.0f;
     source = 100.0f;
     printf("Settings: N=%dx%d dt=%g visc=%g force = %g source=%g\n", Nx, Ny, dt, visc, force, source);
