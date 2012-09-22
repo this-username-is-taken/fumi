@@ -43,7 +43,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
         // The size of density array is 256x256. We map the density as a texture onto a 768x576
         // rectangle. Each grid occupies 3 pixels and the bottom 1/3 are not displayed.
         _colors = calloc(kDensityDimensionsWidth * kDensityDimensionsWidth * kRGB, sizeof(GLubyte));
-        memset(_colors, 100, kDensityDimensionsWidth * kDensityDimensionsWidth * kRGB);
+        memset(_colors, 0, kDensityDimensionsWidth * kDensityDimensionsWidth * kRGB);
 
         [self _createGestureRecognizers];
     }
@@ -136,9 +136,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 - (void)_handlePressGesture:(UILongPressGestureRecognizer *)gestureRecognizer
 {
     FMPoint p = FMPointMakeWithCGPoint([gestureRecognizer locationInGLView:self forGridSize:kCanvasDensityGridSize]);
-    _colors[I_CLR_3(p.y, p.x, R)] = 255;
-    _colors[I_CLR_3(p.y, p.x, G)] = 0;
-    _colors[I_CLR_3(p.y, p.x, B)] = 0;
+    _canvas->denCurr[I_DEN(p.y, p.x)] = 1000;
     DDLogInfo(@"%@ at %@", gestureRecognizer, NSStringFromFMPoint(p));
 }
 
@@ -176,7 +174,7 @@ static const GLfloat _vertices[] = {
     // Physics
     _benchmark.physicsTime = CFAbsoluteTimeGetCurrent();
     vel_step(kVelocityDimensionsWidth, kVelocityDimensionsHeight, _canvas->velCurrX, _canvas->velCurrY, kPhysicsViscosity, kPhysicsTimestep);
-    //dens_step(kDensityDimensionsHeight, kDensityDimensionsHeight, _canvas->denCurr, _canvas->velCurrX, _canvas->velCurrY, kPhysicsTimestep);
+    dens_step(kDensityDimensionsWidth, kDensityDimensionsHeight, _canvas->denCurr, _canvas->velCurrX, _canvas->velCurrY, kPhysicsTimestep);
     _benchmark.physicsTime = CFAbsoluteTimeGetCurrent() - _benchmark.physicsTime;
     
     // Drawing
@@ -211,6 +209,16 @@ static const GLfloat _vertices[] = {
 
 - (void)_renderDensity
 {
+    for (int i=0;i<kDensityDimensionsHeight;i++) {
+        for (int j=0;j<kDensityDimensionsWidth;j++) {
+            float density = _canvas->denCurr[I_DEN(i, j)];
+            if (density > 255.0) density = 255.0;
+            if (density > 0) {
+                _colors[I_CLR_3(i, j, 0)] = density;
+            }
+        }
+    }
+    
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, kDensityDimensionsWidth, kDensityDimensionsWidth, 0, GL_RGB, GL_UNSIGNED_BYTE, _colors);
 
     glVertexPointer(2, GL_FLOAT, 0, _vertices);

@@ -16,8 +16,8 @@
 #define kCanvasDimensionsHeight 576   // in pixels
 
 // Each grid will be nxn pixels
-#define kCanvasVelocityGridSize 12
-#define kCanvasDensityGridSize  12
+#define kCanvasVelocityGridSize 6
+#define kCanvasDensityGridSize  6
 
 // Total number of grids being used for rendering, excluding boundaries
 // 64x48
@@ -46,6 +46,6 @@
 
 #define kPhysicsForce 5.0f
 #define kPhysicsTimestep 0.01f
-#define kPhysicsViscosity 0.0f
+#define kPhysicsViscosity 0.01f
 
 #endif

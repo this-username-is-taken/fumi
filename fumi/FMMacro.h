@@ -14,7 +14,8 @@
 #define B 2
 #define kRGB 3
 
-#define I_CLR_3(i,j,k) (i*kDensityDimensionsWidth*kRGB+j*kRGB+k)
-#define I_VEL(i,j) (i*kVelocityGridCountWidth+j)
+#define I_CLR_3(i,j,k) ((i)*kDensityDimensionsWidth*kRGB+(j)*kRGB+(k))
+#define I_VEL(i,j) ((i)*kVelocityGridCountWidth+(j))
+#define I_DEN(i,j) ((i)*kDensityGridCountWidth+(j))
 
 #endif
