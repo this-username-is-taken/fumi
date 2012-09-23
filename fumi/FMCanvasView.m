@@ -9,7 +9,8 @@
 #import "FMCanvasView.h"
 #import "FMCanvas.h"
 #import "FMSolver.h"
-#import "FMReplay.h"
+
+#import "FMReplayManager.h"
 
 #import "FMGeometry.h"
 #import "FMMacro.h"
@@ -21,9 +22,12 @@
 
 static const int ddLogLevel = LOG_LEVEL_INFO;
 
+#define REPLAY_MODE
+
 @interface FMCanvasView ()
 {
     FMCanvas *_canvas;
+    FMReplayManager *_replayManager;
 
     GLuint _texture[1];
     GLubyte *_colors;
@@ -38,6 +42,8 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 {
     self = [super initWithFrame:frame];
     if (self) {
+        _replayManager = [[FMReplayManager alloc] init];
+        
         _canvas = [[FMCanvas alloc] init];
         start_solver(kVelocityGridCountHeight * kVelocityGridCountWidth);
         
@@ -53,6 +59,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 
 - (void)dealloc
 {
+    [_replayManager release];
     [_canvas release];
     end_solver();
     
@@ -107,8 +114,8 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     // TODO: time diff bug when *starting*
     NSTimeInterval diffTime = CFAbsoluteTimeGetCurrent() - lastTime;
     lastTime = CFAbsoluteTimeGetCurrent();
-    CGPoint end = [gestureRecognizer locationInGLView:self forGridSize:kCanvasVelocityGridSize];
-    FMPoint index = FMPointMakeWithCGPoint(end);
+    CGPoint end = [gestureRecognizer locationInGLView:self];
+    FMPoint index = FMPointMakeWithCGPoint(end, kCanvasVelocityGridSize);
 
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan)
     {
@@ -136,8 +143,16 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 // Long press gestures are interpreted as ink injection
 - (void)_handlePressGesture:(UILongPressGestureRecognizer *)gestureRecognizer
 {
-    FMPoint p = FMPointMakeWithCGPoint([gestureRecognizer locationInGLView:self forGridSize:kCanvasDensityGridSize]);
+    CGPoint p = [gestureRecognizer locationInGLView:self];
+    FMLongPress lp = FMLongPressMake(p.x, p.y, gestureRecognizer.state, _benchmark.frames);
+    NSLog(@"%lld 1 %f %f %d", lp.frame, lp.x, lp.y, lp.state);
     
+    [self _injectInkAtPoint:FMPointMakeWithCGPoint(p, kCanvasDensityGridSize)];
+}
+
+- (void)_injectInkAtPoint:(FMPoint)p
+{
+    // TODO: handle boundary cases; stack density; or even rewrite this
     int radius = 20;
     for (float x=-radius; x<=radius; x++) {
         for (float y=-radius; y<=radius; y++) {
@@ -154,7 +169,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
         }
     }
     
-    DDLogInfo(@"%@ at %@", gestureRecognizer, NSStringFromFMPoint(p));
+    DDLogInfo(@"Injected ink at %@", NSStringFromFMPoint(p));
 }
 
 #pragma mark -
@@ -179,6 +194,9 @@ static const GLfloat _vertices[] = {
 - (void)drawView
 {
     NSTimeInterval startTime = CFAbsoluteTimeGetCurrent();
+    
+    // Read input for canvas replay
+    
     
     // Setting up drawing content
     [EAGLContext setCurrentContext:self.context];

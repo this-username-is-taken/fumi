@@ -24,9 +24,9 @@ CG_INLINE FMPoint FMPointMake(int x, int y)
     return p;
 }
 
-CG_INLINE FMPoint FMPointMakeWithCGPoint(CGPoint p)
+CG_INLINE FMPoint FMPointMakeWithCGPoint(CGPoint p, int gridSize)
 {
-    return FMPointMake(p.x, p.y);
+    return FMPointMake(p.x/gridSize, p.y/gridSize);
 }
 
 CG_INLINE NSString *NSStringFromFMPoint(FMPoint p)

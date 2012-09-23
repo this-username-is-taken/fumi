@@ -22,13 +22,14 @@
 		2B08309D15C44FA000A5ADA9 /* DDFileLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B08309315C44D2C00A5ADA9 /* DDFileLogger.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		2B08309E15C44FA400A5ADA9 /* DDTTYLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B08309715C44D2C00A5ADA9 /* DDTTYLogger.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		2B1B7712160966BF002A3A50 /* FMSolver.c in Sources */ = {isa = PBXBuildFile; fileRef = 2B1B7711160966BF002A3A50 /* FMSolver.c */; };
-		2B1B7741160E3796002A3A50 /* FMReplay.c in Sources */ = {isa = PBXBuildFile; fileRef = 2B1B7740160E3796002A3A50 /* FMReplay.c */; };
 		2B37E76E15BFC25B00D21E55 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B37E76D15BFC25B00D21E55 /* UIKit.framework */; };
 		2B37E77015BFC25B00D21E55 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B37E76F15BFC25B00D21E55 /* Foundation.framework */; };
 		2B37E77215BFC25B00D21E55 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B37E77115BFC25B00D21E55 /* CoreGraphics.framework */; };
 		2B37E77815BFC25B00D21E55 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 2B37E77615BFC25B00D21E55 /* InfoPlist.strings */; };
 		2B37E77A15BFC25C00D21E55 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B37E77915BFC25C00D21E55 /* main.m */; };
 		2B37E77E15BFC25C00D21E55 /* FMAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B37E77D15BFC25C00D21E55 /* FMAppDelegate.m */; };
+		2B66EE08160E51BF003B5F83 /* input.fm in Resources */ = {isa = PBXBuildFile; fileRef = 2B66EE07160E51BF003B5F83 /* input.fm */; };
+		2B66EE0C160E5269003B5F83 /* FMReplayManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B66EE0B160E5269003B5F83 /* FMReplayManager.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -63,8 +64,6 @@
 		2B1B770E16096697002A3A50 /* FMSolver.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FMSolver.h; sourceTree = "<group>"; };
 		2B1B7711160966BF002A3A50 /* FMSolver.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = FMSolver.c; sourceTree = "<group>"; };
 		2B1B7719160AA3F5002A3A50 /* solver.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = solver.c; path = ../solver.c; sourceTree = "<group>"; };
-		2B1B773F160E378C002A3A50 /* FMReplay.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FMReplay.h; sourceTree = "<group>"; };
-		2B1B7740160E3796002A3A50 /* FMReplay.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = FMReplay.c; sourceTree = "<group>"; };
 		2B37E76915BFC25B00D21E55 /* fumi.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = fumi.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2B37E76D15BFC25B00D21E55 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		2B37E76F15BFC25B00D21E55 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -75,6 +74,9 @@
 		2B37E77B15BFC25C00D21E55 /* fumi-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "fumi-Prefix.pch"; sourceTree = "<group>"; };
 		2B37E77C15BFC25C00D21E55 /* FMAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FMAppDelegate.h; sourceTree = "<group>"; };
 		2B37E77D15BFC25C00D21E55 /* FMAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FMAppDelegate.m; sourceTree = "<group>"; };
+		2B66EE07160E51BF003B5F83 /* input.fm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = input.fm; sourceTree = "<group>"; };
+		2B66EE0A160E5269003B5F83 /* FMReplayManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMReplayManager.h; sourceTree = "<group>"; };
+		2B66EE0B160E5269003B5F83 /* FMReplayManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMReplayManager.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -124,6 +126,8 @@
 				2B066F8815E9330500AF1122 /* EAGLView.m */,
 				2B082D0C15C2593F00A5ADA9 /* FMGeometry.h */,
 				2B082D0D15C2593F00A5ADA9 /* FMGeometry.m */,
+				2B66EE0A160E5269003B5F83 /* FMReplayManager.h */,
+				2B66EE0B160E5269003B5F83 /* FMReplayManager.m */,
 			);
 			name = Foundation;
 			sourceTree = "<group>";
@@ -156,8 +160,6 @@
 			children = (
 				2B1B770E16096697002A3A50 /* FMSolver.h */,
 				2B1B7711160966BF002A3A50 /* FMSolver.c */,
-				2B1B773F160E378C002A3A50 /* FMReplay.h */,
-				2B1B7740160E3796002A3A50 /* FMReplay.c */,
 			);
 			name = Physics;
 			sourceTree = "<group>";
@@ -213,6 +215,7 @@
 		2B37E77415BFC25B00D21E55 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				2B66EE07160E51BF003B5F83 /* input.fm */,
 				2B37E77515BFC25B00D21E55 /* fumi-Info.plist */,
 				2B37E77615BFC25B00D21E55 /* InfoPlist.strings */,
 				2B37E77915BFC25C00D21E55 /* main.m */,
@@ -275,6 +278,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2B37E77815BFC25B00D21E55 /* InfoPlist.strings in Resources */,
+				2B66EE08160E51BF003B5F83 /* input.fm in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -300,7 +304,7 @@
 				2B06323A15FCD3A30012B73A /* FMCanvas.m in Sources */,
 				2B06324215FFB4410012B73A /* UIGestureRecognizer+Fumi.m in Sources */,
 				2B1B7712160966BF002A3A50 /* FMSolver.c in Sources */,
-				2B1B7741160E3796002A3A50 /* FMReplay.c in Sources */,
+				2B66EE0C160E5269003B5F83 /* FMReplayManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

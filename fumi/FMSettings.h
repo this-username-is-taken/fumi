@@ -44,8 +44,8 @@
 
 /* ===== Physics Settings ===== */
 
-#define kPhysicsForce 5.0f
+#define kPhysicsForce 1.0f
 #define kPhysicsTimestep 0.01f
-#define kPhysicsViscosity 0.01f
+#define kPhysicsViscosity 0.02f
 
 #endif

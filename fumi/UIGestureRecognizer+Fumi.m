@@ -11,11 +11,10 @@
 
 @implementation UIGestureRecognizer (Fumi)
 
-- (CGPoint)locationInGLView:(EAGLView *)view forGridSize:(unsigned char)gridSize;
+- (CGPoint)locationInGLView:(EAGLView *)view
 {
     CGPoint p = [self locationInView:view];
-    p.x = p.x/gridSize; // convert to grid size
-    p.y = (CGRectGetHeight(view.bounds) - p.y)/gridSize; // flip coordinates
+    p.y = (CGRectGetHeight(view.bounds) - p.y); // flip coordinates
     return p;
 }
 

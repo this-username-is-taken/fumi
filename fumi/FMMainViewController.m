@@ -125,6 +125,7 @@ static const CGRect kBenchmarkLabelFrame = {10, 10, 800, 30};
     _canvasView.renderingMode = _segmentedControl.selectedSegmentIndex;
 }
 
+#pragma mark -
 #pragma mark Benchmark Label Handler
 
 - (void)updateBenchmark:(FMBenchmark *)benchmark
@@ -139,7 +140,5 @@ static const CGRect kBenchmarkLabelFrame = {10, 10, 800, 30};
                             (int)(1.0/benchmark->averageTime),
                             benchmark->averageTime * 1000];
 }
-
-#pragma mark -
 
 @end
