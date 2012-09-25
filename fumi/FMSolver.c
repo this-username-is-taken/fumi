@@ -52,8 +52,8 @@ void lin_solve(int Nx, int Ny, int b, float *x, float *x0, float a, float c)
 	int i, j, k;
     
 	for (k=0;k<20;k++) {
-        for (i=1;i<Nx;i++) {
-            for (j=1;j<Ny;j++) {
+        for (i=1;i<=Nx;i++) {
+            for (j=1;j<=Ny;j++) {
                 x[IX(i,j)] = (x0[IX(i,j)] + a*(x[IX(i-1,j)]+x[IX(i+1,j)]+x[IX(i,j-1)]+x[IX(i,j+1)]))/c;
             }
         }
@@ -75,8 +75,8 @@ void advect(int Nx, int Ny, int b, float *d_new, float *d_old, float *u, float *
 	int i, j, i0, j0, i1, j1;
 	float x, y, s0, t0, s1, t1;
     
-	for (i=1;i<Nx;i++) {
-        for (j=1;j<Ny;j++) {
+	for (i=1;i<=Nx;i++) {
+        for (j=1;j<=Ny;j++) {
             // (x,y) is the past cell that we copy density from
             x = i-dt*Nx*u[IX(i,j)];
             y = j-dt*Ny*v[IX(i,j)];
@@ -103,8 +103,8 @@ void project(int Nx, int Ny, float *u, float *v, float *p, float *div)
 	int i, j;
     
     // Compute the divergence (and initialize the pressure term)
-	for (i=1;i<Nx;i++) {
-        for (j=1;j<Ny;j++) {
+	for (i=1;i<=Nx;i++) {
+        for (j=1;j<=Ny;j++) {
             div[IX(i,j)] = -0.5f*(u[IX(i+1,j)]-u[IX(i-1,j)]+v[IX(i,j+1)]-v[IX(i,j-1)])/Ny;
             p[IX(i,j)] = 0;
         }
@@ -116,8 +116,8 @@ void project(int Nx, int Ny, float *u, float *v, float *p, float *div)
 	lin_solve(Nx, Ny, 0, p, div, 1, 4);
 
     // Subtract the pressure from velocity field
-	for (i=1;i<Nx;i++) {
-        for (j=1;j<Ny;j++) {
+	for (i=1;i<=Nx;i++) {
+        for (j=1;j<=Ny;j++) {
             u[IX(i,j)] -= 0.5f*Ny*(p[IX(i+1,j)]-p[IX(i-1,j)]);
             v[IX(i,j)] -= 0.5f*Ny*(p[IX(i,j+1)]-p[IX(i,j-1)]);
         }

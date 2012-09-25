@@ -15,6 +15,9 @@
 {
     CGPoint p = [self locationInView:view];
     p.y = (CGRectGetHeight(view.bounds) - p.y); // flip coordinates
+    // velocity/density grids start at 1
+    p.x += 1;
+    p.y += 1;
     return p;
 }
 

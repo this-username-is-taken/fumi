@@ -149,8 +149,8 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     
     if (fabsf(start.x - end.x) > 0.5 || fabsf(start.y - end.y) > 0.5)
     {
-        _velX[I_VEL(index.x - 1, index.y - 1)] += kPhysicsForce * (float)(end.x - start.x);
-        _velY[I_VEL(index.x - 1, index.y - 1)] += kPhysicsForce * (float)(end.y - start.y);
+        _velX[I_VEL(index.x, index.y)] += kPhysicsForce * (float)(end.x - start.x);
+        _velY[I_VEL(index.x, index.y)] += kPhysicsForce * (float)(end.y - start.y);
         
         DDLogInfo(@"CGPoint: %.5f, %@, %@", diffTime, NSStringFromCGPoint(start), NSStringFromCGPoint(end));
         DDLogInfo(@"%d, %d, %f, %f", index.x, index.y, _velX[I_VEL(index.x, index.y)], _velY[I_VEL(index.x, index.y)]);
@@ -171,7 +171,8 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     FMLongPress lp = FMLongPressMake(p.x, p.y, gestureRecognizer.state, _benchmark.frames);
     NSLog(@"%lld 1 %f %f %d", lp.frame, lp.x, lp.y, lp.state);
     
-    [self _injectInkAtPoint:FMPointMakeWithCGPoint(p, _dimensions.denCellSize)];
+    if (gestureRecognizer.state == UIGestureRecognizerStateBegan)
+        [self _injectInkAtPoint:FMPointMakeWithCGPoint(p, _dimensions.denCellSize)];
 }
 
 - (void)_injectInkAtPoint:(FMPoint)p
@@ -185,10 +186,10 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
             if (dist > radius*radius) {
                 continue;
             } else if (dist == 0) {
-                _den[index] = 255.0;
+                _den[index] += 255.0;
             } else {
                 float amount = 255.0/dist*20.0;
-                _den[index] = (amount > 255.0) ? 255.0 : amount;
+                _den[index] += (amount > 255.0) ? 255.0 : amount;
             }
         }
     }
@@ -211,6 +212,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
     
     // Clear background color
+    glColor4ub(255, 255, 255, 255);
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     
@@ -256,14 +258,14 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
     
-    for (int i=0;i<_dimensions.denWidth;i++) {
-        for (int j=0;j<_dimensions.denHeight;j++) {
+    for (int i=1;i<=_dimensions.denWidth;i++) {
+        for (int j=1;j<=_dimensions.denHeight;j++) {
             float density = _den[I_DEN(i, j)];
             if (density > 255.0) density = 255.0;
             if (density > 0) {
-                _clr[I_CLR_3(i, j, R)] = 255;
-                _clr[I_CLR_3(i, j, G)] = 255-density;
-                _clr[I_CLR_3(i, j, B)] = 255-density;
+                _clr[I_CLR_3(i - 1, j - 1, R)] = 255;
+                _clr[I_CLR_3(i - 1, j - 1, G)] = 255-density;
+                _clr[I_CLR_3(i - 1, j - 1, B)] = 255-density;
             }
         }
     }
@@ -303,8 +305,8 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
             CGFloat vertices[4];
             vertices[0] = x;
             vertices[1] = y;
-            vertices[2] = x + _velX[I_VEL(i, j)] * size * 100;
-            vertices[3] = y + _velY[I_VEL(i, j)] * size * 100;
+            vertices[2] = x + _velX[I_VEL(i, j)] * size * 10;
+            vertices[3] = y + _velY[I_VEL(i, j)] * size * 10;
             
             glVertexPointer(2, GL_FLOAT, 0, vertices);
             glDrawArrays(GL_LINES, 0, 2);
