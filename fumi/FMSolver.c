@@ -126,7 +126,7 @@ void project(int Nx, int Ny, float *u, float *v, float *p, float *div)
     set_bnd(Nx, Ny, 2, v);
 }
 
-void dens_step(int Nx, int Ny, float *d, float *u, float *v, float dt)
+void den_step(int Nx, int Ny, float *d, float *u, float *v, float dt)
 {
     advect(Nx, Ny, 0, d_tmp, d, u, v, dt);
     SWAP(d_tmp, d);

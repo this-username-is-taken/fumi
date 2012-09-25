@@ -8,21 +8,76 @@
 
 #import "FMSettings.h"
 
+static BOOL hasDimensions = NO;
+static FMDimensions dimensions;
+
 @implementation FMSettings
 
-+ (CGRect)dimensions
++ (FMDimensions)dimensions
 {
-    static CGRect bounds;
-    if (CGRectIsEmpty(bounds)) {
-        bounds = [UIScreen mainScreen].bounds;
-        if ([self isDevicePad]) {
-            // set the default orientation to be landscape on the iPad
-            CGFloat tmp = bounds.size.height;
-            bounds.size.height = bounds.size.width;
-            bounds.size.width = tmp;
-        }
+    if (hasDimensions) {
+        return dimensions;
     }
-    return bounds;
+    
+    if ([FMSettings isDevicePad]) {
+        dimensions.canvasWidth = 1024;
+        dimensions.canvasHeight = 768;
+        
+        dimensions.velCellSize = 8;
+        dimensions.denCellSize = 8;
+        
+        dimensions.textureSide = 128;
+        dimensions.textureMap[0] = 0.0;
+        dimensions.textureMap[1] = 0.0;
+        dimensions.textureMap[2] = 0.0;
+        dimensions.textureMap[3] = 0.75;
+        dimensions.textureMap[4] = 1.0;
+        dimensions.textureMap[5] = 0.0;
+        dimensions.textureMap[6] = 1.0;
+        dimensions.textureMap[7] = 0.75;
+    } else {
+        dimensions.canvasWidth = 320;
+        dimensions.canvasHeight = 480;
+        
+        dimensions.velCellSize = 8;
+        dimensions.denCellSize = 8;
+        
+        dimensions.textureSide = 64;
+        dimensions.textureMap[0] = 0.0;
+        dimensions.textureMap[1] = 0.0;
+        dimensions.textureMap[2] = 0.0;
+        dimensions.textureMap[3] = 0.9375;
+        dimensions.textureMap[4] = 0.625;
+        dimensions.textureMap[5] = 0.0;
+        dimensions.textureMap[6] = 0.625;
+        dimensions.textureMap[7] = 0.9375;
+    }
+    
+    dimensions.velWidth = dimensions.canvasWidth / dimensions.velCellSize;
+    dimensions.velHeight = dimensions.canvasHeight / dimensions.velCellSize;
+    
+    dimensions.denWidth = dimensions.canvasWidth / dimensions.denCellSize;
+    dimensions.denHeight = dimensions.canvasHeight / dimensions.denCellSize;
+    
+    dimensions.velGridWidth = dimensions.velWidth + 2;
+    dimensions.velGridHeight = dimensions.velHeight + 2;
+    dimensions.velGridCount = dimensions.velGridWidth * dimensions.velGridHeight;
+    
+    dimensions.denGridWidth = dimensions.denWidth + 2;
+    dimensions.denGridHeight = dimensions.denHeight + 2;
+    dimensions.denGridCount = dimensions.denGridWidth * dimensions.denGridHeight;
+
+    hasDimensions = YES;
+    return dimensions;
+}
+
++ (CGRect)canvasDimensions
+{
+    if (!hasDimensions) {
+        [FMSettings dimensions];
+    }
+    
+    return CGRectMake(0.0, 0.0, dimensions.canvasWidth, dimensions.canvasHeight);
 }
 
 + (BOOL)isDevicePad

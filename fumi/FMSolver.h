@@ -31,6 +31,6 @@ void vel_step(int Nx, int Ny, float *u, float *v, float visc, float dt);
 // - u:     the x component of the vector field
 // - v:     the y component of the vector field
 // - dt:    the change in time between timesteps
-void dens_step(int Nx, int Ny, float *d, float *u, float *v, float dt);
+void den_step(int Nx, int Ny, float *d, float *u, float *v, float dt);
 
 #endif

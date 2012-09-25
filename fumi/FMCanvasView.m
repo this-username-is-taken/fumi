@@ -21,43 +21,21 @@
 
 static const int ddLogLevel = LOG_LEVEL_INFO;
 
-/* ===== Dimension Settings ===== */
+#define R 0
+#define G 1
+#define B 2
+#define kRGB 3
 
-// Total number of cells in the array, including boundaries
-// e.g. 6x6 grid for 4x4 canvas
-// * - - - - *
-// - + + + + -
-// - + + + + -
-// - + + + + -
-// - + + + + -
-// * - - - - *
-
-static int kCanvasDimensionsWidth = 0;
-static int kCanvasDimensionsHeight = 0;
-
-// Each grid will be nxn pixels
-static int kCanvasVelocityGridSize = 8;
-static int kCanvasDensityGridSize = 8;
-
-// Total number of grids being used for rendering, excluding boundaries
-static int kVelocityDimensionsHeight = 0;
-static int kVelocityDimensionsWidth = 0;
-static int kDensityDimensionsHeight = 0;
-static int kDensityDimensionsWidth = 0;
-
-static int kVelocityGridCountWidth = 0;
-static int kVelocityGridCountHeight = 0;
-static int kDensityGridCountWidth = 0;
-static int kDensityGridCountHeight = 0;
-
-static int kTextureDimensionSidePad = 0;
-static int kTextureDimensionSidePhone = 0;
+#define I_CLR_3(i,j,k) ((i)*kRGB+(j)*_dimensions.textureSide*kRGB+(k))
+#define I_VEL(i,j) ((i)+(j)*_dimensions.velGridWidth)
+#define I_DEN(i,j) ((i)+(j)*_dimensions.denGridWidth)
 
 #define REPLAY_MODE
 
 @interface FMCanvasView ()
 {
     FMReplayManager *_replayManager;
+    FMDimensions _dimensions;
     
     CGFloat *_velX;
     CGFloat *_velY;
@@ -76,53 +54,28 @@ static int kTextureDimensionSidePhone = 0;
 {
     self = [super initWithFrame:frame];
     if (self) {
-        CGRect dimensions = [FMSettings dimensions];
-        
-        kCanvasDimensionsWidth = CGRectGetWidth(dimensions);
-        kCanvasDimensionsHeight = CGRectGetHeight(dimensions);
-        
-        kVelocityDimensionsWidth = kCanvasDimensionsWidth / kCanvasVelocityGridSize;
-        kVelocityDimensionsHeight = kCanvasDimensionsHeight / kCanvasVelocityGridSize;
-        
-        kDensityDimensionsWidth = kCanvasDimensionsWidth / kCanvasDensityGridSize;
-        kDensityDimensionsHeight = kCanvasDimensionsHeight / kCanvasDensityGridSize;
-        
-        kVelocityGridCountWidth = kVelocityDimensionsWidth + 2;
-        kVelocityGridCountHeight = kVelocityDimensionsHeight + 2;
-        kDensityGridCountWidth = kDensityDimensionsWidth + 2;
-        kDensityGridCountHeight = kDensityDimensionsHeight + 2;
-        
-        kTextureDimensionSidePad = kDensityDimensionsWidth;
-        kTextureDimensionSidePhone = 64;
-        
-        int nVelGrids = kVelocityGridCountWidth * kVelocityGridCountHeight;
-        int nDenGrids = kDensityGridCountWidth * kDensityGridCountHeight;
-        
+        _dimensions = [FMSettings dimensions];
+
         // allocate memory for velocity
-        _velX    = (CGFloat *)calloc(nVelGrids, sizeof(CGFloat));
-        _velY	= (CGFloat *)calloc(nVelGrids, sizeof(CGFloat));
+        _velX = (CGFloat *)calloc(_dimensions.velGridCount, sizeof(CGFloat));
+        _velY = (CGFloat *)calloc(_dimensions.velGridCount, sizeof(CGFloat));
         
         // allocate memory for density
-        _den		= (CGFloat *)calloc(nDenGrids, sizeof(CGFloat));
+        _den  = (CGFloat *)calloc(_dimensions.denGridCount, sizeof(CGFloat));
         
-        if (_velX == NULL || _velY == NULL || _den  == NULL) {
+        if (_velX == NULL || _velY == NULL || _den == NULL) {
             DDLogError(@"FMCanvas unable to allocate enough memory");
         } else {
-            DDLogInfo(@"Initialized memory for velocity at dimension: %dx%d", kVelocityDimensionsWidth, kVelocityDimensionsHeight);
-            DDLogInfo(@"Initialized memory for density at dimension: %dx%d", kDensityDimensionsWidth, kDensityDimensionsHeight);
+            DDLogInfo(@"Initialized memory for velocity at dimension: %dx%d", _dimensions.velWidth, _dimensions.velHeight);
+            DDLogInfo(@"Initialized memory for density at dimension: %dx%d", _dimensions.denWidth, _dimensions.denHeight);
         }
         
         _replayManager = [[FMReplayManager alloc] init];
         
-        start_solver(kVelocityGridCountHeight * kVelocityGridCountWidth);
+        start_solver(_dimensions.velGridCount);
         
-        if ([FMSettings isDevicePad]) {
-            _colors = calloc(kTextureDimensionSidePad * kTextureDimensionSidePad * kRGB, sizeof(GLubyte));
-            memset(_colors, 0, kTextureDimensionSidePad * kTextureDimensionSidePad * kRGB);
-        } else {
-            _colors = calloc(kTextureDimensionSidePhone * kTextureDimensionSidePhone * kRGB, sizeof(GLubyte));
-            memset(_colors, 0, kTextureDimensionSidePhone * kTextureDimensionSidePhone * kRGB);
-        }
+        _colors = calloc(_dimensions.textureSide * _dimensions.textureSide * kRGB, sizeof(GLubyte));
+        memset(_colors, 0, _dimensions.textureSide * _dimensions.textureSide * kRGB);
 
         [self _createGestureRecognizers];
     }
@@ -189,7 +142,7 @@ static int kTextureDimensionSidePhone = 0;
     NSTimeInterval diffTime = CFAbsoluteTimeGetCurrent() - lastTime;
     lastTime = CFAbsoluteTimeGetCurrent();
     CGPoint end = [gestureRecognizer locationInGLView:self];
-    FMPoint index = FMPointMakeWithCGPoint(end, kCanvasVelocityGridSize);
+    FMPoint index = FMPointMakeWithCGPoint(end, _dimensions.velCellSize);
 
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan)
     {
@@ -221,7 +174,7 @@ static int kTextureDimensionSidePhone = 0;
     FMLongPress lp = FMLongPressMake(p.x, p.y, gestureRecognizer.state, _benchmark.frames);
     NSLog(@"%lld 1 %f %f %d", lp.frame, lp.x, lp.y, lp.state);
     
-    [self _injectInkAtPoint:FMPointMakeWithCGPoint(p, kCanvasDensityGridSize)];
+    [self _injectInkAtPoint:FMPointMakeWithCGPoint(p, _dimensions.denCellSize)];
 }
 
 - (void)_injectInkAtPoint:(FMPoint)p
@@ -266,8 +219,8 @@ static int kTextureDimensionSidePhone = 0;
     
     // Physics
     _benchmark.physicsTime = CFAbsoluteTimeGetCurrent();
-    vel_step(kVelocityDimensionsWidth, kVelocityDimensionsHeight, _velX, _velY, kPhysicsViscosity, kPhysicsTimestep);
-    dens_step(kDensityDimensionsWidth, kDensityDimensionsHeight, _den, _velX, _velY, kPhysicsTimestep);
+    vel_step(_dimensions.velWidth, _dimensions.velHeight, _velX, _velY, kPhysicsViscosity, kPhysicsTimestep);
+    den_step(_dimensions.denWidth, _dimensions.denHeight, _den, _velX, _velY, kPhysicsTimestep);
     _benchmark.physicsTime = CFAbsoluteTimeGetCurrent() - _benchmark.physicsTime;
     
     // Drawing
@@ -302,8 +255,8 @@ static int kTextureDimensionSidePhone = 0;
 
 - (void)_renderDensity
 {
-    for (int i=0;i<kDensityDimensionsWidth;i++) {
-        for (int j=0;j<kDensityDimensionsHeight;j++) {
+    for (int i=0;i<_dimensions.denWidth;i++) {
+        for (int j=0;j<_dimensions.denHeight;j++) {
             float density = _den[I_DEN(i, j)];
             if (density > 255.0) density = 255.0;
             if (density > 0) {
@@ -312,35 +265,17 @@ static int kTextureDimensionSidePhone = 0;
         }
     }
     
-    if ([FMSettings isDevicePad]) {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, kTextureDimensionSidePad, kTextureDimensionSidePad, 0, GL_RGB, GL_UNSIGNED_BYTE, _colors);
-    } else {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, kTextureDimensionSidePhone, kTextureDimensionSidePhone, 0, GL_RGB, GL_UNSIGNED_BYTE, _colors);
-    }
-    
-    // Define the texture coordinates
-    static const GLfloat _texCoordsPad[] = {
-        0.0, 0.0,
-        0.0, 0.75,
-        1.0, 0.0,
-        1.0, 0.75
-    };
-    
-    // Define the texture coordinates
-    static const GLfloat _texCoordsPhone[] = {
-        0.0, 0.0,
-        0.0, 0.9375,
-        0.625, 0.0,
-        0.625, 0.9375
-    };
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _dimensions.textureSide, _dimensions.textureSide, 0, GL_RGB, GL_UNSIGNED_BYTE, _colors);
     
     // Define the square vertices
-    float width = CGRectGetWidth(self.bounds);
-    float height = CGRectGetHeight(self.bounds);
-    GLfloat _vertices[] = { 0, 0, 0, height, width, 0, width, height };
+    CGRect bounds = [FMSettings canvasDimensions];
+    GLfloat _vertices[] = { CGRectGetMinX(bounds), CGRectGetMinY(bounds),
+                            CGRectGetMinX(bounds), CGRectGetMaxY(bounds),
+                            CGRectGetMaxX(bounds), CGRectGetMinY(bounds),
+                            CGRectGetMaxX(bounds), CGRectGetMaxY(bounds)};
 
     glVertexPointer(2, GL_FLOAT, 0, _vertices);
-    glTexCoordPointer(2, GL_FLOAT, 0, ([FMSettings isDevicePad] ? _texCoordsPad : _texCoordsPhone));
+    glTexCoordPointer(2, GL_FLOAT, 0, _dimensions.textureMap);
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
     
@@ -356,16 +291,17 @@ static int kTextureDimensionSidePhone = 0;
     
 	glColor4f(0.0f, 1.0f, 1.0f, 1.0f);
     
-    for (int i=1; i<=kVelocityDimensionsWidth; i++) {
-        GLfloat x = (i-0.5f) * kCanvasVelocityGridSize;
-        for (int j=1; j<=kVelocityDimensionsHeight; j++) {
-            GLfloat y = (j-0.5f) * kCanvasVelocityGridSize;
+    CGFloat size = _dimensions.velCellSize;
+    for (int i=1; i<=_dimensions.velWidth; i++) {
+        GLfloat x = (i-0.5f) * size;
+        for (int j=1; j<=_dimensions.velHeight; j++) {
+            GLfloat y = (j-0.5f) * size;
             
             CGFloat vertices[4];
             vertices[0] = x;
             vertices[1] = y;
-            vertices[2] = x + _velX[I_VEL(i, j)] * kCanvasVelocityGridSize * 100;
-            vertices[3] = y + _velY[I_VEL(i, j)] * kCanvasVelocityGridSize * 100;
+            vertices[2] = x + _velX[I_VEL(i, j)] * size * 100;
+            vertices[3] = y + _velY[I_VEL(i, j)] * size * 100;
             
             glVertexPointer(2, GL_FLOAT, 0, vertices);
             glDrawArrays(GL_LINES, 0, 2);
@@ -383,10 +319,10 @@ static int kTextureDimensionSidePhone = 0;
     
     glPointSize(5);
     
-    for (int i=1; i<=kDensityDimensionsWidth; i++) {
-        GLfloat x = (i-0.5f) * kCanvasDensityGridSize;
-        for (int j=1; j<=kDensityDimensionsHeight; j++) {
-            GLfloat y = (j-0.5f) * kCanvasDensityGridSize;
+    for (int i=1; i<=_dimensions.denWidth; i++) {
+        GLfloat x = (i-0.5f) * _dimensions.denCellSize;
+        for (int j=1; j<=_dimensions.denHeight; j++) {
+            GLfloat y = (j-0.5f) * _dimensions.denCellSize;
             
             CGFloat vertices[2];
             vertices[0] = x;
@@ -415,9 +351,8 @@ static int kTextureDimensionSidePhone = 0;
 - (void)_setupView
 {
     // Matrix & viewport initialization
-    glLoadIdentity();
     glMatrixMode(GL_PROJECTION);
-    CGRect bounds = self.bounds;
+    CGRect bounds = [FMSettings canvasDimensions];
     glOrthof(CGRectGetMinX(bounds), CGRectGetMaxX(bounds), CGRectGetMinY(bounds), CGRectGetMaxY(bounds), -1.0f, 1.0f);
     glViewport(CGRectGetMinX(bounds), CGRectGetMinY(bounds), CGRectGetMaxX(bounds), CGRectGetMaxY(bounds));
     

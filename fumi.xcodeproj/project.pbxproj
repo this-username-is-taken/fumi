@@ -33,7 +33,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		2B06323B15FE218E0012B73A /* FMMacro.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FMMacro.h; sourceTree = "<group>"; };
 		2B06324015FFB4410012B73A /* UIGestureRecognizer+Fumi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIGestureRecognizer+Fumi.h"; sourceTree = "<group>"; };
 		2B06324115FFB4410012B73A /* UIGestureRecognizer+Fumi.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIGestureRecognizer+Fumi.m"; sourceTree = "<group>"; };
 		2B066F8715E9330500AF1122 /* EAGLView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EAGLView.h; sourceTree = "<group>"; };
@@ -199,7 +198,6 @@
 				2B082CFA15C1094600A5ADA9 /* FMMainViewController.m */,
 				2B122620161019E3009DD484 /* FMSettings.h */,
 				2B122621161019E3009DD484 /* FMSettings.m */,
-				2B06323B15FE218E0012B73A /* FMMacro.h */,
 				2B066FCB15EA763900AF1122 /* Foundation */,
 				2B1B7710160966A5002A3A50 /* Physics */,
 				2B066FC915EA760700AF1122 /* Canvas */,

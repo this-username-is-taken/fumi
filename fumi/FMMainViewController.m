@@ -64,7 +64,7 @@ static const CGRect kBenchmarkLabelFrame = {10, 10, 800, 30};
     
     self.view.backgroundColor = [UIColor whiteColor];
     
-    _canvasView = [[FMCanvasView alloc] initWithFrame:[FMSettings dimensions]];
+    _canvasView = [[FMCanvasView alloc] initWithFrame:[FMSettings canvasDimensions]];
     _canvasView.delegate = self;
     [self.view addSubview:_canvasView];
     
