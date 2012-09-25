@@ -7,7 +7,6 @@
 //
 
 #import "FMCanvasView.h"
-#import "FMCanvas.h"
 #import "FMSolver.h"
 
 #import "FMReplayManager.h"
@@ -22,12 +21,44 @@
 
 static const int ddLogLevel = LOG_LEVEL_INFO;
 
+/* ===== Dimension Settings ===== */
+
+// Total number of cells in the array, including boundaries
+// e.g. 6x6 grid for 4x4 canvas
+// * - - - - *
+// - + + + + -
+// - + + + + -
+// - + + + + -
+// - + + + + -
+// * - - - - *
+
+static int kCanvasDimensionsWidth = 0;
+static int kCanvasDimensionsHeight = 0;
+
+// Each grid will be nxn pixels
+static int kCanvasVelocityGridSize = 8;
+static int kCanvasDensityGridSize = 8;
+
+// Total number of grids being used for rendering, excluding boundaries
+static int kVelocityDimensionsHeight = 0;
+static int kVelocityDimensionsWidth = 0;
+static int kDensityDimensionsHeight = 0;
+static int kDensityDimensionsWidth = 0;
+
+static int kVelocityGridCountWidth = 0;
+static int kVelocityGridCountHeight = 0;
+static int kDensityGridCountWidth = 0;
+static int kDensityGridCountHeight = 0;
+
 #define REPLAY_MODE
 
 @interface FMCanvasView ()
 {
-    FMCanvas *_canvas;
     FMReplayManager *_replayManager;
+    
+    CGFloat *_velX;
+    CGFloat *_velY;
+    CGFloat *_den;
 
     GLuint _texture[1];
     GLubyte *_colors;
@@ -42,13 +73,43 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 {
     self = [super initWithFrame:frame];
     if (self) {
+        CGRect dimensions = [FMSettings dimensions];
+        
+        kCanvasDimensionsWidth = CGRectGetWidth(dimensions);
+        kCanvasDimensionsHeight = CGRectGetHeight(dimensions);
+        
+        kVelocityDimensionsWidth = kCanvasDimensionsWidth / kCanvasVelocityGridSize;
+        kVelocityDimensionsHeight = kCanvasDimensionsHeight / kCanvasVelocityGridSize;
+        
+        kDensityDimensionsWidth = kCanvasDimensionsWidth / kCanvasDensityGridSize;
+        kDensityDimensionsHeight = kCanvasDimensionsHeight / kCanvasDensityGridSize;
+        
+        kVelocityGridCountWidth = kVelocityDimensionsWidth + 2;
+        kVelocityGridCountHeight = kVelocityDimensionsHeight + 2;
+        kDensityGridCountWidth = kDensityDimensionsWidth + 2;
+        kDensityGridCountHeight = kDensityDimensionsHeight + 2;
+        
+        int nVelGrids = kVelocityGridCountWidth * kVelocityGridCountHeight;
+        int nDenGrids = kDensityGridCountWidth * kDensityGridCountHeight;
+        
+        // allocate memory for velocity
+        _velX    = (CGFloat *)calloc(nVelGrids, sizeof(CGFloat));
+        _velY	= (CGFloat *)calloc(nVelGrids, sizeof(CGFloat));
+        
+        // allocate memory for density
+        _den		= (CGFloat *)calloc(nDenGrids, sizeof(CGFloat));
+        
+        if (_velX == NULL || _velY == NULL || _den  == NULL) {
+            DDLogError(@"FMCanvas unable to allocate enough memory");
+        } else {
+            DDLogInfo(@"Initialized memory for velocity at dimension: %dx%d", kVelocityDimensionsWidth, kVelocityDimensionsHeight);
+            DDLogInfo(@"Initialized memory for density at dimension: %dx%d", kDensityDimensionsWidth, kDensityDimensionsHeight);
+        }
+        
         _replayManager = [[FMReplayManager alloc] init];
         
-        _canvas = [[FMCanvas alloc] init];
         start_solver(kVelocityGridCountHeight * kVelocityGridCountWidth);
         
-        // The size of density array is 256x256. We map the density as a texture onto a 768x576
-        // rectangle. Each grid occupies 3 pixels and the bottom 1/3 are not displayed.
         _colors = calloc(kDensityDimensionsWidth * kDensityDimensionsWidth * kRGB, sizeof(GLubyte));
         memset(_colors, 0, kDensityDimensionsWidth * kDensityDimensionsWidth * kRGB);
 
@@ -60,9 +121,11 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 - (void)dealloc
 {
     [_replayManager release];
-    [_canvas release];
     end_solver();
     
+    free(_velX);
+	free(_velY);
+	free(_den);
     free(_colors);
     
     [super dealloc];
@@ -124,12 +187,12 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     }
     
     if (fabsf(start.x - end.x) > 0.5 || fabsf(start.y - end.y) > 0.5)
-    {        
-        _canvas->velX[I_VEL(index.x, index.y)] += kPhysicsForce * (float)(end.x - start.x);
-        _canvas->velY[I_VEL(index.x, index.y)] += kPhysicsForce * (float)(end.y - start.y);
+    {
+        _velX[I_VEL(index.x - 1, index.y - 1)] += kPhysicsForce * (float)(end.x - start.x);
+        _velY[I_VEL(index.x - 1, index.y - 1)] += kPhysicsForce * (float)(end.y - start.y);
         
         DDLogInfo(@"CGPoint: %.5f, %@, %@", diffTime, NSStringFromCGPoint(start), NSStringFromCGPoint(end));
-        DDLogInfo(@"%f, %f", _canvas->velX[I_VEL(index.x, index.y)], _canvas->velY[I_VEL(index.x, index.y)]);
+        DDLogInfo(@"%d, %d, %f, %f", index.x, index.y, _velX[I_VEL(index.x, index.y)], _velY[I_VEL(index.x, index.y)]);
         start = end;
     }
 }
@@ -161,10 +224,10 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
             if (dist > radius*radius) {
                 continue;
             } else if (dist == 0) {
-                _canvas->den[index] = 255.0;
+                _den[index] = 255.0;
             } else {
                 float amount = 255.0/dist*20.0;
-                _canvas->den[index] = (amount > 255.0) ? 255.0 : amount;
+                _den[index] = (amount > 255.0) ? 255.0 : amount;
             }
         }
     }
@@ -174,22 +237,6 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 
 #pragma mark -
 #pragma mark OpenGL Rendering
-
-// Define the texture coordinates
-static const GLfloat _texCoords[] = {
-    0.0, 0.0,
-    0.0, 0.75,
-    1.0, 0.0,
-    1.0, 0.75
-};
-
-// Define the square vertices
-static const GLfloat _vertices[] = {
-    0, 0,
-    0, kCanvasDimensionsHeight,
-    kCanvasDimensionsWidth, 0,
-    kCanvasDimensionsWidth, kCanvasDimensionsHeight
-};
 
 - (void)drawView
 {
@@ -208,8 +255,8 @@ static const GLfloat _vertices[] = {
     
     // Physics
     _benchmark.physicsTime = CFAbsoluteTimeGetCurrent();
-    vel_step(kVelocityDimensionsWidth, kVelocityDimensionsHeight, _canvas->velX, _canvas->velY, kPhysicsViscosity, kPhysicsTimestep);
-    dens_step(kDensityDimensionsWidth, kDensityDimensionsHeight, _canvas->den, _canvas->velX, _canvas->velY, kPhysicsTimestep);
+    vel_step(kVelocityDimensionsWidth, kVelocityDimensionsHeight, _velX, _velY, kPhysicsViscosity, kPhysicsTimestep);
+    dens_step(kDensityDimensionsWidth, kDensityDimensionsHeight, _den, _velX, _velY, kPhysicsTimestep);
     _benchmark.physicsTime = CFAbsoluteTimeGetCurrent() - _benchmark.physicsTime;
     
     // Drawing
@@ -246,7 +293,7 @@ static const GLfloat _vertices[] = {
 {
     for (int i=0;i<kDensityDimensionsWidth;i++) {
         for (int j=0;j<kDensityDimensionsHeight;j++) {
-            float density = _canvas->den[I_DEN(i, j)];
+            float density = _den[I_DEN(i, j)];
             if (density > 255.0) density = 255.0;
             if (density > 0) {
                 _colors[I_CLR_3(i, j, 0)] = density;
@@ -255,6 +302,19 @@ static const GLfloat _vertices[] = {
     }
     
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, kDensityDimensionsWidth, kDensityDimensionsWidth, 0, GL_RGB, GL_UNSIGNED_BYTE, _colors);
+    
+    // Define the texture coordinates
+    static const GLfloat _texCoords[] = {
+        0.0, 0.0,
+        0.0, 0.75,
+        1.0, 0.0,
+        1.0, 0.75
+    };
+    
+    // Define the square vertices
+    float width = CGRectGetWidth(self.bounds);
+    float height = CGRectGetHeight(self.bounds);
+    GLfloat _vertices[] = { 0, 0, 0, height, width, 0, width, height };
 
     glVertexPointer(2, GL_FLOAT, 0, _vertices);
     glTexCoordPointer(2, GL_FLOAT, 0, _texCoords);
@@ -277,8 +337,8 @@ static const GLfloat _vertices[] = {
             CGFloat vertices[4];
             vertices[0] = x;
             vertices[1] = y;
-            vertices[2] = x + _canvas->velX[I_VEL(i, j)] * kCanvasVelocityGridSize * 100;
-            vertices[3] = y + _canvas->velY[I_VEL(i, j)] * kCanvasVelocityGridSize * 100;
+            vertices[2] = x + _velX[I_VEL(i, j)] * kCanvasVelocityGridSize * 100;
+            vertices[3] = y + _velY[I_VEL(i, j)] * kCanvasVelocityGridSize * 100;
             
             glVertexPointer(2, GL_FLOAT, 0, vertices);
             glDrawArrays(GL_LINES, 0, 2);
@@ -299,8 +359,9 @@ static const GLfloat _vertices[] = {
     // Matrix & viewport initialization
     glLoadIdentity();
     glMatrixMode(GL_PROJECTION);
-    glOrthof(0, kCanvasDimensionsWidth, 0, kCanvasDimensionsHeight, -1.0f, 1.0f);
-    glViewport(0, 0, kCanvasDimensionsWidth, kCanvasDimensionsHeight);
+    CGRect bounds = self.bounds;
+    glOrthof(CGRectGetMinX(bounds), CGRectGetMaxX(bounds), CGRectGetMinY(bounds), CGRectGetMaxY(bounds), -1.0f, 1.0f);
+    glViewport(CGRectGetMinX(bounds), CGRectGetMinY(bounds), CGRectGetMaxX(bounds), CGRectGetMaxY(bounds));
     
     // Enable texture mapping
     glEnable(GL_TEXTURE_2D);

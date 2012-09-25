@@ -16,9 +16,9 @@
 
 static const int ddLogLevel = LOG_LEVEL_INFO;
 
-static const CGRect kPauseSwitchFrame = {750, 52, 0, 0};
-static const CGRect kNextFrameButtonFrame = {750, 85, 100, 30};
-static const CGRect kSegmentedControlFrame = {362, 50, 300, 30};
+static const CGRect kPauseSwitchFrame = {10, 90, 0, 0};
+static const CGRect kNextFrameButtonFrame = {100, 90, 100, 30};
+static const CGRect kSegmentedControlFrame = {10, 50, 300, 30};
 static const CGRect kBenchmarkLabelFrame = {10, 10, 800, 30};
 
 @interface FMMainViewController ()
@@ -64,6 +64,10 @@ static const CGRect kBenchmarkLabelFrame = {10, 10, 800, 30};
     
     self.view.backgroundColor = [UIColor whiteColor];
     
+    _canvasView = [[FMCanvasView alloc] initWithFrame:[FMSettings dimensions]];
+    _canvasView.delegate = self;
+    [self.view addSubview:_canvasView];
+    
     _pauseSwitch = [[UISwitch alloc] initWithFrame:kPauseSwitchFrame];
     [_pauseSwitch addTarget:self action:@selector(_switchDidChange:) forControlEvents:UIControlEventValueChanged];
     [self.view addSubview:_pauseSwitch];
@@ -85,14 +89,6 @@ static const CGRect kBenchmarkLabelFrame = {10, 10, 800, 30};
     _benchmarkLabel = [[UILabel alloc] initWithFrame:kBenchmarkLabelFrame];
     [self.view addSubview:_benchmarkLabel];
     
-    _canvasView = [[FMCanvasView alloc] initWithFrame:FMRectMakeWithSize(CGSizeMake(kCanvasDimensionsWidth, kCanvasDimensionsHeight))];
-    _canvasView.delegate = self;
-    CGPoint midpoint = FMRectGetMid(self.view.bounds);
-    midpoint.y += 100;
-    _canvasView.position = midpoint;
-    _canvasView.anchorPoint = kAnchorPointCenter;
-    _canvasView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin|UIViewAutoresizingFlexibleRightMargin|UIViewAutoresizingFlexibleTopMargin|UIViewAutoresizingFlexibleBottomMargin;
-    [self.view addSubview:_canvasView];
     DDLogInfo(@"Created canvas view: %@", _canvasView);
 }
 

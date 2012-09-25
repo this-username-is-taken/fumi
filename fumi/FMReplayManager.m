@@ -23,9 +23,9 @@
     if (self) {
         _events = [[NSMutableDictionary alloc] init];
         
-        NSString *path = [[NSBundle mainBundle] pathForResource:@"input" ofType:@"fm"];
-        NSLog(@"%@", path);
-        NSLog(@"%@", [NSString stringWithContentsOfFile:path encoding:NSASCIIStringEncoding error:NULL]);
+        //NSString *path = [[NSBundle mainBundle] pathForResource:@"input" ofType:@"fm"];
+        //NSLog(@"%@", path);
+        //NSLog(@"%@", [NSString stringWithContentsOfFile:path encoding:NSASCIIStringEncoding error:NULL]);
     }
     return self;
 }
