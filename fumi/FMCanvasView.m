@@ -50,6 +50,9 @@ static int kVelocityGridCountHeight = 0;
 static int kDensityGridCountWidth = 0;
 static int kDensityGridCountHeight = 0;
 
+static int kTextureDimensionSidePad = 0;
+static int kTextureDimensionSidePhone = 0;
+
 #define REPLAY_MODE
 
 @interface FMCanvasView ()
@@ -89,6 +92,9 @@ static int kDensityGridCountHeight = 0;
         kDensityGridCountWidth = kDensityDimensionsWidth + 2;
         kDensityGridCountHeight = kDensityDimensionsHeight + 2;
         
+        kTextureDimensionSidePad = kDensityDimensionsWidth;
+        kTextureDimensionSidePhone = 64;
+        
         int nVelGrids = kVelocityGridCountWidth * kVelocityGridCountHeight;
         int nDenGrids = kDensityGridCountWidth * kDensityGridCountHeight;
         
@@ -110,8 +116,13 @@ static int kDensityGridCountHeight = 0;
         
         start_solver(kVelocityGridCountHeight * kVelocityGridCountWidth);
         
-        _colors = calloc(kDensityDimensionsWidth * kDensityDimensionsWidth * kRGB, sizeof(GLubyte));
-        memset(_colors, 0, kDensityDimensionsWidth * kDensityDimensionsWidth * kRGB);
+        if ([FMSettings isDevicePad]) {
+            _colors = calloc(kTextureDimensionSidePad * kTextureDimensionSidePad * kRGB, sizeof(GLubyte));
+            memset(_colors, 0, kTextureDimensionSidePad * kTextureDimensionSidePad * kRGB);
+        } else {
+            _colors = calloc(kTextureDimensionSidePhone * kTextureDimensionSidePhone * kRGB, sizeof(GLubyte));
+            memset(_colors, 0, kTextureDimensionSidePhone * kTextureDimensionSidePhone * kRGB);
+        }
 
         [self _createGestureRecognizers];
     }
@@ -301,14 +312,26 @@ static int kDensityGridCountHeight = 0;
         }
     }
     
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, kDensityDimensionsWidth, kDensityDimensionsWidth, 0, GL_RGB, GL_UNSIGNED_BYTE, _colors);
+    if ([FMSettings isDevicePad]) {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, kTextureDimensionSidePad, kTextureDimensionSidePad, 0, GL_RGB, GL_UNSIGNED_BYTE, _colors);
+    } else {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, kTextureDimensionSidePhone, kTextureDimensionSidePhone, 0, GL_RGB, GL_UNSIGNED_BYTE, _colors);
+    }
     
     // Define the texture coordinates
-    static const GLfloat _texCoords[] = {
+    static const GLfloat _texCoordsPad[] = {
         0.0, 0.0,
         0.0, 0.75,
         1.0, 0.0,
         1.0, 0.75
+    };
+    
+    // Define the texture coordinates
+    static const GLfloat _texCoordsPhone[] = {
+        0.0, 0.0,
+        0.0, 0.9375,
+        0.625, 0.0,
+        0.625, 0.9375
     };
     
     // Define the square vertices
@@ -317,7 +340,7 @@ static int kDensityGridCountHeight = 0;
     GLfloat _vertices[] = { 0, 0, 0, height, width, 0, width, height };
 
     glVertexPointer(2, GL_FLOAT, 0, _vertices);
-    glTexCoordPointer(2, GL_FLOAT, 0, _texCoords);
+    glTexCoordPointer(2, GL_FLOAT, 0, ([FMSettings isDevicePad] ? _texCoordsPad : _texCoordsPhone));
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
     
@@ -327,7 +350,11 @@ static int kDensityGridCountHeight = 0;
 
 - (void)_renderVelocity
 {
-	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    glDisable(GL_TEXTURE_2D);
+
+    
+	glColor4f(0.0f, 1.0f, 1.0f, 1.0f);
     
     for (int i=1; i<=kVelocityDimensionsWidth; i++) {
         GLfloat x = (i-0.5f) * kCanvasVelocityGridSize;
@@ -348,7 +375,38 @@ static int kDensityGridCountHeight = 0;
 
 - (void)_renderHeight
 {
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    glDisable(GL_TEXTURE_2D);
     
+	//glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+    
+    glPointSize(5);
+    
+    for (int i=1; i<=kDensityDimensionsWidth; i++) {
+        GLfloat x = (i-0.5f) * kCanvasDensityGridSize;
+        for (int j=1; j<=kDensityDimensionsHeight; j++) {
+            GLfloat y = (j-0.5f) * kCanvasDensityGridSize;
+            
+            CGFloat vertices[2];
+            vertices[0] = x;
+            vertices[1] = y;
+            
+            GLubyte colours[3];
+            colours[0] = 0;//_den[I_DEN(i, j)];
+            colours[1] = 0;
+            colours[2] = 0;
+            
+            glColor4f(1.0f/_den[I_DEN(i, j)], 0.0f, 0.0f, 1.0f);
+            
+            glVertexPointer(2, GL_FLOAT, 0, vertices);
+            //glColorPointer(3, GL_UNSIGNED_BYTE, 0, colours);
+            glDrawArrays(GL_POINTS, 0, 1);
+        }
+    }
+    
+    glDisableClientState(GL_VERTEX_ARRAY);
+    //glDisableClientState(GL_COLOR_ARRAY);
 }
 
 #pragma mark -

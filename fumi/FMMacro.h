@@ -14,7 +14,7 @@
 #define B 2
 #define kRGB 3
 
-#define I_CLR_3(i,j,k) ((i)*kRGB+(j)*kDensityDimensionsWidth*kRGB+(k))
+#define I_CLR_3(i,j,k) ((i)*kRGB+(j)*kTextureDimensionSidePhone*kRGB+(k))
 #define I_VEL(i,j) ((i)+(j)*kVelocityGridCountWidth)
 #define I_DEN(i,j) ((i)+(j)*kDensityGridCountWidth)
 
