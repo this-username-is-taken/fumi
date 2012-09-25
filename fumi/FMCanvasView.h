@@ -18,9 +18,9 @@ typedef struct {
 } FMBenchmark;
 
 typedef enum {
-    FMRenderingModeDensity = 0, // default
+    FMRenderingModeTexture = 0, // default
     FMRenderingModeVelocity,
-    FMRenderingModeHeight,
+    FMRenderingModeDensity,
 } FMRenderingMode;
 
 CG_INLINE CGFloat updateBenchmarkAvg(FMBenchmark *benchmark)

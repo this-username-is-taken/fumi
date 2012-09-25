@@ -12,7 +12,6 @@
 #import "FMReplayManager.h"
 
 #import "FMGeometry.h"
-#import "FMMacro.h"
 #import "FMSettings.h"
 
 #import "UIGestureRecognizer+Fumi.h"
@@ -40,9 +39,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     CGFloat *_velX;
     CGFloat *_velY;
     CGFloat *_den;
-
-    GLuint _texture[1];
-    GLubyte *_colors;
+    GLubyte *_clr;
     
     FMBenchmark _benchmark;
 }
@@ -74,8 +71,8 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
         
         start_solver(_dimensions.velGridCount);
         
-        _colors = calloc(_dimensions.textureSide * _dimensions.textureSide * kRGB, sizeof(GLubyte));
-        memset(_colors, 0, _dimensions.textureSide * _dimensions.textureSide * kRGB);
+        _clr = calloc(_dimensions.textureSide * _dimensions.textureSide * kRGB, sizeof(GLubyte));
+        memset(_clr, 255, _dimensions.textureSide * _dimensions.textureSide * kRGB);
 
         [self _createGestureRecognizers];
     }
@@ -90,7 +87,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     free(_velX);
 	free(_velY);
 	free(_den);
-    free(_colors);
+    free(_clr);
     
     [super dealloc];
 }
@@ -214,7 +211,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
     
     // Clear background color
-    glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     
     // Physics
@@ -227,14 +224,14 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     _benchmark.graphicsTime = CFAbsoluteTimeGetCurrent();
     
     switch (_renderingMode) {
-        case FMRenderingModeDensity:
-            [self _renderDensity];
+        case FMRenderingModeTexture:
+            [self _renderTexture];
             break;
         case FMRenderingModeVelocity:
             [self _renderVelocity];
             break;
-        case FMRenderingModeHeight:
-            [self _renderHeight];
+        case FMRenderingModeDensity:
+            [self _renderDensity];
             break;
         default:
             break;
@@ -253,19 +250,25 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     [_delegate updateBenchmark:&_benchmark];
 }
 
-- (void)_renderDensity
+- (void)_renderTexture
 {
+    glEnable(GL_TEXTURE_2D);
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    
     for (int i=0;i<_dimensions.denWidth;i++) {
         for (int j=0;j<_dimensions.denHeight;j++) {
             float density = _den[I_DEN(i, j)];
             if (density > 255.0) density = 255.0;
             if (density > 0) {
-                _colors[I_CLR_3(i, j, 0)] = density;
+                _clr[I_CLR_3(i, j, R)] = 255;
+                _clr[I_CLR_3(i, j, G)] = 255-density;
+                _clr[I_CLR_3(i, j, B)] = 255-density;
             }
         }
     }
     
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _dimensions.textureSide, _dimensions.textureSide, 0, GL_RGB, GL_UNSIGNED_BYTE, _colors);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _dimensions.textureSide, _dimensions.textureSide, 0, GL_RGB, GL_UNSIGNED_BYTE, _clr);
     
     // Define the square vertices
     CGRect bounds = [FMSettings canvasDimensions];
@@ -276,20 +279,20 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 
     glVertexPointer(2, GL_FLOAT, 0, _vertices);
     glTexCoordPointer(2, GL_FLOAT, 0, _dimensions.textureMap);
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
     
     // Only need to draw the four corners of the rectangle
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    
+    glDisable(GL_TEXTURE_2D);
+    glDisableClientState(GL_VERTEX_ARRAY);
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 }
 
 - (void)_renderVelocity
 {
-    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-    glDisable(GL_TEXTURE_2D);
-
+    glEnableClientState(GL_VERTEX_ARRAY);
     
-	glColor4f(0.0f, 1.0f, 1.0f, 1.0f);
+	glColor4ub(255, 0, 0, 255);
     
     CGFloat size = _dimensions.velCellSize;
     for (int i=1; i<=_dimensions.velWidth; i++) {
@@ -307,15 +310,13 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
             glDrawArrays(GL_LINES, 0, 2);
         }
     }
+    
+    glDisableClientState(GL_VERTEX_ARRAY);
 }
 
-- (void)_renderHeight
+- (void)_renderDensity
 {
     glEnableClientState(GL_VERTEX_ARRAY);
-    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-    glDisable(GL_TEXTURE_2D);
-    
-	//glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
     
     glPointSize(5);
     
@@ -328,21 +329,16 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
             vertices[0] = x;
             vertices[1] = y;
             
-            GLubyte colours[3];
-            colours[0] = 0;//_den[I_DEN(i, j)];
-            colours[1] = 0;
-            colours[2] = 0;
-            
-            glColor4f(1.0f/_den[I_DEN(i, j)], 0.0f, 0.0f, 1.0f);
+            float density = _den[I_DEN(i, j)];
+            if (density > 255.0) density = 255.0;
+            glColor4ub(255, 255-density, 255-density, 255);
             
             glVertexPointer(2, GL_FLOAT, 0, vertices);
-            //glColorPointer(3, GL_UNSIGNED_BYTE, 0, colours);
             glDrawArrays(GL_POINTS, 0, 1);
         }
     }
     
     glDisableClientState(GL_VERTEX_ARRAY);
-    //glDisableClientState(GL_COLOR_ARRAY);
 }
 
 #pragma mark -
@@ -361,9 +357,13 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE, GL_SRC_COLOR);
     
+    // Make vertices (glPoints) smooth
+    glEnable(GL_POINT_SMOOTH);
+    
     // Generate and bind texture
-    glGenTextures(1, &_texture[0]);
-    glBindTexture(GL_TEXTURE_2D, _texture[0]);
+    GLuint _textureBinding[1];
+    glGenTextures(1, &_textureBinding[0]);
+    glBindTexture(GL_TEXTURE_2D, _textureBinding[0]);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }

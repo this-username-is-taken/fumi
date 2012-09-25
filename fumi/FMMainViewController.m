@@ -72,10 +72,10 @@ static const CGRect kBenchmarkLabelFrame = {10, 10, 800, 30};
     [_pauseSwitch addTarget:self action:@selector(_switchDidChange:) forControlEvents:UIControlEventValueChanged];
     [self.view addSubview:_pauseSwitch];
     
-    _segmentedControl = [[UISegmentedControl alloc] initWithItems:[NSArray arrayWithObjects:@"Density", @"Velocity", @"Height", nil]];
+    _segmentedControl = [[UISegmentedControl alloc] initWithItems:[NSArray arrayWithObjects:@"Texture", @"Velocity", @"Density", nil]];
     _segmentedControl.frame = kSegmentedControlFrame;
     _segmentedControl.segmentedControlStyle = UISegmentedControlStyleBar;
-    _segmentedControl.selectedSegmentIndex = FMRenderingModeDensity;
+    _segmentedControl.selectedSegmentIndex = FMRenderingModeTexture;
     [_segmentedControl addTarget:self action:@selector(_segmentDidChange:) forControlEvents:UIControlEventValueChanged];
     [self.view addSubview:_segmentedControl];
     
