@@ -69,6 +69,7 @@ static const CGRect kBenchmarkLabelFrame = {10, 10, 800, 30};
     [self.view addSubview:_canvasView];
     
     _pauseSwitch = [[UISwitch alloc] initWithFrame:kPauseSwitchFrame];
+    _pauseSwitch.on = YES;
     [_pauseSwitch addTarget:self action:@selector(_switchDidChange:) forControlEvents:UIControlEventValueChanged];
     [self.view addSubview:_pauseSwitch];
     
@@ -81,7 +82,7 @@ static const CGRect kBenchmarkLabelFrame = {10, 10, 800, 30};
     
     _nextFrameButton = [[UIButton buttonWithType:UIButtonTypeRoundedRect] retain];
     _nextFrameButton.frame = kNextFrameButtonFrame;
-    _nextFrameButton.enabled = NO;
+    _nextFrameButton.enabled = YES;
     [_nextFrameButton setTitle:@"Next Frame" forState:UIControlStateNormal];
     [_nextFrameButton addTarget:self action:@selector(_buttonDidPress:) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:_nextFrameButton];
@@ -94,7 +95,7 @@ static const CGRect kBenchmarkLabelFrame = {10, 10, 800, 30};
 
 - (void)viewWillAppear:(BOOL)animated
 {
-    [_canvasView startAnimation];
+    //[_canvasView startAnimation];
 }
 
 #pragma mark -

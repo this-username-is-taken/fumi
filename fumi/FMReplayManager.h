@@ -8,40 +8,22 @@
 
 #import <Foundation/Foundation.h>
 
-typedef struct {
-    float x;
-    float y;
-    unsigned int state;
-    unsigned long long frame;
-} FMLongPress;
+@interface FMReplayObject : NSObject
 
-typedef struct {
-    float x;
-    float y;
-    unsigned int state;
-    unsigned long long frame;
-} FMTineLine;
+@property (nonatomic, assign) CGFloat x;
+@property (nonatomic, assign) CGFloat y;
+@property (nonatomic, assign) unsigned int state;
+@property (nonatomic, assign) unsigned long long frame;
 
-CG_INLINE FMLongPress FMLongPressMake(float x, float y, unsigned int state, unsigned long long frame)
-{
-    FMLongPress lp;
-    lp.x = x;
-    lp.y = y;
-    lp.state = state;
-    lp.frame = frame;
-    return lp;
-}
+- (id)initWithFrame:(unsigned long long)frame state:(unsigned int)state x:(CGFloat)x y:(CGFloat)y;
 
-CG_INLINE FMTineLine FMTineLineMake(float x, float y, unsigned int state, unsigned long long frame)
-{
-    FMTineLine tl;
-    tl.x = x;
-    tl.y = y;
-    tl.state = state;
-    tl.frame = frame;
-    return tl;
-}
+@end
+
+@interface FMReplayLongPress : FMReplayObject
+@end
 
 @interface FMReplayManager : NSObject
+
+@property (nonatomic, retain) NSMutableDictionary *events;
 
 @end

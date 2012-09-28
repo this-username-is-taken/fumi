@@ -168,7 +168,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 - (void)_handlePressGesture:(UILongPressGestureRecognizer *)gestureRecognizer
 {
     CGPoint p = [gestureRecognizer locationInGLView:self];
-    FMLongPress lp = FMLongPressMake(p.x, p.y, gestureRecognizer.state, _benchmark.frames);
+    FMReplayLongPress *lp = [[[FMReplayLongPress alloc] initWithFrame:_benchmark.frames state:gestureRecognizer.state x:p.x y:p.y] autorelease];
     NSLog(@"%lld 1 %f %f %d", lp.frame, lp.x, lp.y, lp.state);
     
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan)
