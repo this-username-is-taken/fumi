@@ -39,10 +39,10 @@ static FMDimensions dimensions;
         dimensions.canvasWidth = 320;
         dimensions.canvasHeight = 480;
         
-        dimensions.velCellSize = 8;
-        dimensions.denCellSize = 8;
+        dimensions.velCellSize = 1;
+        dimensions.denCellSize = 1;
         
-        dimensions.textureSide = 64;
+        dimensions.textureSide = 512;
         dimensions.textureMap[0] = 0.0;
         dimensions.textureMap[1] = 0.0;
         dimensions.textureMap[2] = 0.0;

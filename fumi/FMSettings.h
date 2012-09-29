@@ -12,7 +12,7 @@
 
 #define kPhysicsForce 1.0f
 #define kPhysicsTimestep 0.01f
-#define kPhysicsViscosity 0.02f
+#define kPhysicsViscosity 0.002f
 
 typedef struct {
     CGFloat canvasWidth;

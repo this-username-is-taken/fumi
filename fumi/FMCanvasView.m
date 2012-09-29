@@ -149,8 +149,8 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     
     if (fabsf(start.x - end.x) > 0.5 || fabsf(start.y - end.y) > 0.5)
     {
-        _velX[I_VEL(index.x, index.y)] += kPhysicsForce * (float)(end.x - start.x);
-        _velY[I_VEL(index.x, index.y)] += kPhysicsForce * (float)(end.y - start.y);
+        _velX[I_VEL(index.x, index.y)] += (float)(end.x - start.x) * kPhysicsForce * 10;
+        _velY[I_VEL(index.x, index.y)] += (float)(end.y - start.y) * kPhysicsForce * 10;
         
         DDLogInfo(@"CGPoint: %.5f, %@, %@", diffTime, NSStringFromCGPoint(start), NSStringFromCGPoint(end));
         DDLogInfo(@"%d, %d, %f, %f", index.x, index.y, _velX[I_VEL(index.x, index.y)], _velY[I_VEL(index.x, index.y)]);
@@ -178,10 +178,10 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 - (void)_injectInkAtPoint:(FMPoint)p
 {
     // TODO: handle boundary cases; stack density; or even rewrite this
-    int radius = 20;
+    int radius = 50;
     for (float x=-radius; x<=radius; x++) {
         for (float y=-radius; y<=radius; y++) {
-            float dist = x*x+y*y;
+            float dist = x*x/10+y*y/10;
             int index = I_DEN(p.x+(int)x, p.y+(int)y);
             if (dist > radius*radius) {
                 continue;
