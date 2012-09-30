@@ -41,4 +41,7 @@ CG_INLINE CGFloat updateBenchmarkAvg(FMBenchmark *benchmark)
 @property (nonatomic, assign) id<FMBenchmarkDelegate> delegate;
 @property (nonatomic, assign) FMRenderingMode renderingMode;
 
+- (void)printVelocity;
+- (void)clearDensity;
+
 @end

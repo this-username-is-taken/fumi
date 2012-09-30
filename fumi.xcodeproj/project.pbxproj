@@ -30,6 +30,7 @@
 		2B37E77E15BFC25C00D21E55 /* FMAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B37E77D15BFC25C00D21E55 /* FMAppDelegate.m */; };
 		2B66EE08160E51BF003B5F83 /* input.fm in Resources */ = {isa = PBXBuildFile; fileRef = 2B66EE07160E51BF003B5F83 /* input.fm */; };
 		2B66EE0C160E5269003B5F83 /* FMReplayManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B66EE0B160E5269003B5F83 /* FMReplayManager.m */; };
+		2BF9CDEB16174B99005169D5 /* velocity.fm in Resources */ = {isa = PBXBuildFile; fileRef = 2BF9CDEA16174B99005169D5 /* velocity.fm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -75,6 +76,7 @@
 		2B66EE07160E51BF003B5F83 /* input.fm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = input.fm; sourceTree = "<group>"; };
 		2B66EE0A160E5269003B5F83 /* FMReplayManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMReplayManager.h; sourceTree = "<group>"; };
 		2B66EE0B160E5269003B5F83 /* FMReplayManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMReplayManager.m; sourceTree = "<group>"; };
+		2BF9CDEA16174B99005169D5 /* velocity.fm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = velocity.fm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -212,6 +214,7 @@
 			isa = PBXGroup;
 			children = (
 				2B66EE07160E51BF003B5F83 /* input.fm */,
+				2BF9CDEA16174B99005169D5 /* velocity.fm */,
 				2B37E77515BFC25B00D21E55 /* fumi-Info.plist */,
 				2B37E77615BFC25B00D21E55 /* InfoPlist.strings */,
 				2B37E77915BFC25C00D21E55 /* main.m */,
@@ -275,6 +278,7 @@
 			files = (
 				2B37E77815BFC25B00D21E55 /* InfoPlist.strings in Resources */,
 				2B66EE08160E51BF003B5F83 /* input.fm in Resources */,
+				2BF9CDEB16174B99005169D5 /* velocity.fm in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

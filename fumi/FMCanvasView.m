@@ -25,11 +25,22 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 #define B 2
 #define kRGB 3
 
+#define N_FRAME 27
+
 #define I_CLR_3(i,j,k) ((i)*kRGB+(j)*_dimensions.textureSide*kRGB+(k))
 #define I_VEL(i,j) ((i)+(j)*_dimensions.velGridWidth)
 #define I_DEN(i,j) ((i)+(j)*_dimensions.denGridWidth)
 
 #define REPLAY_MODE
+
+@interface FMTouch : NSObject
+@property (nonatomic, assign) CGPoint vector;
+@property (nonatomic, assign) FMPoint position;
+@property (nonatomic, assign) int frames;
+@end
+
+@implementation FMTouch
+@end
 
 @interface FMCanvasView ()
 {
@@ -40,6 +51,11 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     CGFloat *_velY;
     CGFloat *_den;
     GLubyte *_clr;
+    
+    CGFloat *_velFrameX[N_FRAME];
+    CGFloat *_velFrameY[N_FRAME];
+    
+    NSMutableArray *_events;
     
     FMBenchmark _benchmark;
 }
@@ -73,8 +89,11 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
         
         _clr = calloc(_dimensions.textureSide * _dimensions.textureSide * kRGB, sizeof(GLubyte));
         memset(_clr, 255, _dimensions.textureSide * _dimensions.textureSide * kRGB);
+        
+        _events = [[NSMutableArray alloc] init];
 
         [self _createGestureRecognizers];
+        [self _readVelocity];
     }
     return self;
 }
@@ -82,6 +101,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 - (void)dealloc
 {
     [_replayManager release];
+    [_events release];
     end_solver();
     
     free(_velX);
@@ -117,16 +137,25 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 - (void)_createGestureRecognizers
 {
     UIPanGestureRecognizer *panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(_handlePanGesture:)];
+    UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(_handleTapGesture:)];
     UIPinchGestureRecognizer *pinchGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(_handlePinchGesture:)];
     UILongPressGestureRecognizer *pressGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(_handlePressGesture:)];
     
     [self addGestureRecognizer:panGesture];
+    //[self addGestureRecognizer:tapGesture];
     [self addGestureRecognizer:pinchGesture];
     [self addGestureRecognizer:pressGesture];
     
     [panGesture release];
+    //[tapGesture release];
     [pinchGesture release];
     [pressGesture release];
+}
+
+- (void)_handleTapGesture:(UITapGestureRecognizer *)gestureRecognizer
+{
+    _velX[I_VEL(_dimensions.velGridWidth/2, _dimensions.velGridHeight/2)] += (float)0.0 * kPhysicsForce;
+    _velY[I_VEL(_dimensions.velGridWidth/2, _dimensions.velGridHeight/2)] += (float)50.0 * kPhysicsForce;
 }
 
 // Pan gestures are interpreted as free interactions with ink
@@ -147,10 +176,17 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
         return;
     }
     
-    if (fabsf(start.x - end.x) > 0.5 || fabsf(start.y - end.y) > 0.5)
+    if (fabsf(start.x - end.x) > 3 || fabsf(start.y - end.y) > 3)
     {
-        _velX[I_VEL(index.x, index.y)] += (float)(end.x - start.x) * kPhysicsForce * 10;
-        _velY[I_VEL(index.x, index.y)] += (float)(end.y - start.y) * kPhysicsForce * 10;
+        FMTouch *touch = [[FMTouch alloc] init];
+        touch.position = index;
+        touch.vector = CGPointMake(end.x - start.x, end.y - start.y);
+        touch.frames = 0;
+        [_events addObject:touch];
+        [touch release];
+        
+        //_velX[I_VEL(index.x, index.y)] += (float)(end.x - start.x) * kPhysicsForce;
+        //_velY[I_VEL(index.x, index.y)] += (float)(end.y - start.y) * kPhysicsForce;
         
         DDLogInfo(@"CGPoint: %.5f, %@, %@", diffTime, NSStringFromCGPoint(start), NSStringFromCGPoint(end));
         DDLogInfo(@"%d, %d, %f, %f", index.x, index.y, _velX[I_VEL(index.x, index.y)], _velY[I_VEL(index.x, index.y)]);
@@ -218,7 +254,19 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     
     // Physics
     _benchmark.physicsTime = CFAbsoluteTimeGetCurrent();
-    vel_step(_dimensions.velWidth, _dimensions.velHeight, _velX, _velY, kPhysicsViscosity, kPhysicsTimestep);
+    //vel_step(_dimensions.velWidth, _dimensions.velHeight, _velX, _velY, kPhysicsViscosity, kPhysicsTimestep);
+    memset(_velX, 0, _dimensions.velGridCount * sizeof(CGFloat));
+    memset(_velY, 0, _dimensions.velGridCount * sizeof(CGFloat));
+    for (FMTouch *touch in _events) {
+        [self _addVelocity:touch.position vector:touch.vector frame:touch.frames];
+        ++touch.frames;
+    }
+    for (int i=0;i<[_events count];i++) {
+        FMTouch *touch = [_events objectAtIndex:i];
+        if (touch.frames >= N_FRAME) {
+            [_events removeObjectAtIndex:i--];
+        }
+    }
     den_step(_dimensions.denWidth, _dimensions.denHeight, _den, _velX, _velY, kPhysicsTimestep);
     _benchmark.physicsTime = CFAbsoluteTimeGetCurrent() - _benchmark.physicsTime;
     
@@ -368,6 +416,75 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     glBindTexture(GL_TEXTURE_2D, _textureBinding[0]);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+}
+
+- (void)clearDensity
+{
+    memset(_den, 0, _dimensions.denGridCount * sizeof(CGFloat));
+}
+
+- (void)printVelocity
+{
+    for (int i=0;i<_dimensions.velGridCount;i++) {
+        printf("%f ", _velX[i]);
+    }
+    printf("\n");
+    for (int i=0;i<_dimensions.velGridCount;i++) {
+        printf("%f ", _velY[i]);
+    }
+    printf("\n");
+}
+
+- (void)_readVelocity
+{
+    NSString *path = [[NSBundle mainBundle] pathForResource:@"velocity" ofType:@"fm"];
+    NSString *file = [NSString stringWithContentsOfFile:path encoding:NSASCIIStringEncoding error:NULL];
+    NSArray *lines = [file componentsSeparatedByString:@"\n"];
+    
+    for (int i=0;i<N_FRAME;i++) {
+        _velFrameX[i] = (CGFloat *)malloc(_dimensions.velGridCount * sizeof(CGFloat));
+        _velFrameY[i] = (CGFloat *)malloc(_dimensions.velGridCount * sizeof(CGFloat));
+        
+        NSString *line = [lines objectAtIndex:i*2];
+        NSArray *items = [line componentsSeparatedByString:@" "];
+        for (int j=0;j<_dimensions.velGridCount;j++) {
+            _velFrameX[i][j] = [[items objectAtIndex:j] floatValue];
+        }
+        line = [lines objectAtIndex:i*2+1];
+        items = [line componentsSeparatedByString:@" "];
+        for (int j=0;j<_dimensions.velGridCount;j++) {
+            _velFrameY[i][j] = [[items objectAtIndex:j] floatValue];
+        }
+    }
+    
+    NSLog(@"Velocity loaded");
+}
+
+- (void)_addVelocity:(FMPoint)index vector:(CGPoint)vector frame:(int)frame
+{
+    CGFloat mag = sqrtf(vector.x * vector.x + vector.y * vector.y);
+    CGPoint v = CGPointMake(vector.x/mag, vector.y/mag);
+    CGFloat angle = acosf(v.y);
+    if (v.x > 0) angle = -angle;
+    
+    //NSLog(@"%f", angle);
+    CGFloat c_angle = cosf(angle);
+    CGFloat s_angle = sinf(angle);
+    
+    for (int i=0;i<_dimensions.velGridWidth;i++) {
+        for (int j=0;j<_dimensions.velGridHeight;j++) {
+            int x = i-index.x+40;
+            int y = j-index.y+60;
+            if (x >= _dimensions.velGridWidth) continue;
+            if (x < 0) continue;
+            if (y >= _dimensions.velGridHeight) continue;
+            if (y < 0) continue;
+            CGFloat val_x = _velFrameX[frame][I_VEL(x, y)];
+            CGFloat val_y = _velFrameY[frame][I_VEL(x, y)];
+            _velX[I_VEL(i, j)] += (val_x * c_angle - val_y * s_angle) * 0.2;
+            _velY[I_VEL(i, j)] += (val_x * s_angle + val_y * c_angle) * 0.2;
+        }
+    }
 }
 
 @end
