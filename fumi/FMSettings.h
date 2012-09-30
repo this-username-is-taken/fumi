@@ -10,7 +10,7 @@
 
 /* ===== Physics Settings ===== */
 
-#define kPhysicsForce 5.0f
+#define kPhysicsForce 0.2f
 #define kPhysicsTimestep 0.01f
 #define kPhysicsViscosity 0.04f
 

@@ -7,20 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
-
-@interface FMReplayObject : NSObject
-
-@property (nonatomic, assign) CGFloat x;
-@property (nonatomic, assign) CGFloat y;
-@property (nonatomic, assign) unsigned int state;
-@property (nonatomic, assign) unsigned long long frame;
-
-- (id)initWithFrame:(unsigned long long)frame state:(unsigned int)state x:(CGFloat)x y:(CGFloat)y;
-
-@end
-
-@interface FMReplayLongPress : FMReplayObject
-@end
+#import "FMReplayPan.h"
+#import "FMReplayLongPress.h"
 
 @interface FMReplayManager : NSObject
 

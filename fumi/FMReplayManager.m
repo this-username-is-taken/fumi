@@ -13,25 +13,6 @@ typedef enum {
     FMReplayTypeLongPressGesture,
 } FMReplayType;
 
-@implementation FMReplayObject
-
-- (id)initWithFrame:(unsigned long long)frame state:(unsigned int)state x:(CGFloat)x y:(CGFloat)y
-{
-    self = [super init];
-    if (self) {
-        _frame = frame;
-        _state = state;
-        _x = x;
-        _y = y;
-    }
-    return self;
-}
-
-@end
-
-@implementation FMReplayLongPress
-@end
-
 @interface FMReplayManager ()
 {
 }
@@ -50,9 +31,8 @@ typedef enum {
         for (NSString *line in [file componentsSeparatedByString:@"\n"]) {
             NSArray *tokens = [line componentsSeparatedByString:@" "];
             FMReplayLongPress *lp = [[[FMReplayLongPress alloc] init] autorelease];
-            lp.frame = [tokens[0] longLongValue];
-            lp.x = [tokens[2] floatValue];
-            lp.y = [tokens[3] floatValue];
+            lp.timestamp = [tokens[0] longLongValue];
+            lp.position = CGPointMake([tokens[2] floatValue], [tokens[3] floatValue]);
             lp.state = [tokens[4] unsignedIntValue];
             [_events setObject:lp forKey:[NSNumber numberWithInt:lp.frame]];
         }

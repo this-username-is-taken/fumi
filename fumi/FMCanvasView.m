@@ -31,17 +31,6 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 #define I_VEL(i,j) ((i)+(j)*_dimensions.velGridWidth)
 #define I_DEN(i,j) ((i)+(j)*_dimensions.denGridWidth)
 
-#define REPLAY_MODE
-
-@interface FMTouch : NSObject
-@property (nonatomic, assign) CGPoint vector;
-@property (nonatomic, assign) FMPoint position;
-@property (nonatomic, assign) int frames;
-@end
-
-@implementation FMTouch
-@end
-
 @interface FMCanvasView ()
 {
     FMReplayManager *_replayManager;
@@ -142,12 +131,12 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     UILongPressGestureRecognizer *pressGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(_handlePressGesture:)];
     
     [self addGestureRecognizer:panGesture];
-    //[self addGestureRecognizer:tapGesture];
+    [self addGestureRecognizer:tapGesture];
     [self addGestureRecognizer:pinchGesture];
     [self addGestureRecognizer:pressGesture];
     
     [panGesture release];
-    //[tapGesture release];
+    [tapGesture release];
     [pinchGesture release];
     [pressGesture release];
 }
@@ -168,7 +157,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     NSTimeInterval diffTime = CFAbsoluteTimeGetCurrent() - lastTime;
     lastTime = CFAbsoluteTimeGetCurrent();
     CGPoint end = [gestureRecognizer locationInGLView:self];
-    FMPoint index = FMPointMakeWithCGPoint(end, _dimensions.velCellSize);
+    CGPoint force = CGPointMake(end.x - start.x, end.y - start.y);
 
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan)
     {
@@ -176,20 +165,11 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
         return;
     }
     
-    if (fabsf(start.x - end.x) > 3 || fabsf(start.y - end.y) > 3)
+    if (FMMagnitude(force) > 3.0)
     {
-        FMTouch *touch = [[FMTouch alloc] init];
-        touch.position = index;
-        touch.vector = CGPointMake(end.x - start.x, end.y - start.y);
-        touch.frames = 0;
-        [_events addObject:touch];
-        [touch release];
-        
-        //_velX[I_VEL(index.x, index.y)] += (float)(end.x - start.x) * kPhysicsForce;
-        //_velY[I_VEL(index.x, index.y)] += (float)(end.y - start.y) * kPhysicsForce;
-        
-        DDLogInfo(@"CGPoint: %.5f, %@, %@", diffTime, NSStringFromCGPoint(start), NSStringFromCGPoint(end));
-        DDLogInfo(@"%d, %d, %f, %f", index.x, index.y, _velX[I_VEL(index.x, index.y)], _velY[I_VEL(index.x, index.y)]);
+        FMReplayPan *pan = [[[FMReplayPan alloc] initWithPosition:end state:gestureRecognizer.state timestamp:_benchmark.frames] autorelease];
+        pan.force = force;
+        [_events addObject:pan];
         start = end;
     }
 }
@@ -204,11 +184,11 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 - (void)_handlePressGesture:(UILongPressGestureRecognizer *)gestureRecognizer
 {
     CGPoint p = [gestureRecognizer locationInGLView:self];
-    FMReplayLongPress *lp = [[[FMReplayLongPress alloc] initWithFrame:_benchmark.frames state:gestureRecognizer.state x:p.x y:p.y] autorelease];
-    NSLog(@"%lld 1 %f %f %d", lp.frame, lp.x, lp.y, lp.state);
+    FMReplayLongPress *lp = [[[FMReplayLongPress alloc] initWithPosition:p state:gestureRecognizer.state timestamp:_benchmark.frames] autorelease];
     
-    if (gestureRecognizer.state == UIGestureRecognizerStateBegan)
-        [self _injectInkAtPoint:FMPointMakeWithCGPoint(p, _dimensions.denCellSize)];
+    if (gestureRecognizer.state == UIGestureRecognizerStateBegan) {
+        [self _injectInkAtPoint:FMPointMakeWithCGPoint(lp.position, _dimensions.denCellSize)];
+    }
 }
 
 - (void)_injectInkAtPoint:(FMPoint)p
@@ -257,13 +237,13 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     //vel_step(_dimensions.velWidth, _dimensions.velHeight, _velX, _velY, kPhysicsViscosity, kPhysicsTimestep);
     memset(_velX, 0, _dimensions.velGridCount * sizeof(CGFloat));
     memset(_velY, 0, _dimensions.velGridCount * sizeof(CGFloat));
-    for (FMTouch *touch in _events) {
-        [self _addVelocity:touch.position vector:touch.vector frame:touch.frames];
-        ++touch.frames;
+    for (FMReplayPan *event in _events) {
+        FMPoint origin = FMPointMakeWithCGPoint(event.position, _dimensions.velCellSize);
+        [self _addVelocity:origin vector:event.force frame:event.frame++];
     }
     for (int i=0;i<[_events count];i++) {
-        FMTouch *touch = [_events objectAtIndex:i];
-        if (touch.frames >= N_FRAME) {
+        FMReplayPan *event = [_events objectAtIndex:i];
+        if (event.frame >= N_FRAME) {
             [_events removeObjectAtIndex:i--];
         }
     }
@@ -310,7 +290,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
         for (int j=1;j<=_dimensions.denHeight;j++) {
             float density = _den[I_DEN(i, j)];
             if (density > 255.0) density = 255.0;
-            if (density > 0) {
+            if (density >= 0) {
                 _clr[I_CLR_3(i - 1, j - 1, R)] = 255;
                 _clr[I_CLR_3(i - 1, j - 1, G)] = 255-density;
                 _clr[I_CLR_3(i - 1, j - 1, B)] = 255-density;
@@ -462,8 +442,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 
 - (void)_addVelocity:(FMPoint)index vector:(CGPoint)vector frame:(int)frame
 {
-    CGFloat mag = sqrtf(vector.x * vector.x + vector.y * vector.y);
-    CGPoint v = CGPointMake(vector.x/mag, vector.y/mag);
+    CGPoint v = FMUnitVectorFromCGPoint(vector);
     CGFloat angle = acosf(v.y);
     if (v.x > 0) angle = -angle;
     
@@ -481,8 +460,8 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
             if (y < 0) continue;
             CGFloat val_x = _velFrameX[frame][I_VEL(x, y)];
             CGFloat val_y = _velFrameY[frame][I_VEL(x, y)];
-            _velX[I_VEL(i, j)] += (val_x * c_angle - val_y * s_angle) * 0.2;
-            _velY[I_VEL(i, j)] += (val_x * s_angle + val_y * c_angle) * 0.2;
+            _velX[I_VEL(i, j)] += (val_x * c_angle - val_y * s_angle) * kPhysicsForce;
+            _velY[I_VEL(i, j)] += (val_x * s_angle + val_y * c_angle) * kPhysicsForce;
         }
     }
 }

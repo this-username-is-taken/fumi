@@ -9,6 +9,25 @@
 #import <Foundation/Foundation.h>
 
 #pragma mark -
+#pragma mark Basic Math
+
+CG_INLINE CGFloat FMDistance(CGFloat x, CGFloat y)
+{
+    return sqrtf(x * x + y * y);
+}
+
+CG_INLINE CGFloat FMMagnitude(CGPoint v)
+{
+    return sqrtf(v.x * v.x + v.y * v.y);
+}
+
+CG_INLINE CGPoint FMUnitVectorFromCGPoint(CGPoint v)
+{
+    CGFloat mag = FMMagnitude(v);
+    return CGPointMake(v.x/mag, v.y/mag);
+}
+
+#pragma mark -
 #pragma mark FMPoint
 
 typedef struct {
