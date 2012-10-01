@@ -445,15 +445,23 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     CGPoint v = FMUnitVectorFromCGPoint(vector);
     CGFloat angle = acosf(v.y);
     if (v.x > 0) angle = -angle;
-    
-    //NSLog(@"%f", angle);
     CGFloat c_angle = cosf(angle);
     CGFloat s_angle = sinf(angle);
     
+    CGFloat new_angle = -acosf(v.y);
+    if (v.x > 0) new_angle = -new_angle;
+    CGFloat new_c_angle = cosf(new_angle);
+    CGFloat new_s_angle = sinf(new_angle);
+    
     for (int i=0;i<_dimensions.velGridWidth;i++) {
         for (int j=0;j<_dimensions.velGridHeight;j++) {
-            int x = i-index.x+40;
-            int y = j-index.y+60;
+            int x = i-index.x;
+            int y = j-index.y;
+            int new_x = x * new_c_angle - y * new_s_angle;
+            int new_y = x * new_s_angle + y * new_c_angle;
+            x = new_x + 40;
+            y = new_y + 60;
+            // TODO: check velocity grid bounds
             if (x >= _dimensions.velGridWidth) continue;
             if (x < 0) continue;
             if (y >= _dimensions.velGridHeight) continue;
