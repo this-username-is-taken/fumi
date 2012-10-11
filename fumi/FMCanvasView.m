@@ -25,7 +25,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 #define B 2
 #define kRGB 3
 
-#define N_FRAME 27
+#define N_FRAME 15
 
 #define I_CLR_3(i,j,k) ((i)*kRGB+(j)*_dimensions.textureSide*kRGB+(k))
 #define I_VEL(i,j) ((i)+(j)*_dimensions.velGridWidth)
@@ -145,6 +145,8 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 {
     _velX[I_VEL(_dimensions.velGridWidth/2, _dimensions.velGridHeight/2)] += (float)0.0 * kPhysicsForce;
     _velY[I_VEL(_dimensions.velGridWidth/2, _dimensions.velGridHeight/2)] += (float)50.0 * kPhysicsForce;
+    
+    [self _addVelocity:FMPointMake(30, 60) vector:CGPointMake(-50, 0) frame:0];
 }
 
 // Pan gestures are interpreted as free interactions with ink
@@ -333,8 +335,8 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
             CGFloat vertices[4];
             vertices[0] = x;
             vertices[1] = y;
-            vertices[2] = x + _velX[I_VEL(i, j)] * size * 10;
-            vertices[3] = y + _velY[I_VEL(i, j)] * size * 10;
+            vertices[2] = x + _velX[I_VEL(i, j)] * size * 100;
+            vertices[3] = y + _velY[I_VEL(i, j)] * size * 100;
             
             glVertexPointer(2, GL_FLOAT, 0, vertices);
             glDrawArrays(GL_LINES, 0, 2);
@@ -442,9 +444,11 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 
 - (void)_addVelocity:(FMPoint)index vector:(CGPoint)vector frame:(int)frame
 {
+    CGFloat mag = FMMagnitude(vector);
     CGPoint v = FMUnitVectorFromCGPoint(vector);
     CGFloat angle = acosf(v.y);
     if (v.x > 0) angle = -angle;
+    //NSLog(@"angle %f", angle);
     CGFloat c_angle = cosf(angle);
     CGFloat s_angle = sinf(angle);
     
@@ -453,8 +457,14 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     CGFloat new_c_angle = cosf(new_angle);
     CGFloat new_s_angle = sinf(new_angle);
     
+    CGFloat sum_x = 0;
+    CGFloat sum_y = 0;
+    CGFloat factor = 1.0f + fabsf(angle)/M_PI_2;
+    
     for (int i=0;i<_dimensions.velGridWidth;i++) {
         for (int j=0;j<_dimensions.velGridHeight;j++) {
+//    for (int i=40;i<=40;i++) {
+//        for (int j=60;j<=60;j++) {
             int x = i-index.x;
             int y = j-index.y;
             int new_x = x * new_c_angle - y * new_s_angle;
@@ -468,10 +478,21 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
             if (y < 0) continue;
             CGFloat val_x = _velFrameX[frame][I_VEL(x, y)];
             CGFloat val_y = _velFrameY[frame][I_VEL(x, y)];
-            _velX[I_VEL(i, j)] += (val_x * c_angle - val_y * s_angle) * kPhysicsForce;
-            _velY[I_VEL(i, j)] += (val_x * s_angle + val_y * c_angle) * kPhysicsForce;
+//            if (val_x != 0 || val_y != 0) {
+//                NSLog(@"x: %f, y: %f", val_x * c_angle - val_y * s_angle, val_x * s_angle + val_y * c_angle);
+//            }
+            _velX[I_VEL(i, j)] += (val_x * c_angle - val_y * s_angle) * mag * kPhysicsForce * factor;
+            _velY[I_VEL(i, j)] += (val_x * s_angle + val_y * c_angle) * mag * kPhysicsForce * factor;
+            if (frame == 0) {
+                sum_x += fabsf(_velX[I_VEL(i, j)]);
+                sum_y += fabsf(_velY[I_VEL(i, j)]);
+            }
         }
     }
+
+//if (frame == 0) {
+//    NSLog(@"Total: %f %f, %f", sum_x, sum_y, sum_x + sum_y);
+//}
 }
 
 @end
