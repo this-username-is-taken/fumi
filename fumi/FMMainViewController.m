@@ -106,6 +106,7 @@ static const CGRect kBenchmarkLabelFrame = {10, 10, 800, 30};
     [self.view addSubview:_printVelButton];
     
     _benchmarkLabel = [[UILabel alloc] initWithFrame:kBenchmarkLabelFrame];
+    _benchmarkLabel.font = [UIFont systemFontOfSize:12];
     [self.view addSubview:_benchmarkLabel];
     
     DDLogInfo(@"Created canvas view: %@", _canvasView);
@@ -156,7 +157,7 @@ static const CGRect kBenchmarkLabelFrame = {10, 10, 800, 30};
 - (void)updateBenchmark:(FMBenchmark *)benchmark
 {
     // Goal: 24fps or 40ms elapsed time
-    _benchmarkLabel.text = [NSString stringWithFormat:@"FPS: %d, physics: %.2f, graphics: %.2f, elapsed: %.2f, loop: %.2f | FPS: %d, average: %.2f",
+    _benchmarkLabel.text = [NSString stringWithFormat:@"FPS:%d p:%.2f g:%.2f f:%.2f loop:%.2f FPS:%d avg:%.2f",
                             (int)(1.0/benchmark->runloopTime),
                             benchmark->physicsTime * 1000,
                             benchmark->graphicsTime * 1000,
