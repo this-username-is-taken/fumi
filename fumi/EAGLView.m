@@ -29,65 +29,6 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     return [CAEAGLLayer class];
 }
 
-- (GLuint)_compileShader:(NSString*)shaderName withType:(GLenum)shaderType
-{
-    NSString *shaderPath = [[NSBundle mainBundle] pathForResource:shaderName ofType:@"glsl"];
-    NSError *error;
-    NSString *shaderString = [NSString stringWithContentsOfFile:shaderPath encoding:NSUTF8StringEncoding error:&error];
-    if (!shaderString) {
-        NSLog(@"Error loading shader: %@", error.localizedDescription);
-        exit(1);
-    }
-    
-    GLuint shaderHandle = glCreateShader(shaderType);
-    
-    const char *shaderStringUTF8 = [shaderString UTF8String];
-    int shaderStringLength = [shaderString length];
-    glShaderSource(shaderHandle, 1, &shaderStringUTF8, &shaderStringLength);
-    
-    glCompileShader(shaderHandle);
-    
-    GLint compileSuccess;
-    glGetShaderiv(shaderHandle, GL_COMPILE_STATUS, &compileSuccess);
-    if (compileSuccess == GL_FALSE) {
-        GLchar messages[256];
-        glGetShaderInfoLog(shaderHandle, sizeof(messages), 0, &messages[0]);
-        NSString *messageString = [NSString stringWithUTF8String:messages];
-        NSLog(@"%@", messageString);
-        exit(1);
-    }
-    
-    return shaderHandle;
-}
-
-- (void)_compileShaders
-{
-    GLuint vertexShader = [self _compileShader:@"vertex" withType:GL_VERTEX_SHADER];
-    GLuint fragmentShader = [self _compileShader:@"fragment" withType:GL_FRAGMENT_SHADER];
-    
-    GLuint programHandle = glCreateProgram();
-    glAttachShader(programHandle, vertexShader);
-    glAttachShader(programHandle, fragmentShader);
-    glLinkProgram(programHandle);
-    
-    GLint linkSuccess;
-    glGetProgramiv(programHandle, GL_LINK_STATUS, &linkSuccess);
-    if (linkSuccess == GL_FALSE) {
-        GLchar messages[256];
-        glGetProgramInfoLog(programHandle, sizeof(messages), 0, &messages[0]);
-        NSString *messageString = [NSString stringWithUTF8String:messages];
-        NSLog(@"%@", messageString);
-        exit(1);
-    }
-    
-    glUseProgram(programHandle);
-    
-    _positionSlot = glGetAttribLocation(programHandle, "Position");
-    _colorSlot = glGetAttribLocation(programHandle, "SourceColor");
-    glEnableVertexAttribArray(_positionSlot);
-    glEnableVertexAttribArray(_colorSlot);
-}
-
 - (id)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
@@ -145,36 +86,6 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 #pragma mark -
 #pragma mark Buffer Life Cycle
 
-typedef struct {
-    float Position[2];
-    float Color[4];
-} Vertex;
-
-const Vertex Vertices[] = {
-    {{1, -1}, {1, 0, 0, 1}},
-    {{1, 1}, {0, 1, 0, 1}},
-    {{-1, 1}, {0, 0, 1, 1}},
-    {{-1, -1}, {0, 0, 0, 1}}
-};
-
-const GLubyte Indices[] = {
-    0, 1, 2,
-    2, 3, 0
-};
-
-- (void)_setupVBO
-{
-    GLuint vertexBuffer;
-    glGenBuffers(1, &vertexBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
-    
-    GLuint indexBuffer;
-    glGenBuffers(1, &indexBuffer);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices), Indices, GL_STATIC_DRAW);
-}
-
 - (BOOL)_createFramebuffer
 {
     glGenFramebuffers(1, &viewFramebuffer);
@@ -194,9 +105,6 @@ const GLubyte Indices[] = {
         return NO;
     }
     DDLogInfo(@"Created frame buffer: %@", self);
-    
-    [self _compileShaders];
-    [self _setupVBO];
     
     return YES;
 }
@@ -231,11 +139,6 @@ const GLubyte Indices[] = {
     glClear(GL_COLOR_BUFFER_BIT);
     
     glViewport(0, 0, backingWidth, backingHeight);
-    
-    glVertexAttribPointer(_positionSlot, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
-    glVertexAttribPointer(_colorSlot, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*) (sizeof(float) * 2));
-    
-    glDrawElements(GL_TRIANGLES, sizeof(Indices)/sizeof(Indices[0]), GL_UNSIGNED_BYTE, 0);
     
     [_context presentRenderbuffer:GL_RENDERBUFFER];
 }

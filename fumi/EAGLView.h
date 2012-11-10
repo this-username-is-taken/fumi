@@ -22,9 +22,6 @@
     /* The pixel dimensions of the backbuffer */
     GLint backingWidth;
     GLint backingHeight;
-    
-    int _positionSlot;
-    int _colorSlot;
 
     /* OpenGL names for the renderbuffer and framebuffers used to render to this view */
     GLuint viewRenderbuffer, viewFramebuffer;

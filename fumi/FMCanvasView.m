@@ -77,7 +77,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
         start_solver(_dimensions.velGridCount);
         
         _clr = calloc(_dimensions.textureSide * _dimensions.textureSide * kRGB, sizeof(GLubyte));
-        memset(_clr, 255, _dimensions.textureSide * _dimensions.textureSide * kRGB);
+        memset(_clr, 0, _dimensions.textureSide * _dimensions.textureSide * kRGB);
         
         _events = [[NSMutableArray alloc] init];
 
@@ -217,6 +217,57 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 
 #pragma mark -
 #pragma mark OpenGL Rendering
+
+typedef struct {
+    float Position[2];
+    float Color[4];
+    float TexCoord[2];
+} Vertex;
+
+const Vertex Vertices[] = {
+    {{-1, -1}, {1, 0, 0, 1}, {0.0, 0.0}},
+    {{-1, 1}, {0, 1, 0, 1}, {0.0, 0.9375}},
+    {{1, -1}, {0, 0, 1, 1}, {0.625, 0.0}},
+    {{1, 1}, {0, 0, 0, 1}, {0.625, 0.9375}}
+};
+
+const GLubyte Indices[] = {
+    0, 1, 2, 3
+};
+
+- (void)_setupVBO
+{
+    GLuint vertexBuffer;
+    glGenBuffers(1, &vertexBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
+    
+    GLuint indexBuffer;
+    glGenBuffers(1, &indexBuffer);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices), Indices, GL_STATIC_DRAW);
+}
+
+- (void)drawView
+{
+    glClearColor(0.5, 0.5, 0.5, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT);
+    
+    glViewport(0, 0, backingWidth, backingHeight);
+    
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _dimensions.textureSide, _dimensions.textureSide, 0, GL_RGB, GL_UNSIGNED_BYTE, _clr);
+    
+    glVertexAttribPointer(_positionSlot, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+    glVertexAttribPointer(_colorSlot, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*) (sizeof(float) * 2));
+    glVertexAttribPointer(_texCoordSlot, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*) (sizeof(float) * 6));
+    
+    glActiveTexture(GL_TEXTURE0);
+    glUniform1i(_textureUniform, 0);
+    
+    glDrawElements(GL_TRIANGLE_STRIP, sizeof(Indices)/sizeof(Indices[0]), GL_UNSIGNED_BYTE, 0);
+    
+    [self.context presentRenderbuffer:GL_RENDERBUFFER];
+}
 
 /*
 - (void)drawView
@@ -378,6 +429,69 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 #pragma mark -
 #pragma mark Helper Functions
 
+- (GLuint)_compileShader:(NSString*)shaderName withType:(GLenum)shaderType
+{
+    NSString *shaderPath = [[NSBundle mainBundle] pathForResource:shaderName ofType:@"glsl"];
+    NSError *error;
+    NSString *shaderString = [NSString stringWithContentsOfFile:shaderPath encoding:NSUTF8StringEncoding error:&error];
+    if (!shaderString) {
+        NSLog(@"Error loading shader: %@", error.localizedDescription);
+        exit(1);
+    }
+    
+    GLuint shaderHandle = glCreateShader(shaderType);
+    
+    const char *shaderStringUTF8 = [shaderString UTF8String];
+    int shaderStringLength = [shaderString length];
+    glShaderSource(shaderHandle, 1, &shaderStringUTF8, &shaderStringLength);
+    
+    glCompileShader(shaderHandle);
+    
+    GLint compileSuccess;
+    glGetShaderiv(shaderHandle, GL_COMPILE_STATUS, &compileSuccess);
+    if (compileSuccess == GL_FALSE) {
+        GLchar messages[256];
+        glGetShaderInfoLog(shaderHandle, sizeof(messages), 0, &messages[0]);
+        NSString *messageString = [NSString stringWithUTF8String:messages];
+        NSLog(@"%@", messageString);
+        exit(1);
+    }
+    
+    return shaderHandle;
+}
+
+- (void)_compileShaders
+{
+    GLuint vertexShader = [self _compileShader:@"vertex" withType:GL_VERTEX_SHADER];
+    GLuint fragmentShader = [self _compileShader:@"fragment" withType:GL_FRAGMENT_SHADER];
+    
+    GLuint programHandle = glCreateProgram();
+    glAttachShader(programHandle, vertexShader);
+    glAttachShader(programHandle, fragmentShader);
+    glLinkProgram(programHandle);
+    
+    GLint linkSuccess;
+    glGetProgramiv(programHandle, GL_LINK_STATUS, &linkSuccess);
+    if (linkSuccess == GL_FALSE) {
+        GLchar messages[256];
+        glGetProgramInfoLog(programHandle, sizeof(messages), 0, &messages[0]);
+        NSString *messageString = [NSString stringWithUTF8String:messages];
+        NSLog(@"%@", messageString);
+        exit(1);
+    }
+    
+    glUseProgram(programHandle);
+    
+    _positionSlot = glGetAttribLocation(programHandle, "Position");
+    _colorSlot = glGetAttribLocation(programHandle, "SourceColor");
+    glEnableVertexAttribArray(_positionSlot);
+    glEnableVertexAttribArray(_colorSlot);
+    
+    _texCoordSlot = glGetAttribLocation(programHandle, "TexCoordIn");
+    glEnableVertexAttribArray(_texCoordSlot);
+    _textureUniform = glGetUniformLocation(programHandle, "Texture");
+}
+
 - (void)_setupView
 {
     // Matrix & viewport initialization
@@ -400,6 +514,9 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     glBindTexture(GL_TEXTURE_2D, _textureBinding[0]);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    
+    [self _compileShaders];
+    [self _setupVBO];
 }
 
 - (void)clearDensity
