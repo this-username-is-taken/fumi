@@ -29,6 +29,65 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     return [CAEAGLLayer class];
 }
 
+- (GLuint)_compileShader:(NSString*)shaderName withType:(GLenum)shaderType
+{
+    NSString *shaderPath = [[NSBundle mainBundle] pathForResource:shaderName ofType:@"glsl"];
+    NSError *error;
+    NSString *shaderString = [NSString stringWithContentsOfFile:shaderPath encoding:NSUTF8StringEncoding error:&error];
+    if (!shaderString) {
+        NSLog(@"Error loading shader: %@", error.localizedDescription);
+        exit(1);
+    }
+    
+    GLuint shaderHandle = glCreateShader(shaderType);
+    
+    const char *shaderStringUTF8 = [shaderString UTF8String];
+    int shaderStringLength = [shaderString length];
+    glShaderSource(shaderHandle, 1, &shaderStringUTF8, &shaderStringLength);
+    
+    glCompileShader(shaderHandle);
+    
+    GLint compileSuccess;
+    glGetShaderiv(shaderHandle, GL_COMPILE_STATUS, &compileSuccess);
+    if (compileSuccess == GL_FALSE) {
+        GLchar messages[256];
+        glGetShaderInfoLog(shaderHandle, sizeof(messages), 0, &messages[0]);
+        NSString *messageString = [NSString stringWithUTF8String:messages];
+        NSLog(@"%@", messageString);
+        exit(1);
+    }
+    
+    return shaderHandle;
+}
+
+- (void)_compileShaders
+{
+    GLuint vertexShader = [self _compileShader:@"vertex" withType:GL_VERTEX_SHADER];
+    GLuint fragmentShader = [self _compileShader:@"fragment" withType:GL_FRAGMENT_SHADER];
+    
+    GLuint programHandle = glCreateProgram();
+    glAttachShader(programHandle, vertexShader);
+    glAttachShader(programHandle, fragmentShader);
+    glLinkProgram(programHandle);
+    
+    GLint linkSuccess;
+    glGetProgramiv(programHandle, GL_LINK_STATUS, &linkSuccess);
+    if (linkSuccess == GL_FALSE) {
+        GLchar messages[256];
+        glGetProgramInfoLog(programHandle, sizeof(messages), 0, &messages[0]);
+        NSString *messageString = [NSString stringWithUTF8String:messages];
+        NSLog(@"%@", messageString);
+        exit(1);
+    }
+    
+    glUseProgram(programHandle);
+    
+    _positionSlot = glGetAttribLocation(programHandle, "Position");
+    _colorSlot = glGetAttribLocation(programHandle, "SourceColor");
+    glEnableVertexAttribArray(_positionSlot);
+    glEnableVertexAttribArray(_colorSlot);
+}
+
 - (id)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
@@ -42,7 +101,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
                                         kEAGLDrawablePropertyColorFormat,
                                         nil];
         
-        _context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
+        _context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
         
         if (!_context || ![EAGLContext setCurrentContext:_context])
         {
@@ -86,34 +145,67 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 #pragma mark -
 #pragma mark Buffer Life Cycle
 
+typedef struct {
+    float Position[2];
+    float Color[4];
+} Vertex;
+
+const Vertex Vertices[] = {
+    {{1, -1}, {1, 0, 0, 1}},
+    {{1, 1}, {0, 1, 0, 1}},
+    {{-1, 1}, {0, 0, 1, 1}},
+    {{-1, -1}, {0, 0, 0, 1}}
+};
+
+const GLubyte Indices[] = {
+    0, 1, 2,
+    2, 3, 0
+};
+
+- (void)_setupVBO
+{
+    GLuint vertexBuffer;
+    glGenBuffers(1, &vertexBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
+    
+    GLuint indexBuffer;
+    glGenBuffers(1, &indexBuffer);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices), Indices, GL_STATIC_DRAW);
+}
+
 - (BOOL)_createFramebuffer
 {
-    glGenFramebuffersOES(1, &viewFramebuffer);
-    glGenRenderbuffersOES(1, &viewRenderbuffer);
+    glGenFramebuffers(1, &viewFramebuffer);
+    glGenRenderbuffers(1, &viewRenderbuffer);
     
-    glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
-    glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
-    [_context renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:(CAEAGLLayer *)self.layer];
-    glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_RENDERBUFFER_OES, viewRenderbuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, viewFramebuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, viewRenderbuffer);
+    [_context renderbufferStorage:GL_RENDERBUFFER fromDrawable:(CAEAGLLayer *)self.layer];
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, viewRenderbuffer);
     
-    glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
-    glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
+    glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &backingWidth);
+    glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &backingHeight);
     
-    if (glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES)
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     {
-        DDLogError(@"Failed to create framebuffer %x", glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES));
+        DDLogError(@"Failed to create framebuffer %x", glCheckFramebufferStatus(GL_FRAMEBUFFER));
         return NO;
     }
     DDLogInfo(@"Created frame buffer: %@", self);
+    
+    [self _compileShaders];
+    [self _setupVBO];
     
     return YES;
 }
 
 - (void)_destroyFramebuffer
 {
-    glDeleteFramebuffersOES(1, &viewFramebuffer);
+    glDeleteFramebuffers(1, &viewFramebuffer);
     viewFramebuffer = 0;
-    glDeleteRenderbuffersOES(1, &viewRenderbuffer);
+    glDeleteRenderbuffers(1, &viewRenderbuffer);
     viewRenderbuffer = 0;
     
     DDLogInfo(@"Destroyed frame buffer: %@", self);
@@ -135,45 +227,17 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 // overriden by subclasses
 - (void)drawView
 {
-    // Define the square vertices
-    const GLfloat squareVertices[] = {
-        0, 0,
-        0, backingHeight,
-        backingWidth, 0,
-        backingWidth, backingHeight
-    };
-    
-    // Define the colors of the square vertices
-    const GLubyte squareColors[] = {
-        255, 255,   0, 255,
-        0,   255, 255, 255,
-        0,     0,   0,   0,
-        255,   0, 255, 255,
-    };
-    
-    // Setting up drawing content
-    [EAGLContext setCurrentContext:_context];
-    glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
-    
-    // Matrix & viewport initialization
-    glLoadIdentity();
-    glMatrixMode(GL_PROJECTION);
-    glOrthof(0, backingWidth, 0, backingHeight, -1.0f, 1.0f);
-    glViewport(0, 0, backingWidth, backingHeight);
-
-    // Clear background color
-    glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+    glClearColor(0.5, 0.5, 0.5, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
     
-    // Drawing
-    glVertexPointer(2, GL_FLOAT, 0, squareVertices);
-    glColorPointer(4, GL_UNSIGNED_BYTE, 0, squareColors);
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_COLOR_ARRAY);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glViewport(0, 0, backingWidth, backingHeight);
     
-    glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
-    [_context presentRenderbuffer:GL_RENDERBUFFER_OES];
+    glVertexAttribPointer(_positionSlot, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+    glVertexAttribPointer(_colorSlot, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*) (sizeof(float) * 2));
+    
+    glDrawElements(GL_TRIANGLES, sizeof(Indices)/sizeof(Indices[0]), GL_UNSIGNED_BYTE, 0);
+    
+    [_context presentRenderbuffer:GL_RENDERBUFFER];
 }
 
 @end

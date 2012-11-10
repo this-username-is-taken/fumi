@@ -218,6 +218,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 #pragma mark -
 #pragma mark OpenGL Rendering
 
+/*
 - (void)drawView
 {
     NSTimeInterval startTime = CFAbsoluteTimeGetCurrent();
@@ -281,6 +282,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     updateBenchmarkAvg(&_benchmark);
     [_delegate updateBenchmark:&_benchmark];
 }
+ */
 
 - (void)_renderTexture
 {
