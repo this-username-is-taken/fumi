@@ -250,36 +250,14 @@ const GLubyte Indices[] = {
 
 - (void)drawView
 {
-    glClearColor(0.5, 0.5, 0.5, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT);
-    
-    glViewport(0, 0, backingWidth, backingHeight);
-    
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _dimensions.textureSide, _dimensions.textureSide, 0, GL_RGB, GL_UNSIGNED_BYTE, _clr);
-    
-    glVertexAttribPointer(_positionSlot, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
-    glVertexAttribPointer(_colorSlot, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*) (sizeof(float) * 2));
-    glVertexAttribPointer(_texCoordSlot, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*) (sizeof(float) * 6));
-    
-    glActiveTexture(GL_TEXTURE0);
-    glUniform1i(_textureUniform, 0);
-    
-    glDrawElements(GL_TRIANGLE_STRIP, sizeof(Indices)/sizeof(Indices[0]), GL_UNSIGNED_BYTE, 0);
-    
-    [self.context presentRenderbuffer:GL_RENDERBUFFER];
-}
-
-/*
-- (void)drawView
-{
     NSTimeInterval startTime = CFAbsoluteTimeGetCurrent();
     
     // Read input for canvas replay
     
     
     // Setting up drawing content
-    [EAGLContext setCurrentContext:self.context];
-    glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
+    [EAGLContext setCurrentContext:self.glContext];
+    glBindFramebuffer(GL_FRAMEBUFFER, viewFramebuffer);
     
     // Clear background color
     glColor4ub(255, 255, 255, 255);
@@ -321,8 +299,8 @@ const GLubyte Indices[] = {
             break;
     }
     
-    glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
-    [self.context presentRenderbuffer:GL_RENDERBUFFER_OES];
+    glBindRenderbuffer(GL_RENDERBUFFER, viewRenderbuffer);
+    [self.glContext presentRenderbuffer:GL_RENDERBUFFER];
     _benchmark.graphicsTime = CFAbsoluteTimeGetCurrent() - _benchmark.graphicsTime;
     
     // Performance analysis
@@ -333,7 +311,6 @@ const GLubyte Indices[] = {
     updateBenchmarkAvg(&_benchmark);
     [_delegate updateBenchmark:&_benchmark];
 }
- */
 
 - (void)_renderTexture
 {
@@ -353,20 +330,24 @@ const GLubyte Indices[] = {
         }
     }
     
+    
+    glClearColor(0.5, 0.5, 0.5, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT);
+    
+    glViewport(0, 0, backingWidth, backingHeight);
+    
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _dimensions.textureSide, _dimensions.textureSide, 0, GL_RGB, GL_UNSIGNED_BYTE, _clr);
     
-    // Define the square vertices
-    CGRect bounds = [FMSettings canvasDimensions];
-    GLfloat _vertices[] = { CGRectGetMinX(bounds), CGRectGetMinY(bounds),
-                            CGRectGetMinX(bounds), CGRectGetMaxY(bounds),
-                            CGRectGetMaxX(bounds), CGRectGetMinY(bounds),
-                            CGRectGetMaxX(bounds), CGRectGetMaxY(bounds)};
-
-    glVertexPointer(2, GL_FLOAT, 0, _vertices);
-    glTexCoordPointer(2, GL_FLOAT, 0, _dimensions.textureMap);
+    glVertexAttribPointer(_positionSlot, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+    glVertexAttribPointer(_colorSlot, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*) (sizeof(float) * 2));
+    glVertexAttribPointer(_texCoordSlot, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*) (sizeof(float) * 6));
     
-    // Only need to draw the four corners of the rectangle
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glActiveTexture(GL_TEXTURE0);
+    glUniform1i(_textureUniform, 0);
+    
+    glDrawElements(GL_TRIANGLE_STRIP, sizeof(Indices)/sizeof(Indices[0]), GL_UNSIGNED_BYTE, 0);
+    
+    //[self.context presentRenderbuffer:GL_RENDERBUFFER];
     
     glDisable(GL_TEXTURE_2D);
     glDisableClientState(GL_VERTEX_ARRAY);

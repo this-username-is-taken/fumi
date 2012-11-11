@@ -42,9 +42,9 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
                                         kEAGLDrawablePropertyColorFormat,
                                         nil];
         
-        _context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+        _glContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
         
-        if (!_context || ![EAGLContext setCurrentContext:_context])
+        if (!_glContext || ![EAGLContext setCurrentContext:_glContext])
         {
             DDLogError(@"Failed to create EAGLContext");
             [self release];
@@ -61,10 +61,10 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 {
     [self stopAnimation];
     
-    if ([EAGLContext currentContext] == _context)
+    if ([EAGLContext currentContext] == _glContext)
         [EAGLContext setCurrentContext:nil];
     
-    [_context release];
+    [_glContext release];
     
     [super dealloc];
 }
@@ -93,7 +93,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     
     glBindFramebuffer(GL_FRAMEBUFFER, viewFramebuffer);
     glBindRenderbuffer(GL_RENDERBUFFER, viewRenderbuffer);
-    [_context renderbufferStorage:GL_RENDERBUFFER fromDrawable:(CAEAGLLayer *)self.layer];
+    [_glContext renderbufferStorage:GL_RENDERBUFFER fromDrawable:(CAEAGLLayer *)self.layer];
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, viewRenderbuffer);
     
     glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &backingWidth);
@@ -124,7 +124,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 
 - (void)layoutSubviews
 {
-    [EAGLContext setCurrentContext:_context];
+    [EAGLContext setCurrentContext:_glContext];
     [self _destroyFramebuffer];
     [self _createFramebuffer];
 }
@@ -140,7 +140,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     
     glViewport(0, 0, backingWidth, backingHeight);
     
-    [_context presentRenderbuffer:GL_RENDERBUFFER];
+    [_glContext presentRenderbuffer:GL_RENDERBUFFER];
 }
 
 @end

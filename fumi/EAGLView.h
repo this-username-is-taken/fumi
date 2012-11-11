@@ -27,7 +27,7 @@
     GLuint viewRenderbuffer, viewFramebuffer;
 }
 
-@property (nonatomic, retain) EAGLContext *context;
+@property (nonatomic, retain) EAGLContext *glContext;
 @property (nonatomic, assign) NSTimeInterval animationInterval;
 
 - (void)startAnimation;
