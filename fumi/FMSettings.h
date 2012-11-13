@@ -23,6 +23,7 @@ typedef struct {
     
     unsigned int velWidth;
     unsigned int velHeight;
+    unsigned int velCount;
     
     unsigned int denWidth;
     unsigned int denHeight;

@@ -135,7 +135,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 // overriden by subclasses
 - (void)drawView
 {
-    glClearColor(0.5, 0.5, 0.5, 1.0);
+    glClearColor(129.0/255.0, 216.0/255.0, 208.0/255.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
     
     glViewport(0, 0, backingWidth, backingHeight);

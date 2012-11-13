@@ -55,6 +55,7 @@ static FMDimensions dimensions;
     
     dimensions.velWidth = dimensions.canvasWidth / dimensions.velCellSize;
     dimensions.velHeight = dimensions.canvasHeight / dimensions.velCellSize;
+    dimensions.velCount = dimensions.velWidth * dimensions.velHeight;
     
     dimensions.denWidth = dimensions.canvasWidth / dimensions.denCellSize;
     dimensions.denHeight = dimensions.canvasHeight / dimensions.denCellSize;

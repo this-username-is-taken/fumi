@@ -6,6 +6,9 @@
 //  Copyright (c) 2012 fumi. All rights reserved.
 //
 
+#import <QuartzCore/QuartzCore.h>
+#import <OpenGLES/EAGLDrawable.h>
+
 #import "FMCanvasView.h"
 #import "FMSolver.h"
 
@@ -44,6 +47,9 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     CGFloat *_velFrameX[N_FRAME];
     CGFloat *_velFrameY[N_FRAME];
     
+    CGFloat *_velVertices;
+    GLuint *_velIndices;
+    
     NSMutableArray *_events;
     
     FMBenchmark _benchmark;
@@ -79,6 +85,11 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
         _clr = calloc(_dimensions.textureSide * _dimensions.textureSide * kRGB, sizeof(GLubyte));
         memset(_clr, 0, _dimensions.textureSide * _dimensions.textureSide * kRGB);
         
+        _velVertices = (GLfloat *)calloc(_dimensions.velCount * 4, sizeof(GLfloat));
+        _velIndices = (GLuint *)calloc(_dimensions.velCount * 2, sizeof(GLuint));
+        for (int i=0;i<_dimensions.velCount * 2;i++)
+            _velIndices[i] = i;
+        
         _events = [[NSMutableArray alloc] init];
 
         [self _createGestureRecognizers];
@@ -98,17 +109,9 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 	free(_den);
     free(_clr);
     
-    [super dealloc];
-}
-
-#pragma mark -
-#pragma mark View Layout
-
-- (void)layoutSubviews
-{
-    [super layoutSubviews];
+    free(_velVertices);
     
-    [self _setupView];
+    [super dealloc];
 }
 
 #pragma mark -
@@ -216,6 +219,53 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 #pragma mark -
+#pragma mark View Layout
+
+- (void)layoutSubviews
+{
+    [EAGLContext setCurrentContext:self.glContext];
+    [self _destroyFramebuffer];
+    [self _createFramebuffer];
+    [self _setupView];
+}
+
+#pragma mark -
+#pragma mark Buffer Life Cycle
+
+- (BOOL)_createFramebuffer
+{
+    glGenFramebuffers(1, &viewFramebuffer);
+    glGenRenderbuffers(1, &viewRenderbuffer);
+    
+    glBindFramebuffer(GL_FRAMEBUFFER, viewFramebuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, viewRenderbuffer);
+    [self.glContext renderbufferStorage:GL_RENDERBUFFER fromDrawable:(CAEAGLLayer *)self.layer];
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, viewRenderbuffer);
+    
+    glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &backingWidth);
+    glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &backingHeight);
+    
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    {
+        DDLogError(@"Failed to create framebuffer %x", glCheckFramebufferStatus(GL_FRAMEBUFFER));
+        return NO;
+    }
+    DDLogInfo(@"Created frame buffer: %@", self);
+    
+    return YES;
+}
+
+- (void)_destroyFramebuffer
+{
+    glDeleteFramebuffers(1, &viewFramebuffer);
+    viewFramebuffer = 0;
+    glDeleteRenderbuffers(1, &viewRenderbuffer);
+    viewRenderbuffer = 0;
+    
+    DDLogInfo(@"Destroyed frame buffer: %@", self);
+}
+
+#pragma mark -
 #pragma mark OpenGL Rendering
 
 typedef struct {
@@ -235,19 +285,6 @@ const GLubyte Indices[] = {
     0, 1, 2, 3
 };
 
-- (void)_setupVBO
-{
-    GLuint vertexBuffer;
-    glGenBuffers(1, &vertexBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
-    
-    GLuint indexBuffer;
-    glGenBuffers(1, &indexBuffer);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices), Indices, GL_STATIC_DRAW);
-}
-
 - (void)drawView
 {
     NSTimeInterval startTime = CFAbsoluteTimeGetCurrent();
@@ -260,7 +297,6 @@ const GLubyte Indices[] = {
     glBindFramebuffer(GL_FRAMEBUFFER, viewFramebuffer);
     
     // Clear background color
-    glColor4ub(255, 255, 255, 255);
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     
@@ -287,7 +323,7 @@ const GLubyte Indices[] = {
     
     switch (_renderingMode) {
         case FMRenderingModeTexture:
-            [self _renderTexture];
+            [self _renderVelocity];
             break;
         case FMRenderingModeVelocity:
             [self _renderVelocity];
@@ -315,8 +351,6 @@ const GLubyte Indices[] = {
 - (void)_renderTexture
 {
     glEnable(GL_TEXTURE_2D);
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
     
     for (int i=1;i<=_dimensions.denWidth;i++) {
         for (int j=1;j<=_dimensions.denHeight;j++) {
@@ -330,12 +364,9 @@ const GLubyte Indices[] = {
         }
     }
     
-    
     glClearColor(0.5, 0.5, 0.5, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
-    
-    glViewport(0, 0, backingWidth, backingHeight);
-    
+
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _dimensions.textureSide, _dimensions.textureSide, 0, GL_RGB, GL_UNSIGNED_BYTE, _clr);
     
     glVertexAttribPointer(_positionSlot, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
@@ -345,43 +376,38 @@ const GLubyte Indices[] = {
     glActiveTexture(GL_TEXTURE0);
     glUniform1i(_textureUniform, 0);
     
-    glDrawElements(GL_TRIANGLE_STRIP, sizeof(Indices)/sizeof(Indices[0]), GL_UNSIGNED_BYTE, 0);
-    
-    //[self.context presentRenderbuffer:GL_RENDERBUFFER];
-    
+    glDrawElements(GL_TRIANGLE_STRIP, sizeof(Indices)/sizeof(Indices[0]), GL_UNSIGNED_INT, 0);
+
     glDisable(GL_TEXTURE_2D);
-    glDisableClientState(GL_VERTEX_ARRAY);
-    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 }
 
 - (void)_renderVelocity
 {
-    glEnableClientState(GL_VERTEX_ARRAY);
-    
-	glColor4ub(255, 0, 0, 255);
-    
-    CGFloat size = _dimensions.velCellSize;
+    glClearColor(1.0, 1.0, 1.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT);
+
     for (int i=1; i<=_dimensions.velWidth; i++) {
-        GLfloat x = (i-0.5f) * size;
+        GLfloat x = (i-0.5f) * (1.0/_dimensions.velWidth) * 2.0 - 1.0;
         for (int j=1; j<=_dimensions.velHeight; j++) {
-            GLfloat y = (j-0.5f) * size;
+            GLfloat y = (j-0.5f) * (1.0/_dimensions.velHeight) * 2.0 - 1.0;
             
-            CGFloat vertices[4];
-            vertices[0] = x;
-            vertices[1] = y;
-            vertices[2] = x + _velX[I_VEL(i, j)] * size * 100;
-            vertices[3] = y + _velY[I_VEL(i, j)] * size * 100;
-            
-            glVertexPointer(2, GL_FLOAT, 0, vertices);
-            glDrawArrays(GL_LINES, 0, 2);
+            _velVertices[(i-1)*4+(j-1)*_dimensions.velWidth*4] = x;
+            _velVertices[(i-1)*4+(j-1)*_dimensions.velWidth*4+1] = y;
+            _velVertices[(i-1)*4+(j-1)*_dimensions.velWidth*4+2] = x+_velX[I_VEL(i, j)];
+            _velVertices[(i-1)*4+(j-1)*_dimensions.velWidth*4+3] = y+_velY[I_VEL(i, j)];
         }
     }
+    glBufferData(GL_ARRAY_BUFFER, _dimensions.velCount * 4 * sizeof(GLfloat), _velVertices, GL_STREAM_DRAW);
     
-    glDisableClientState(GL_VERTEX_ARRAY);
+    glVertexAttribPointer(_positionSlot, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat)*2, 0);
+    
+    glDrawElements(GL_LINES, _dimensions.velCount * 2, GL_UNSIGNED_INT, 0);
+    NSLog(@"%d", glGetError());
 }
 
 - (void)_renderDensity
 {
+    /*
     glEnableClientState(GL_VERTEX_ARRAY);
     
     glPointSize(5);
@@ -405,6 +431,7 @@ const GLubyte Indices[] = {
     }
     
     glDisableClientState(GL_VERTEX_ARRAY);
+     */
 }
 
 #pragma mark -
@@ -416,7 +443,7 @@ const GLubyte Indices[] = {
     NSError *error;
     NSString *shaderString = [NSString stringWithContentsOfFile:shaderPath encoding:NSUTF8StringEncoding error:&error];
     if (!shaderString) {
-        NSLog(@"Error loading shader: %@", error.localizedDescription);
+        DDLogError(@"Error loading shader: %@", error.localizedDescription);
         exit(1);
     }
     
@@ -434,17 +461,18 @@ const GLubyte Indices[] = {
         GLchar messages[256];
         glGetShaderInfoLog(shaderHandle, sizeof(messages), 0, &messages[0]);
         NSString *messageString = [NSString stringWithUTF8String:messages];
-        NSLog(@"%@", messageString);
+        DDLogError(@"%@", messageString);
         exit(1);
     }
     
     return shaderHandle;
 }
 
+/*
 - (void)_compileShaders
 {
-    GLuint vertexShader = [self _compileShader:@"vertex" withType:GL_VERTEX_SHADER];
-    GLuint fragmentShader = [self _compileShader:@"fragment" withType:GL_FRAGMENT_SHADER];
+    GLuint vertexShader = [self _compileShader:@"den_vertex" withType:GL_VERTEX_SHADER];
+    GLuint fragmentShader = [self _compileShader:@"den_fragment" withType:GL_FRAGMENT_SHADER];
     
     GLuint programHandle = glCreateProgram();
     glAttachShader(programHandle, vertexShader);
@@ -457,7 +485,7 @@ const GLubyte Indices[] = {
         GLchar messages[256];
         glGetProgramInfoLog(programHandle, sizeof(messages), 0, &messages[0]);
         NSString *messageString = [NSString stringWithUTF8String:messages];
-        NSLog(@"%@", messageString);
+        DDLogError(@"%@", messageString);
         exit(1);
     }
     
@@ -471,23 +499,46 @@ const GLubyte Indices[] = {
     _texCoordSlot = glGetAttribLocation(programHandle, "TexCoordIn");
     glEnableVertexAttribArray(_texCoordSlot);
     _textureUniform = glGetUniformLocation(programHandle, "Texture");
+}*/
+
+- (void)_compileShaders
+{
+    GLuint vertexShader = [self _compileShader:@"vel_vertex" withType:GL_VERTEX_SHADER];
+    GLuint fragmentShader = [self _compileShader:@"vel_fragment" withType:GL_FRAGMENT_SHADER];
+    
+    GLuint programHandle = glCreateProgram();
+    glAttachShader(programHandle, vertexShader);
+    glAttachShader(programHandle, fragmentShader);
+    glLinkProgram(programHandle);
+    
+    GLint linkSuccess;
+    glGetProgramiv(programHandle, GL_LINK_STATUS, &linkSuccess);
+    if (linkSuccess == GL_FALSE) {
+        GLchar messages[256];
+        glGetProgramInfoLog(programHandle, sizeof(messages), 0, &messages[0]);
+        NSString *messageString = [NSString stringWithUTF8String:messages];
+        DDLogError(@"%@", messageString);
+        exit(1);
+    }
+    
+    glUseProgram(programHandle);
+    
+    _positionSlot = glGetAttribLocation(programHandle, "Position");
+    //_colorSlot = glGetAttribLocation(programHandle, "SourceColor");
+    glEnableVertexAttribArray(_positionSlot);
+    //glEnableVertexAttribArray(_colorSlot);
 }
 
 - (void)_setupView
 {
     // Matrix & viewport initialization
-    glMatrixMode(GL_PROJECTION);
     CGRect bounds = [FMSettings canvasDimensions];
-    glOrthof(CGRectGetMinX(bounds), CGRectGetMaxX(bounds), CGRectGetMinY(bounds), CGRectGetMaxY(bounds), -1.0f, 1.0f);
     glViewport(CGRectGetMinX(bounds), CGRectGetMinY(bounds), CGRectGetMaxX(bounds), CGRectGetMaxY(bounds));
     
     // Enable texture mapping
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE, GL_SRC_COLOR);
-    
-    // Make vertices (glPoints) smooth
-    glEnable(GL_POINT_SMOOTH);
     
     // Generate and bind texture
     GLuint _textureBinding[1];
@@ -496,8 +547,29 @@ const GLubyte Indices[] = {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     
+    // Setup VBO
+    /*GLuint vertexBuffer;
+    glGenBuffers(1, &vertexBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
+    
+    GLuint indexBuffer;
+    glGenBuffers(1, &indexBuffer);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices), Indices, GL_STATIC_DRAW);*/
+    
+    // Setup VBO
+    GLuint vertexBuffer;
+    glGenBuffers(1, &vertexBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    glBufferData(GL_ARRAY_BUFFER, _dimensions.velCount * 4 * sizeof(GLfloat), _velVertices, GL_STATIC_DRAW);
+    
+    GLuint indexBuffer;
+    glGenBuffers(1, &indexBuffer);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, _dimensions.velCount * 2 * sizeof(GLuint), _velIndices, GL_STATIC_DRAW);
+    
     [self _compileShaders];
-    [self _setupVBO];
 }
 
 - (void)clearDensity

@@ -24,6 +24,10 @@
 		2B1B7712160966BF002A3A50 /* FMSolver.c in Sources */ = {isa = PBXBuildFile; fileRef = 2B1B7711160966BF002A3A50 /* FMSolver.c */; };
 		2B2804F1164EC4790057D8CB /* vertex.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 2B2804F0164EC4790057D8CB /* vertex.glsl */; };
 		2B2804F4164EC48C0057D8CB /* fragment.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 2B2804F3164EC48C0057D8CB /* fragment.glsl */; };
+		2B28050016519FB60057D8CB /* den_vertex.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 2B2804FF16519FB60057D8CB /* den_vertex.glsl */; };
+		2B28050216519FC90057D8CB /* den_fragment.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 2B28050116519FC90057D8CB /* den_fragment.glsl */; };
+		2B28050416519FD40057D8CB /* vel_vertex.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 2B28050316519FD40057D8CB /* vel_vertex.glsl */; };
+		2B28050616519FE00057D8CB /* vel_fragment.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 2B28050516519FE00057D8CB /* vel_fragment.glsl */; };
 		2B37E76E15BFC25B00D21E55 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B37E76D15BFC25B00D21E55 /* UIKit.framework */; };
 		2B37E77015BFC25B00D21E55 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B37E76F15BFC25B00D21E55 /* Foundation.framework */; };
 		2B37E77215BFC25B00D21E55 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B37E77115BFC25B00D21E55 /* CoreGraphics.framework */; };
@@ -70,6 +74,10 @@
 		2B1B7719160AA3F5002A3A50 /* solver.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = solver.c; path = ../solver.c; sourceTree = "<group>"; };
 		2B2804F0164EC4790057D8CB /* vertex.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = vertex.glsl; sourceTree = "<group>"; };
 		2B2804F3164EC48C0057D8CB /* fragment.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = fragment.glsl; sourceTree = "<group>"; };
+		2B2804FF16519FB60057D8CB /* den_vertex.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = den_vertex.glsl; sourceTree = "<group>"; };
+		2B28050116519FC90057D8CB /* den_fragment.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = den_fragment.glsl; sourceTree = "<group>"; };
+		2B28050316519FD40057D8CB /* vel_vertex.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = vel_vertex.glsl; sourceTree = "<group>"; };
+		2B28050516519FE00057D8CB /* vel_fragment.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = vel_fragment.glsl; sourceTree = "<group>"; };
 		2B37E76915BFC25B00D21E55 /* fumi.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = fumi.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2B37E76D15BFC25B00D21E55 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		2B37E76F15BFC25B00D21E55 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -111,6 +119,10 @@
 		2B066FC915EA760700AF1122 /* Canvas */ = {
 			isa = PBXGroup;
 			children = (
+				2B2804FF16519FB60057D8CB /* den_vertex.glsl */,
+				2B28050116519FC90057D8CB /* den_fragment.glsl */,
+				2B28050316519FD40057D8CB /* vel_vertex.glsl */,
+				2B28050516519FE00057D8CB /* vel_fragment.glsl */,
 				2B066FCC15EA953300AF1122 /* FMCanvasView.h */,
 				2B066FCD15EA953300AF1122 /* FMCanvasView.m */,
 			);
@@ -310,6 +322,10 @@
 				2BF9CDEB16174B99005169D5 /* velocity.fm in Resources */,
 				2B2804F1164EC4790057D8CB /* vertex.glsl in Resources */,
 				2B2804F4164EC48C0057D8CB /* fragment.glsl in Resources */,
+				2B28050016519FB60057D8CB /* den_vertex.glsl in Resources */,
+				2B28050216519FC90057D8CB /* den_fragment.glsl in Resources */,
+				2B28050416519FD40057D8CB /* vel_vertex.glsl in Resources */,
+				2B28050616519FE00057D8CB /* vel_fragment.glsl in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
