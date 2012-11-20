@@ -121,6 +121,9 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 {
     DDLogInfo(@"Rendering mode: %d -> %d", _renderingMode, mode);
     _renderingMode = mode;
+    
+    [self _compileShaders];
+    [self _setupVBO];
 }
 
 #pragma mark -
@@ -323,7 +326,7 @@ const GLubyte Indices[] = {
     
     switch (_renderingMode) {
         case FMRenderingModeTexture:
-            [self _renderVelocity];
+            [self _renderTexture];
             break;
         case FMRenderingModeVelocity:
             [self _renderVelocity];
@@ -349,9 +352,7 @@ const GLubyte Indices[] = {
 }
 
 - (void)_renderTexture
-{
-    glEnable(GL_TEXTURE_2D);
-    
+{    
     for (int i=1;i<=_dimensions.denWidth;i++) {
         for (int j=1;j<=_dimensions.denHeight;j++) {
             float density = _den[I_DEN(i, j)];
@@ -366,7 +367,7 @@ const GLubyte Indices[] = {
     
     glClearColor(0.5, 0.5, 0.5, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
-
+    
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _dimensions.textureSide, _dimensions.textureSide, 0, GL_RGB, GL_UNSIGNED_BYTE, _clr);
     
     glVertexAttribPointer(_positionSlot, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
@@ -376,9 +377,9 @@ const GLubyte Indices[] = {
     glActiveTexture(GL_TEXTURE0);
     glUniform1i(_textureUniform, 0);
     
-    glDrawElements(GL_TRIANGLE_STRIP, sizeof(Indices)/sizeof(Indices[0]), GL_UNSIGNED_INT, 0);
-
-    glDisable(GL_TEXTURE_2D);
+    glDrawElements(GL_TRIANGLE_STRIP, sizeof(Indices)/sizeof(Indices[0]), GL_UNSIGNED_BYTE, 0);
+    
+    NSLog(@"%d", glGetError());
 }
 
 - (void)_renderVelocity
@@ -402,7 +403,6 @@ const GLubyte Indices[] = {
     glVertexAttribPointer(_positionSlot, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat)*2, 0);
     
     glDrawElements(GL_LINES, _dimensions.velCount * 2, GL_UNSIGNED_INT, 0);
-    NSLog(@"%d", glGetError());
 }
 
 - (void)_renderDensity
@@ -468,8 +468,7 @@ const GLubyte Indices[] = {
     return shaderHandle;
 }
 
-/*
-- (void)_compileShaders
+- (void)_compileDensityShaders
 {
     GLuint vertexShader = [self _compileShader:@"den_vertex" withType:GL_VERTEX_SHADER];
     GLuint fragmentShader = [self _compileShader:@"den_fragment" withType:GL_FRAGMENT_SHADER];
@@ -499,9 +498,9 @@ const GLubyte Indices[] = {
     _texCoordSlot = glGetAttribLocation(programHandle, "TexCoordIn");
     glEnableVertexAttribArray(_texCoordSlot);
     _textureUniform = glGetUniformLocation(programHandle, "Texture");
-}*/
+}
 
-- (void)_compileShaders
+- (void)_compileVelocityShaders
 {
     GLuint vertexShader = [self _compileShader:@"vel_vertex" withType:GL_VERTEX_SHADER];
     GLuint fragmentShader = [self _compileShader:@"vel_fragment" withType:GL_FRAGMENT_SHADER];
@@ -524,9 +523,57 @@ const GLubyte Indices[] = {
     glUseProgram(programHandle);
     
     _positionSlot = glGetAttribLocation(programHandle, "Position");
-    //_colorSlot = glGetAttribLocation(programHandle, "SourceColor");
     glEnableVertexAttribArray(_positionSlot);
-    //glEnableVertexAttribArray(_colorSlot);
+}
+
+- (void)_compileShaders
+{
+    switch (_renderingMode) {
+        case FMRenderingModeTexture:
+            [self _compileDensityShaders];
+            break;
+        case FMRenderingModeVelocity:
+            [self _compileVelocityShaders];
+            break;
+        default:
+            break;
+    }
+}
+
+- (void)_setupVBO
+{
+    switch (_renderingMode) {
+        case FMRenderingModeTexture:
+        {
+            // Setup VBO
+            GLuint vertexBuffer;
+            glGenBuffers(1, &vertexBuffer);
+            glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
+            
+            GLuint indexBuffer;
+            glGenBuffers(1, &indexBuffer);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices), Indices, GL_STATIC_DRAW);
+            break;
+        }
+        case FMRenderingModeVelocity:
+        {
+            // Setup VBO
+            GLuint vertexBuffer;
+            glGenBuffers(1, &vertexBuffer);
+            glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+            glBufferData(GL_ARRAY_BUFFER, _dimensions.velCount * 4 * sizeof(GLfloat), _velVertices, GL_STATIC_DRAW);
+            
+            GLuint indexBuffer;
+            glGenBuffers(1, &indexBuffer);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, _dimensions.velCount * 2 * sizeof(GLuint), _velIndices, GL_STATIC_DRAW);
+            break;
+        }
+        default:
+            break;
+    }
 }
 
 - (void)_setupView
@@ -535,8 +582,6 @@ const GLubyte Indices[] = {
     CGRect bounds = [FMSettings canvasDimensions];
     glViewport(CGRectGetMinX(bounds), CGRectGetMinY(bounds), CGRectGetMaxX(bounds), CGRectGetMaxY(bounds));
     
-    // Enable texture mapping
-    glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE, GL_SRC_COLOR);
     
@@ -547,29 +592,8 @@ const GLubyte Indices[] = {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     
-    // Setup VBO
-    /*GLuint vertexBuffer;
-    glGenBuffers(1, &vertexBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
-    
-    GLuint indexBuffer;
-    glGenBuffers(1, &indexBuffer);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices), Indices, GL_STATIC_DRAW);*/
-    
-    // Setup VBO
-    GLuint vertexBuffer;
-    glGenBuffers(1, &vertexBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-    glBufferData(GL_ARRAY_BUFFER, _dimensions.velCount * 4 * sizeof(GLfloat), _velVertices, GL_STATIC_DRAW);
-    
-    GLuint indexBuffer;
-    glGenBuffers(1, &indexBuffer);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, _dimensions.velCount * 2 * sizeof(GLuint), _velIndices, GL_STATIC_DRAW);
-    
     [self _compileShaders];
+    [self _setupVBO];
 }
 
 - (void)clearDensity
