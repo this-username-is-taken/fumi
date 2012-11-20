@@ -50,6 +50,12 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     CGFloat *_velVertices;
     GLuint *_velIndices;
     
+    GLuint _offscreenFBO;
+    GLuint _textureBinding[2];
+    
+    GLuint vertexBuffer;
+    GLuint indexBuffer;
+    
     NSMutableArray *_events;
     
     FMBenchmark _benchmark;
@@ -288,6 +294,17 @@ const GLubyte Indices[] = {
     0, 1, 2, 3
 };
 
+const Vertex Vertices2[] = {
+    {{-1, -1}, {1, 0, 0, 1}, {0.0, 0.0}},
+    {{-1, 1}, {0, 1, 0, 1}, {0.0, 0.9375}},
+    {{1, -1}, {0, 0, 1, 1}, {0.625, 0.0}},
+    {{1, 1}, {0, 0, 0, 1}, {0.625, 0.9375}}
+};
+
+const GLubyte Indices2[] = {
+    0, 1, 2, 3
+};
+
 - (void)drawView
 {
     NSTimeInterval startTime = CFAbsoluteTimeGetCurrent();
@@ -365,11 +382,38 @@ const GLubyte Indices[] = {
         }
     }
     
+    glBindFramebuffer(GL_FRAMEBUFFER, _offscreenFBO);
+    glBindTexture(GL_TEXTURE_2D, _textureBinding[0]);
+    
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices), Indices, GL_STATIC_DRAW);
+    
     glClearColor(0.5, 0.5, 0.5, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
     
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _dimensions.textureSide, _dimensions.textureSide, 0, GL_RGB, GL_UNSIGNED_BYTE, _clr);
     
+    glVertexAttribPointer(_positionSlot, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+    glVertexAttribPointer(_colorSlot, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*) (sizeof(float) * 2));
+    glVertexAttribPointer(_texCoordSlot, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*) (sizeof(float) * 6));
+    
+    glActiveTexture(GL_TEXTURE0);
+    glUniform1i(_textureUniform, 0);
+    
+    glDrawElements(GL_TRIANGLE_STRIP, sizeof(Indices)/sizeof(Indices[0]), GL_UNSIGNED_BYTE, 0);
+    
+    glFinish();
+
+    glBindFramebuffer(GL_FRAMEBUFFER, viewFramebuffer);
+    glBindTexture(GL_TEXTURE_2D, _textureBinding[1]);
+    
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices2), Vertices2, GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices2), Indices2, GL_STATIC_DRAW);
+
     glVertexAttribPointer(_positionSlot, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
     glVertexAttribPointer(_colorSlot, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*) (sizeof(float) * 2));
     glVertexAttribPointer(_texCoordSlot, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*) (sizeof(float) * 6));
@@ -546,26 +590,17 @@ const GLubyte Indices[] = {
         case FMRenderingModeTexture:
         {
             // Setup VBO
-            GLuint vertexBuffer;
             glGenBuffers(1, &vertexBuffer);
-            glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-            glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
-            
-            GLuint indexBuffer;
             glGenBuffers(1, &indexBuffer);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices), Indices, GL_STATIC_DRAW);
             break;
         }
         case FMRenderingModeVelocity:
         {
             // Setup VBO
-            GLuint vertexBuffer;
             glGenBuffers(1, &vertexBuffer);
             glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
             glBufferData(GL_ARRAY_BUFFER, _dimensions.velCount * 4 * sizeof(GLfloat), _velVertices, GL_STATIC_DRAW);
             
-            GLuint indexBuffer;
             glGenBuffers(1, &indexBuffer);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, _dimensions.velCount * 2 * sizeof(GLuint), _velIndices, GL_STATIC_DRAW);
@@ -586,11 +621,25 @@ const GLubyte Indices[] = {
     glBlendFunc(GL_ONE, GL_SRC_COLOR);
     
     // Generate and bind texture
-    GLuint _textureBinding[1];
-    glGenTextures(1, &_textureBinding[0]);
+    glGenTextures(2, &_textureBinding[0]);
     glBindTexture(GL_TEXTURE_2D, _textureBinding[0]);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    
+    glBindTexture(GL_TEXTURE_2D, _textureBinding[1]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _dimensions.textureSide * 4, _dimensions.textureSide * 4, 0,  GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    
+    glGenFramebuffers(1, &_offscreenFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, _offscreenFBO);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _textureBinding[1], 0);
+    
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    {
+        NSLog(@"failed to make complete framebuffer object %x", glCheckFramebufferStatus(GL_FRAMEBUFFER));
+        return;
+    }
     
     [self _compileShaders];
     [self _setupVBO];
