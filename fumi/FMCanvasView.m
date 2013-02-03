@@ -9,13 +9,14 @@
 #import <QuartzCore/QuartzCore.h>
 #import <OpenGLES/EAGLDrawable.h>
 
+#import "FMGeometry.h"
+#import "FMSettings.h"
+
 #import "FMCanvasView.h"
 #import "FMSolver.h"
 
+#import "FMVelocity.h"
 #import "FMReplayManager.h"
-
-#import "FMGeometry.h"
-#import "FMSettings.h"
 
 #import "UIGestureRecognizer+Fumi.h"
 
@@ -28,10 +29,9 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 #define B 2
 #define kRGB 3
 
-#define N_FRAME 15
-
 #define I_CLR_3(i,j,k) ((i)*kRGB+(j)*_dimensions.textureSide*kRGB+(k))
 #define I_VEL(i,j) ((i)+(j)*_dimensions.velGridWidth)
+#define I_VEL2(i,j,k) ((i*2)+(j)*_dimensions.velGridWidth*2+k)
 #define I_DEN(i,j) ((i)+(j)*_dimensions.denGridWidth)
 
 @interface FMCanvasView ()
@@ -43,9 +43,6 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     CGFloat *_velY;
     CGFloat *_den;
     GLubyte *_clr;
-    
-    CGFloat *_velFrameX[N_FRAME];
-    CGFloat *_velFrameY[N_FRAME];
     
     CGFloat *_velVertices;
     GLuint *_velIndices;
@@ -59,6 +56,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     NSMutableArray *_events;
     
     FMBenchmark _benchmark;
+    FMVelocity *_velocity;
 }
 @end
 
@@ -97,9 +95,9 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
             _velIndices[i] = i;
         
         _events = [[NSMutableArray alloc] init];
+        _velocity = [[FMVelocity alloc] initWithFilename:@"velocity"];
 
         [self _createGestureRecognizers];
-        [self _readVelocity];
     }
     return self;
 }
@@ -108,6 +106,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 {
     [_replayManager release];
     [_events release];
+    [_velocity release];
     end_solver();
     
     free(_velX);
@@ -331,7 +330,7 @@ const GLubyte Indices2[] = {
     }
     for (int i=0;i<[_events count];i++) {
         FMReplayPan *event = [_events objectAtIndex:i];
-        if (event.frame >= N_FRAME) {
+        if (event.frame >= _velocity.frames) {
             [_events removeObjectAtIndex:i--];
         }
     }
@@ -662,31 +661,6 @@ const GLubyte Indices2[] = {
     printf("\n");
 }
 
-- (void)_readVelocity
-{
-    NSString *path = [[NSBundle mainBundle] pathForResource:@"velocity" ofType:@"fm"];
-    NSString *file = [NSString stringWithContentsOfFile:path encoding:NSASCIIStringEncoding error:NULL];
-    NSArray *lines = [file componentsSeparatedByString:@"\n"];
-    
-    for (int i=0;i<N_FRAME;i++) {
-        _velFrameX[i] = (CGFloat *)malloc(_dimensions.velGridCount * sizeof(CGFloat));
-        _velFrameY[i] = (CGFloat *)malloc(_dimensions.velGridCount * sizeof(CGFloat));
-        
-        NSString *line = [lines objectAtIndex:i*2];
-        NSArray *items = [line componentsSeparatedByString:@" "];
-        for (int j=0;j<_dimensions.velGridCount;j++) {
-            _velFrameX[i][j] = [[items objectAtIndex:j] floatValue];
-        }
-        line = [lines objectAtIndex:i*2+1];
-        items = [line componentsSeparatedByString:@" "];
-        for (int j=0;j<_dimensions.velGridCount;j++) {
-            _velFrameY[i][j] = [[items objectAtIndex:j] floatValue];
-        }
-    }
-    
-    NSLog(@"Velocity loaded");
-}
-
 - (void)_addVelocity:(FMPoint)index vector:(CGPoint)vector frame:(int)frame
 {
     CGFloat mag = FMMagnitude(vector);
@@ -716,8 +690,8 @@ const GLubyte Indices2[] = {
             if (x < 0) continue;
             if (y >= _dimensions.velGridHeight) continue;
             if (y < 0) continue;
-            CGFloat val_x = _velFrameX[frame][I_VEL(x, y)];
-            CGFloat val_y = _velFrameY[frame][I_VEL(x, y)];
+            CGFloat val_x = _velocity.velocity[frame][I_VEL2(x,y,0)];
+            CGFloat val_y = _velocity.velocity[frame][I_VEL2(x,y,1)];
             _velX[I_VEL(i, j)] += (val_x * c_angle - val_y * s_angle) * mag * kPhysicsForce * factor;
             _velY[I_VEL(i, j)] += (val_x * s_angle + val_y * c_angle) * mag * kPhysicsForce * factor;
         }
