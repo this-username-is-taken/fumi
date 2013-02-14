@@ -26,7 +26,7 @@
         _size.height = [[items objectAtIndex:2] intValue];
         _center.x = [[items objectAtIndex:3] intValue];
         _center.y = [[items objectAtIndex:4] intValue];
-        int count = _size.width * _size.height * 2;
+        int count = (_size.width+2) * (_size.height+2) * 2;
         
         // malloc for the frames
         _velocity = (CGFloat **)malloc(_frames * sizeof(CGFloat **));
@@ -34,10 +34,10 @@
         for (int i=0;i<_frames;i++) {
             _velocity[i] = (CGFloat *)malloc(count * sizeof(CGFloat)); // X + Y
             
-            line = [lines objectAtIndex:i];
-            NSArray *items = [line componentsSeparatedByString:@" "];
+            line = [lines objectAtIndex:i+1]; // first line is header
+            NSArray *vals = [line componentsSeparatedByString:@" "];
             for (int j=0;j<count;j++) {
-                _velocity[i][j] = [[items objectAtIndex:j] floatValue];
+                _velocity[i][j] = [[vals objectAtIndex:j] floatValue];
             }
         }
     }

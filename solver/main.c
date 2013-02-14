@@ -12,14 +12,11 @@
 
 #define IX(i,j) ((i)+(Nx+2)*(j))
 
-void print_vel(float *u, float *v, int Nx, int Ny)
+void print_vel(float *u, float *v, int size)
 {
-    int i, j;
-    for (i=1;i<=Ny;i++) {
-        for (j=1;j<=Nx;j++) {
-            printf("%f %f ", u[IX(i, j)], v[IX(i, j)]);
-        }
-    }
+    int i;
+    for (i=0;i<size;i++)
+        printf("%f %f ", u[i], v[i]);
     printf("\n");
 }
 
@@ -30,7 +27,7 @@ int main(int argc, const char * argv[])
     int Ny = 120;
     int center_x = 40;
     int center_y = 60;
-    int frames = 15;
+    int frames = 10;
     float dt = 0.1f;
     float visc = 0.002f;
     
@@ -38,8 +35,8 @@ int main(int argc, const char * argv[])
     
     // allocate data
 	int size = (Nx+2)*(Ny+2);
-	u = (float *) malloc ( size*sizeof(float) );
-	v = (float *) malloc ( size*sizeof(float) );
+	u = calloc(size, sizeof(float));
+	v = calloc(size, sizeof(float));
 	if (!u || !v) printf("Cannot allocate data\n");
     
     printf("%d %d %d %d %d\n", frames, Nx, Ny, center_x, center_y);
@@ -49,7 +46,7 @@ int main(int argc, const char * argv[])
     v[IX(center_x, center_y)] = 1.0;
     for (i=0;i<frames;i++) {
         vel_step(Nx, Ny, u, v, visc, dt);
-        print_vel(u, v, Nx, Ny);
+        print_vel(u, v, size);
     }
     
     end_solver();

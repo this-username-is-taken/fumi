@@ -692,8 +692,8 @@ const GLubyte Indices2[] = {
             if (y < 0) continue;
             CGFloat val_x = _velocity.velocity[frame][I_VEL2(x,y,0)];
             CGFloat val_y = _velocity.velocity[frame][I_VEL2(x,y,1)];
-            _velX[I_VEL(i, j)] += (val_x * c_angle - val_y * s_angle) * mag * kPhysicsForce * factor;
-            _velY[I_VEL(i, j)] += (val_x * s_angle + val_y * c_angle) * mag * kPhysicsForce * factor;
+            _velX[I_VEL(i, j)] += (val_x * c_angle - val_y * s_angle) * mag * kPhysicsForce * factor * 100;
+            _velY[I_VEL(i, j)] += (val_x * s_angle + val_y * c_angle) * mag * kPhysicsForce * factor * 100;
         }
     }
 }

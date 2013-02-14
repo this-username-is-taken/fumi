@@ -30,6 +30,7 @@
 		2B28050616519FE00057D8CB /* vel_fragment.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 2B28050516519FE00057D8CB /* vel_fragment.glsl */; };
 		2B2B685A16BE47E7000F0591 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 2B2B685916BE47E7000F0591 /* main.c */; };
 		2B2B686116BE48A3000F0591 /* FMSolver.c in Sources */ = {isa = PBXBuildFile; fileRef = 2B1B7711160966BF002A3A50 /* FMSolver.c */; };
+		2B2B686516BE4D71000F0591 /* velocity.fm in Resources */ = {isa = PBXBuildFile; fileRef = 2B2B686416BE4D71000F0591 /* velocity.fm */; };
 		2B37E76E15BFC25B00D21E55 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B37E76D15BFC25B00D21E55 /* UIKit.framework */; };
 		2B37E77015BFC25B00D21E55 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B37E76F15BFC25B00D21E55 /* Foundation.framework */; };
 		2B37E77215BFC25B00D21E55 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B37E77115BFC25B00D21E55 /* CoreGraphics.framework */; };
@@ -39,7 +40,6 @@
 		2B66EE08160E51BF003B5F83 /* input.fm in Resources */ = {isa = PBXBuildFile; fileRef = 2B66EE07160E51BF003B5F83 /* input.fm */; };
 		2B66EE0C160E5269003B5F83 /* FMReplayManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B66EE0B160E5269003B5F83 /* FMReplayManager.m */; };
 		2B9E3D3316AF2C6700ED1B50 /* FMVelocity.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B9E3D3216AF2C6700ED1B50 /* FMVelocity.m */; };
-		2BF9CDEB16174B99005169D5 /* velocity.fm in Resources */ = {isa = PBXBuildFile; fileRef = 2BF9CDEA16174B99005169D5 /* velocity.fm */; };
 		2BF9CDEF1618AD9D005169D5 /* FMReplayObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2BF9CDEE1618AD9D005169D5 /* FMReplayObject.m */; };
 		2BF9CDF21618AE04005169D5 /* FMReplayLongPress.m in Sources */ = {isa = PBXBuildFile; fileRef = 2BF9CDF11618AE04005169D5 /* FMReplayLongPress.m */; };
 		2BF9CDF61618AE84005169D5 /* FMReplayPan.m in Sources */ = {isa = PBXBuildFile; fileRef = 2BF9CDF51618AE84005169D5 /* FMReplayPan.m */; };
@@ -95,6 +95,7 @@
 		2B28050516519FE00057D8CB /* vel_fragment.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = vel_fragment.glsl; sourceTree = "<group>"; };
 		2B2B685616BE47E7000F0591 /* solver */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = solver; sourceTree = BUILT_PRODUCTS_DIR; };
 		2B2B685916BE47E7000F0591 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
+		2B2B686416BE4D71000F0591 /* velocity.fm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = velocity.fm; sourceTree = "<group>"; };
 		2B37E76915BFC25B00D21E55 /* fumi.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = fumi.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2B37E76D15BFC25B00D21E55 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		2B37E76F15BFC25B00D21E55 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -110,7 +111,6 @@
 		2B66EE0B160E5269003B5F83 /* FMReplayManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMReplayManager.m; sourceTree = "<group>"; };
 		2B9E3D3116AF2C6700ED1B50 /* FMVelocity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMVelocity.h; sourceTree = "<group>"; };
 		2B9E3D3216AF2C6700ED1B50 /* FMVelocity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMVelocity.m; sourceTree = "<group>"; };
-		2BF9CDEA16174B99005169D5 /* velocity.fm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = velocity.fm; sourceTree = "<group>"; };
 		2BF9CDED1618AD9D005169D5 /* FMReplayObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMReplayObject.h; sourceTree = "<group>"; };
 		2BF9CDEE1618AD9D005169D5 /* FMReplayObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMReplayObject.m; sourceTree = "<group>"; };
 		2BF9CDF01618AE04005169D5 /* FMReplayLongPress.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMReplayLongPress.h; sourceTree = "<group>"; };
@@ -274,7 +274,7 @@
 			isa = PBXGroup;
 			children = (
 				2B66EE07160E51BF003B5F83 /* input.fm */,
-				2BF9CDEA16174B99005169D5 /* velocity.fm */,
+				2B2B686416BE4D71000F0591 /* velocity.fm */,
 				2B37E77515BFC25B00D21E55 /* fumi-Info.plist */,
 				2B37E77615BFC25B00D21E55 /* InfoPlist.strings */,
 				2B37E77915BFC25C00D21E55 /* main.m */,
@@ -391,13 +391,13 @@
 			files = (
 				2B37E77815BFC25B00D21E55 /* InfoPlist.strings in Resources */,
 				2B66EE08160E51BF003B5F83 /* input.fm in Resources */,
-				2BF9CDEB16174B99005169D5 /* velocity.fm in Resources */,
 				2B2804F1164EC4790057D8CB /* vertex.glsl in Resources */,
 				2B2804F4164EC48C0057D8CB /* fragment.glsl in Resources */,
 				2B28050016519FB60057D8CB /* den_vertex.glsl in Resources */,
 				2B28050216519FC90057D8CB /* den_fragment.glsl in Resources */,
 				2B28050416519FD40057D8CB /* vel_vertex.glsl in Resources */,
 				2B28050616519FE00057D8CB /* vel_fragment.glsl in Resources */,
+				2B2B686516BE4D71000F0591 /* velocity.fm in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
