@@ -40,6 +40,7 @@
 		2B66EE08160E51BF003B5F83 /* input.fm in Resources */ = {isa = PBXBuildFile; fileRef = 2B66EE07160E51BF003B5F83 /* input.fm */; };
 		2B66EE0C160E5269003B5F83 /* FMReplayManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B66EE0B160E5269003B5F83 /* FMReplayManager.m */; };
 		2B9E3D3316AF2C6700ED1B50 /* FMVelocity.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B9E3D3216AF2C6700ED1B50 /* FMVelocity.m */; };
+		2BCF704916D57AB000E8A9AD /* FMCanvas.m in Sources */ = {isa = PBXBuildFile; fileRef = 2BCF704816D57AB000E8A9AD /* FMCanvas.m */; };
 		2BF9CDEF1618AD9D005169D5 /* FMReplayObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2BF9CDEE1618AD9D005169D5 /* FMReplayObject.m */; };
 		2BF9CDF21618AE04005169D5 /* FMReplayLongPress.m in Sources */ = {isa = PBXBuildFile; fileRef = 2BF9CDF11618AE04005169D5 /* FMReplayLongPress.m */; };
 		2BF9CDF61618AE84005169D5 /* FMReplayPan.m in Sources */ = {isa = PBXBuildFile; fileRef = 2BF9CDF51618AE84005169D5 /* FMReplayPan.m */; };
@@ -111,6 +112,8 @@
 		2B66EE0B160E5269003B5F83 /* FMReplayManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMReplayManager.m; sourceTree = "<group>"; };
 		2B9E3D3116AF2C6700ED1B50 /* FMVelocity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMVelocity.h; sourceTree = "<group>"; };
 		2B9E3D3216AF2C6700ED1B50 /* FMVelocity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMVelocity.m; sourceTree = "<group>"; };
+		2BCF704716D57AB000E8A9AD /* FMCanvas.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMCanvas.h; sourceTree = "<group>"; };
+		2BCF704816D57AB000E8A9AD /* FMCanvas.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMCanvas.m; sourceTree = "<group>"; };
 		2BF9CDED1618AD9D005169D5 /* FMReplayObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMReplayObject.h; sourceTree = "<group>"; };
 		2BF9CDEE1618AD9D005169D5 /* FMReplayObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMReplayObject.m; sourceTree = "<group>"; };
 		2BF9CDF01618AE04005169D5 /* FMReplayLongPress.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMReplayLongPress.h; sourceTree = "<group>"; };
@@ -145,6 +148,8 @@
 		2B066FC915EA760700AF1122 /* Canvas */ = {
 			isa = PBXGroup;
 			children = (
+				2BCF704716D57AB000E8A9AD /* FMCanvas.h */,
+				2BCF704816D57AB000E8A9AD /* FMCanvas.m */,
 				2B066FCC15EA953300AF1122 /* FMCanvasView.h */,
 				2B066FCD15EA953300AF1122 /* FMCanvasView.m */,
 			);
@@ -437,6 +442,7 @@
 				2BF9CDF21618AE04005169D5 /* FMReplayLongPress.m in Sources */,
 				2BF9CDF61618AE84005169D5 /* FMReplayPan.m in Sources */,
 				2B9E3D3316AF2C6700ED1B50 /* FMVelocity.m in Sources */,
+				2BCF704916D57AB000E8A9AD /* FMCanvas.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -563,6 +569,7 @@
 				2B2B685F16BE47E7000F0591 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		2B37E76315BFC25B00D21E55 /* Build configuration list for PBXProject "fumi" */ = {
 			isa = XCConfigurationList;
