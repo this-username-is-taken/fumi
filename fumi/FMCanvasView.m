@@ -31,7 +31,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 
 #define I_CLR_3(i,j,k) ((i)*kRGB+(j)*_dimensions.textureSide*kRGB+(k))
 #define I_VEL(i,j) ((i)+(j)*_dimensions.velGridWidth)
-#define I_VEL2(i,j,k) ((i*2)+(j)*_dimensions.velGridWidth*2+k)
+#define I_VEL2(i,j,k) ((i*2)+(j)*(int)(_velocity.size.width+2)*2+k)
 #define I_DEN(i,j) ((i)+(j)*_dimensions.denGridWidth)
 
 @interface FMCanvasView ()
@@ -154,10 +154,10 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 
 - (void)_handleTapGesture:(UITapGestureRecognizer *)gestureRecognizer
 {
-    _velX[I_VEL(_dimensions.velGridWidth/2, _dimensions.velGridHeight/2)] += (float)0.0 * kPhysicsForce;
-    _velY[I_VEL(_dimensions.velGridWidth/2, _dimensions.velGridHeight/2)] += (float)50.0 * kPhysicsForce;
-    
-    [self _addVelocity:FMPointMake(40, 60) vector:CGPointMake(0, 30) frame:0];
+//    _velX[I_VEL(_dimensions.velGridWidth/2, _dimensions.velGridHeight/2)] += (float)0.0 * kPhysicsForce;
+//    _velY[I_VEL(_dimensions.velGridWidth/2, _dimensions.velGridHeight/2)] += (float)50.0 * kPhysicsForce;
+//    
+//    [self _addVelocity:FMPointMake(40, 60) vector:CGPointMake(0, 30) frame:0];
 }
 
 // Pan gestures are interpreted as free interactions with ink
@@ -326,7 +326,8 @@ const GLubyte Indices2[] = {
     memset(_velY, 0, _dimensions.velGridCount * sizeof(CGFloat));
     for (FMReplayPan *event in _events) {
         FMPoint origin = FMPointMakeWithCGPoint(event.position, _dimensions.velCellSize);
-        [self _addVelocity:origin vector:event.force frame:event.frame++];
+        event.frame++;
+        [self _addVelocity:origin vector:event.force frame:0];
     }
     for (int i=0;i<[_events count];i++) {
         FMReplayPan *event = [_events objectAtIndex:i];
@@ -679,16 +680,15 @@ const GLubyte Indices2[] = {
     
     for (int i=0;i<_dimensions.velGridWidth;i++) {
         for (int j=0;j<_dimensions.velGridHeight;j++) {
-            int x = i-index.x;
-            int y = j-index.y;
+            int x = i - index.x;
+            int y = j - index.y;
             int new_x = x * new_c_angle - y * new_s_angle;
             int new_y = x * new_s_angle + y * new_c_angle;
-            x = new_x + 40;
-            y = new_y + 60;
-            // TODO: check velocity grid bounds
-            if (x >= _dimensions.velGridWidth) continue;
+            x = new_x + _velocity.center.x;
+            y = new_y + _velocity.center.y;
+            if (x >= _velocity.size.width) continue;
             if (x < 0) continue;
-            if (y >= _dimensions.velGridHeight) continue;
+            if (y >= _velocity.size.height) continue;
             if (y < 0) continue;
             CGFloat val_x = _velocity.velocity[frame][I_VEL2(x,y,0)];
             CGFloat val_y = _velocity.velocity[frame][I_VEL2(x,y,1)];

@@ -23,10 +23,10 @@ void print_vel(float *u, float *v, int size)
 int main(int argc, const char * argv[])
 {
     int i;
-    int Nx = 80;
-    int Ny = 120;
-    int center_x = 40;
-    int center_y = 60;
+    int Nx = 60;
+    int Ny = 100;
+    int center_x = 30;
+    int center_y = 50;
     int frames = 10;
     float dt = 0.1f;
     float visc = 0.002f;
