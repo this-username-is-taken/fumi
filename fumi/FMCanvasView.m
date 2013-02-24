@@ -54,6 +54,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     GLuint _vertexBuffer;
     GLuint _indexBuffer;
     
+    GLuint _solverHandle;
     GLuint _denShaderHandle;
     GLuint _velShaderHandle;
     
@@ -131,7 +132,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     DDLogInfo(@"Rendering mode: %d -> %d", _renderingMode, mode);
     _renderingMode = mode;
     
-    [self _prepareShaders];
+    (_renderingMode == FMRenderingModeTexture) ? [self _prepareDensityShaders] : [self _prepareVelocityShaders];
     [self _setupVBO];
 }
 
@@ -386,6 +387,8 @@ const GLubyte Indices2[] = {
         }
     }
     
+    [self _prepareDensityShaders];
+    
     glBindFramebuffer(GL_FRAMEBUFFER, _offscreenFBO);
     glBindTexture(GL_TEXTURE_2D, _textureBinding[0]);
     
@@ -409,6 +412,8 @@ const GLubyte Indices2[] = {
     glDrawElements(GL_TRIANGLE_STRIP, sizeof(Indices)/sizeof(Indices[0]), GL_UNSIGNED_BYTE, 0);
     
     glFinish();
+    
+    [self _prepareSolverShaders];
 
     glBindFramebuffer(GL_FRAMEBUFFER, viewFramebuffer);
     glBindTexture(GL_TEXTURE_2D, _textureBinding[1]);
@@ -485,34 +490,40 @@ const GLubyte Indices2[] = {
 #pragma mark -
 #pragma mark Helper Functions
 
-- (void)_prepareShaders
+- (void)_prepareSolverShaders
 {
-    switch (_renderingMode) {
-        case FMRenderingModeTexture:
-        {
-            glUseProgram(_denShaderHandle);
-            
-            _positionSlot = glGetAttribLocation(_denShaderHandle, "Position");
-            _colorSlot = glGetAttribLocation(_denShaderHandle, "SourceColor");
-            glEnableVertexAttribArray(_positionSlot);
-            glEnableVertexAttribArray(_colorSlot);
-            
-            _texCoordSlot = glGetAttribLocation(_denShaderHandle, "TexCoordIn");
-            glEnableVertexAttribArray(_texCoordSlot);
-            _textureUniform = glGetUniformLocation(_denShaderHandle, "Texture");
-            break;
-        }
-        case FMRenderingModeVelocity:
-        {
-            glUseProgram(_velShaderHandle);
-            
-            _positionSlot = glGetAttribLocation(_velShaderHandle, "Position");
-            glEnableVertexAttribArray(_positionSlot);
-            break;
-        }
-        default:
-            break;
-    }
+    glUseProgram(_solverHandle);
+    
+    _positionSlot = glGetAttribLocation(_solverHandle, "Position");
+    _colorSlot = glGetAttribLocation(_solverHandle, "SourceColor");
+    glEnableVertexAttribArray(_positionSlot);
+    glEnableVertexAttribArray(_colorSlot);
+    
+    _texCoordSlot = glGetAttribLocation(_solverHandle, "TexCoordIn");
+    glEnableVertexAttribArray(_texCoordSlot);
+    _textureUniform = glGetUniformLocation(_solverHandle, "Texture");
+}
+
+- (void)_prepareDensityShaders
+{
+    glUseProgram(_denShaderHandle);
+    
+    _positionSlot = glGetAttribLocation(_denShaderHandle, "Position");
+    _colorSlot = glGetAttribLocation(_denShaderHandle, "SourceColor");
+    glEnableVertexAttribArray(_positionSlot);
+    glEnableVertexAttribArray(_colorSlot);
+    
+    _texCoordSlot = glGetAttribLocation(_denShaderHandle, "TexCoordIn");
+    glEnableVertexAttribArray(_texCoordSlot);
+    _textureUniform = glGetUniformLocation(_denShaderHandle, "Texture");
+}
+
+- (void)_prepareVelocityShaders
+{
+    glUseProgram(_velShaderHandle);
+    
+    _positionSlot = glGetAttribLocation(_velShaderHandle, "Position");
+    glEnableVertexAttribArray(_positionSlot);
 }
 
 - (void)_setupVBO
@@ -573,9 +584,10 @@ const GLubyte Indices2[] = {
         return;
     }
     
+    _solverHandle = [FMShaderManager programHandle:@"solver"];
     _denShaderHandle = [FMShaderManager programHandle:@"density"];
     _velShaderHandle = [FMShaderManager programHandle:@"velocity"];
-    [self _prepareShaders];
+    (_renderingMode == FMRenderingModeTexture) ? [self _prepareDensityShaders] : [self _prepareVelocityShaders];
     [self _setupVBO];
 }
 
