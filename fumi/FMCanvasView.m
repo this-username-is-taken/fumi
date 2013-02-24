@@ -17,6 +17,7 @@
 
 #import "FMVelocity.h"
 #import "FMReplayManager.h"
+#import "FMShaderManager.h"
 
 #import "UIGestureRecognizer+Fumi.h"
 
@@ -50,8 +51,11 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     GLuint _offscreenFBO;
     GLuint _textureBinding[2];
     
-    GLuint vertexBuffer;
-    GLuint indexBuffer;
+    GLuint _vertexBuffer;
+    GLuint _indexBuffer;
+    
+    GLuint _denShaderHandle;
+    GLuint _velShaderHandle;
     
     NSMutableArray *_events;
     
@@ -127,7 +131,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     DDLogInfo(@"Rendering mode: %d -> %d", _renderingMode, mode);
     _renderingMode = mode;
     
-    [self _compileShaders];
+    [self _prepareShaders];
     [self _setupVBO];
 }
 
@@ -385,9 +389,9 @@ const GLubyte Indices2[] = {
     glBindFramebuffer(GL_FRAMEBUFFER, _offscreenFBO);
     glBindTexture(GL_TEXTURE_2D, _textureBinding[0]);
     
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices), Indices, GL_STATIC_DRAW);
     
     glClearColor(0.5, 0.5, 0.5, 1.0);
@@ -409,9 +413,9 @@ const GLubyte Indices2[] = {
     glBindFramebuffer(GL_FRAMEBUFFER, viewFramebuffer);
     glBindTexture(GL_TEXTURE_2D, _textureBinding[1]);
     
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices2), Vertices2, GL_STATIC_DRAW);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices2), Indices2, GL_STATIC_DRAW);
 
     glVertexAttribPointer(_positionSlot, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
@@ -421,7 +425,7 @@ const GLubyte Indices2[] = {
     glActiveTexture(GL_TEXTURE0);
     glUniform1i(_textureUniform, 0);
     
-    glDrawElements(GL_TRIANGLE_STRIP, sizeof(Indices)/sizeof(Indices[0]), GL_UNSIGNED_BYTE, 0);
+    glDrawElements(GL_TRIANGLE_STRIP, sizeof(Indices2)/sizeof(Indices2[0]), GL_UNSIGNED_BYTE, 0);
     
     NSLog(@"%d", glGetError());
 }
@@ -481,104 +485,31 @@ const GLubyte Indices2[] = {
 #pragma mark -
 #pragma mark Helper Functions
 
-- (GLuint)_compileShader:(NSString*)shaderName withType:(GLenum)shaderType
-{
-    NSString *shaderPath = [[NSBundle mainBundle] pathForResource:shaderName ofType:@"glsl"];
-    NSError *error;
-    NSString *shaderString = [NSString stringWithContentsOfFile:shaderPath encoding:NSUTF8StringEncoding error:&error];
-    if (!shaderString) {
-        DDLogError(@"Error loading shader: %@", error.localizedDescription);
-        exit(1);
-    }
-    
-    GLuint shaderHandle = glCreateShader(shaderType);
-    
-    const char *shaderStringUTF8 = [shaderString UTF8String];
-    int shaderStringLength = [shaderString length];
-    glShaderSource(shaderHandle, 1, &shaderStringUTF8, &shaderStringLength);
-    
-    glCompileShader(shaderHandle);
-    
-    GLint compileSuccess;
-    glGetShaderiv(shaderHandle, GL_COMPILE_STATUS, &compileSuccess);
-    if (compileSuccess == GL_FALSE) {
-        GLchar messages[256];
-        glGetShaderInfoLog(shaderHandle, sizeof(messages), 0, &messages[0]);
-        NSString *messageString = [NSString stringWithUTF8String:messages];
-        DDLogError(@"%@", messageString);
-        exit(1);
-    }
-    
-    return shaderHandle;
-}
-
-- (void)_compileDensityShaders
-{
-    GLuint vertexShader = [self _compileShader:@"den_vertex" withType:GL_VERTEX_SHADER];
-    GLuint fragmentShader = [self _compileShader:@"den_fragment" withType:GL_FRAGMENT_SHADER];
-    
-    GLuint programHandle = glCreateProgram();
-    glAttachShader(programHandle, vertexShader);
-    glAttachShader(programHandle, fragmentShader);
-    glLinkProgram(programHandle);
-    
-    GLint linkSuccess;
-    glGetProgramiv(programHandle, GL_LINK_STATUS, &linkSuccess);
-    if (linkSuccess == GL_FALSE) {
-        GLchar messages[256];
-        glGetProgramInfoLog(programHandle, sizeof(messages), 0, &messages[0]);
-        NSString *messageString = [NSString stringWithUTF8String:messages];
-        DDLogError(@"%@", messageString);
-        exit(1);
-    }
-    
-    glUseProgram(programHandle);
-    
-    _positionSlot = glGetAttribLocation(programHandle, "Position");
-    _colorSlot = glGetAttribLocation(programHandle, "SourceColor");
-    glEnableVertexAttribArray(_positionSlot);
-    glEnableVertexAttribArray(_colorSlot);
-    
-    _texCoordSlot = glGetAttribLocation(programHandle, "TexCoordIn");
-    glEnableVertexAttribArray(_texCoordSlot);
-    _textureUniform = glGetUniformLocation(programHandle, "Texture");
-}
-
-- (void)_compileVelocityShaders
-{
-    GLuint vertexShader = [self _compileShader:@"vel_vertex" withType:GL_VERTEX_SHADER];
-    GLuint fragmentShader = [self _compileShader:@"vel_fragment" withType:GL_FRAGMENT_SHADER];
-    
-    GLuint programHandle = glCreateProgram();
-    glAttachShader(programHandle, vertexShader);
-    glAttachShader(programHandle, fragmentShader);
-    glLinkProgram(programHandle);
-    
-    GLint linkSuccess;
-    glGetProgramiv(programHandle, GL_LINK_STATUS, &linkSuccess);
-    if (linkSuccess == GL_FALSE) {
-        GLchar messages[256];
-        glGetProgramInfoLog(programHandle, sizeof(messages), 0, &messages[0]);
-        NSString *messageString = [NSString stringWithUTF8String:messages];
-        DDLogError(@"%@", messageString);
-        exit(1);
-    }
-    
-    glUseProgram(programHandle);
-    
-    _positionSlot = glGetAttribLocation(programHandle, "Position");
-    glEnableVertexAttribArray(_positionSlot);
-}
-
-- (void)_compileShaders
+- (void)_prepareShaders
 {
     switch (_renderingMode) {
         case FMRenderingModeTexture:
-            [self _compileDensityShaders];
+        {
+            glUseProgram(_denShaderHandle);
+            
+            _positionSlot = glGetAttribLocation(_denShaderHandle, "Position");
+            _colorSlot = glGetAttribLocation(_denShaderHandle, "SourceColor");
+            glEnableVertexAttribArray(_positionSlot);
+            glEnableVertexAttribArray(_colorSlot);
+            
+            _texCoordSlot = glGetAttribLocation(_denShaderHandle, "TexCoordIn");
+            glEnableVertexAttribArray(_texCoordSlot);
+            _textureUniform = glGetUniformLocation(_denShaderHandle, "Texture");
             break;
+        }
         case FMRenderingModeVelocity:
-            [self _compileVelocityShaders];
+        {
+            glUseProgram(_velShaderHandle);
+            
+            _positionSlot = glGetAttribLocation(_velShaderHandle, "Position");
+            glEnableVertexAttribArray(_positionSlot);
             break;
+        }
         default:
             break;
     }
@@ -590,20 +521,20 @@ const GLubyte Indices2[] = {
         case FMRenderingModeTexture:
         {
             // Setup VBO
-            glGenBuffers(1, &vertexBuffer);
-            glGenBuffers(1, &indexBuffer);
+            glGenBuffers(1, &_vertexBuffer);
+            glGenBuffers(1, &_indexBuffer);
             break;
         }
         case FMRenderingModeVelocity:
         {
             // Setup VBO
-            glGenBuffers(1, &vertexBuffer);
-            glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-            glBufferData(GL_ARRAY_BUFFER, _dimensions.velCount * 4 * sizeof(GLfloat), _velVertices, GL_STATIC_DRAW);
+            glGenBuffers(1, &_vertexBuffer);
+            glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);
+            glBufferData(GL_ARRAY_BUFFER, _dimensions.velCount * 4 * sizeof(GLfloat), _velVertices, GL_STREAM_DRAW);
             
-            glGenBuffers(1, &indexBuffer);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, _dimensions.velCount * 2 * sizeof(GLuint), _velIndices, GL_STATIC_DRAW);
+            glGenBuffers(1, &_indexBuffer);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, _dimensions.velCount * 2 * sizeof(GLuint), _velIndices, GL_STREAM_DRAW);
             break;
         }
         default:
@@ -622,6 +553,7 @@ const GLubyte Indices2[] = {
     
     // Generate and bind texture
     glGenTextures(2, &_textureBinding[0]);
+    
     glBindTexture(GL_TEXTURE_2D, _textureBinding[0]);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -641,7 +573,9 @@ const GLubyte Indices2[] = {
         return;
     }
     
-    [self _compileShaders];
+    _denShaderHandle = [FMShaderManager programHandle:@"density"];
+    _velShaderHandle = [FMShaderManager programHandle:@"velocity"];
+    [self _prepareShaders];
     [self _setupVBO];
 }
 
