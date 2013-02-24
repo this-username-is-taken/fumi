@@ -18,7 +18,6 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 
 static const CGRect kPauseSwitchFrame = {10, 90, 0, 0};
 static const CGRect kClearButtonFrame = {255, 90, 50, 30};
-static const CGRect kPrintVelButtonFrame = {200, 90, 50, 30};
 static const CGRect kNextFrameButtonFrame = {95, 90, 100, 30};
 static const CGRect kSegmentedControlFrame = {10, 50, 300, 30};
 static const CGRect kBenchmarkLabelFrame = {10, 10, 800, 30};
@@ -30,7 +29,6 @@ static const CGRect kBenchmarkLabelFrame = {10, 10, 800, 30};
     UISwitch *_pauseSwitch;
     UILabel *_benchmarkLabel;
     UIButton *_clearButton;
-    UIButton *_printVelButton;
     UIButton *_nextFrameButton;
     UISegmentedControl *_segmentedControl;
 }
@@ -52,7 +50,6 @@ static const CGRect kBenchmarkLabelFrame = {10, 10, 800, 30};
     [_pauseSwitch release];
     [_benchmarkLabel release];
     [_clearButton release];
-    [_printVelButton release];
     [_nextFrameButton release];
     [_segmentedControl release];
     
@@ -99,12 +96,6 @@ static const CGRect kBenchmarkLabelFrame = {10, 10, 800, 30};
     [_nextFrameButton addTarget:self action:@selector(_buttonDidPress:) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:_nextFrameButton];
     
-    _printVelButton = [[UIButton buttonWithType:UIButtonTypeRoundedRect] retain];
-    [_printVelButton setTitle:@"Print" forState:UIControlStateNormal];
-    [_printVelButton addTarget:self action:@selector(_printVelocity:) forControlEvents:UIControlEventTouchUpInside];
-    _printVelButton.frame = kPrintVelButtonFrame;
-    [self.view addSubview:_printVelButton];
-    
     _benchmarkLabel = [[UILabel alloc] initWithFrame:kBenchmarkLabelFrame];
     _benchmarkLabel.font = [UIFont systemFontOfSize:12];
     [self.view addSubview:_benchmarkLabel];
@@ -139,11 +130,6 @@ static const CGRect kBenchmarkLabelFrame = {10, 10, 800, 30};
 - (void)_clearDensity:(UIButton *)sender
 {
     [_canvasView clearDensity];
-}
-
-- (void)_printVelocity:(UIButton *)sender
-{
-    [_canvasView printVelocity];
 }
 
 - (void)_segmentDidChange:(UISegmentedControl *)sender

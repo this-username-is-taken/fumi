@@ -650,18 +650,6 @@ const GLubyte Indices2[] = {
     memset(_den, 0, _dimensions.denGridCount * sizeof(CGFloat));
 }
 
-- (void)printVelocity
-{
-    for (int i=0;i<_dimensions.velGridCount;i++) {
-        printf("%f ", _velX[i]);
-    }
-    printf("\n");
-    for (int i=0;i<_dimensions.velGridCount;i++) {
-        printf("%f ", _velY[i]);
-    }
-    printf("\n");
-}
-
 - (void)_addVelocity:(FMPoint)index vector:(CGPoint)vector frame:(int)frame
 {
     CGFloat mag = FMMagnitude(vector);

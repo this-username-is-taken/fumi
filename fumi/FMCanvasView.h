@@ -41,8 +41,6 @@ CG_INLINE CGFloat updateBenchmarkAvg(FMBenchmark *benchmark)
     int _positionSlot;
     int _colorSlot;
     
-    GLuint _floorTexture;
-    GLuint _fishTexture;
     GLuint _texCoordSlot;
     GLuint _textureUniform;
 }
@@ -50,7 +48,6 @@ CG_INLINE CGFloat updateBenchmarkAvg(FMBenchmark *benchmark)
 @property (nonatomic, assign) id<FMBenchmarkDelegate> delegate;
 @property (nonatomic, assign) FMRenderingMode renderingMode;
 
-- (void)printVelocity;
 - (void)clearDensity;
 
 @end
