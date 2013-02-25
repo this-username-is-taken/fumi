@@ -27,14 +27,11 @@ static FMDimensions dimensions;
         dimensions.denCellSize = 8;
         
         dimensions.textureSide = 128;
-        dimensions.textureMap[0] = 0.0;
-        dimensions.textureMap[1] = 0.0;
-        dimensions.textureMap[2] = 0.0;
-        dimensions.textureMap[3] = 0.75;
-        dimensions.textureMap[4] = 1.0;
-        dimensions.textureMap[5] = 0.0;
-        dimensions.textureMap[6] = 1.0;
-        dimensions.textureMap[7] = 0.75;
+        
+        dimensions.texVertices[0] = FMVertexMake(-1.0, -1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0);
+        dimensions.texVertices[1] = FMVertexMake(-1.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.75);
+        dimensions.texVertices[2] = FMVertexMake(1.0, -1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0);
+        dimensions.texVertices[3] = FMVertexMake(1.0, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.75);
     } else {
         dimensions.canvasWidth = 320;
         dimensions.canvasHeight = 480;
@@ -43,14 +40,11 @@ static FMDimensions dimensions;
         dimensions.denCellSize = 4;
         
         dimensions.textureSide = 128;
-        dimensions.textureMap[0] = 0.0;
-        dimensions.textureMap[1] = 0.0;
-        dimensions.textureMap[2] = 0.0;
-        dimensions.textureMap[3] = 0.9375;
-        dimensions.textureMap[4] = 0.625;
-        dimensions.textureMap[5] = 0.0;
-        dimensions.textureMap[6] = 0.625;
-        dimensions.textureMap[7] = 0.9375;
+        
+        dimensions.texVertices[0] = FMVertexMake(-1.0, -1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0);
+        dimensions.texVertices[1] = FMVertexMake(-1.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.9375);
+        dimensions.texVertices[2] = FMVertexMake(1.0, -1.0, 0.0, 0.0, 1.0, 1.0, 0.625, 0.0);
+        dimensions.texVertices[3] = FMVertexMake(1.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.625, 0.9375);
     }
     
     dimensions.velWidth = dimensions.canvasWidth / dimensions.velCellSize;
@@ -67,6 +61,11 @@ static FMDimensions dimensions;
     dimensions.denGridWidth = dimensions.denWidth + 2;
     dimensions.denGridHeight = dimensions.denHeight + 2;
     dimensions.denGridCount = dimensions.denGridWidth * dimensions.denGridHeight;
+    
+    dimensions.texIndices[0] = 0;
+    dimensions.texIndices[1] = 1;
+    dimensions.texIndices[2] = 2;
+    dimensions.texIndices[3] = 3;
 
     hasDimensions = YES;
     return dimensions;
