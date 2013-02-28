@@ -49,7 +49,8 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     GLuint *_velIndices;
     
     GLuint _offscreenFBO;
-    GLuint _textureBinding[2];
+    GLuint _inputTexture;
+    GLuint _outputTexture;
     
     GLuint _vertexBuffer;
     GLuint _indexBuffer;
@@ -363,12 +364,14 @@ const GLubyte Indices[] = {
     
     for (int i=1;i<=_dimensions.denWidth;i++) {
         for (int j=1;j<=_dimensions.denHeight;j++) {
-            float density = _den[I_DEN(i, j)];
-            if (density > 255.0) density = 255.0;
-            if (density >= 0) {
+            if (i<_dimensions.denWidth/2) {
                 _clr[I_CLR_3(i - 1, j - 1, R)] = 255;
-                _clr[I_CLR_3(i - 1, j - 1, G)] = 255-density;
-                _clr[I_CLR_3(i - 1, j - 1, B)] = 255-density;
+                _clr[I_CLR_3(i - 1, j - 1, G)] = 0;
+                _clr[I_CLR_3(i - 1, j - 1, B)] = 0;
+            } else {
+                _clr[I_CLR_3(i - 1, j - 1, R)] = 0;
+                _clr[I_CLR_3(i - 1, j - 1, G)] = 255;
+                _clr[I_CLR_3(i - 1, j - 1, B)] = 0;
             }
         }
     }
@@ -376,7 +379,7 @@ const GLubyte Indices[] = {
     [self _prepareDensityShaders];
     
     glBindFramebuffer(GL_FRAMEBUFFER, _offscreenFBO);
-    glBindTexture(GL_TEXTURE_2D, _textureBinding[0]);
+    glBindTexture(GL_TEXTURE_2D, _inputTexture);
     
     glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
@@ -404,7 +407,7 @@ const GLubyte Indices[] = {
     [self _prepareSolverShaders];
 
     glBindFramebuffer(GL_FRAMEBUFFER, viewFramebuffer);
-    glBindTexture(GL_TEXTURE_2D, _textureBinding[1]);
+    glBindTexture(GL_TEXTURE_2D, _outputTexture);
     
     glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
@@ -553,20 +556,21 @@ const GLubyte Indices[] = {
     glBlendFunc(GL_ONE, GL_SRC_COLOR);
     
     // Generate and bind texture
-    glGenTextures(2, &_textureBinding[0]);
+    glGenTextures(1, &_inputTexture);
+    glGenTextures(1, &_outputTexture);
     
-    glBindTexture(GL_TEXTURE_2D, _textureBinding[0]);
+    glBindTexture(GL_TEXTURE_2D, _inputTexture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     
-    glBindTexture(GL_TEXTURE_2D, _textureBinding[1]);
+    glBindTexture(GL_TEXTURE_2D, _outputTexture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _dimensions.textureSide * 8, _dimensions.textureSide * 8, 0,  GL_RGB, GL_UNSIGNED_BYTE, NULL);
     
     glGenFramebuffers(1, &_offscreenFBO);
     glBindFramebuffer(GL_FRAMEBUFFER, _offscreenFBO);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _textureBinding[1], 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _outputTexture, 0);
     
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     {
