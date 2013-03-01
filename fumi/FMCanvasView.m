@@ -52,6 +52,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     GLuint _inputTexture;
     GLuint _outputTexture;
     
+    GLuint _solverBuffer;
     GLuint _vertexBuffer;
     GLuint _indexBuffer;
     
@@ -357,11 +358,25 @@ const GLubyte Indices[] = {
     0, 1, 2, 3
 };
 
+typedef struct {
+    float position[2];
+    float color[4];
+    float texCoord[2];
+} tmp_struct;
+
+const tmp_struct Solver_Vertices[] = {
+    {{0, 0}, {0, 0, 0, 1}, {0.0, 0.0}},
+    {{0, 128}, {0, 0, 0, 1}, {0.0, 0.75}},
+    {{128, 0}, {0, 0, 0, 1}, {1.0, 0.0}},
+    {{128, 128}, {0, 0, 0, 1}, {1.0, 0.75}}
+};
+
+const GLubyte Solver_Indices[] = {
+    0, 1, 2, 3
+};
+
 - (void)_renderTexture
 {
-    FMVertex *vertices = _dimensions.texVertices;
-    GLubyte *indices = _dimensions.texIndices;
-    
     for (int i=1;i<=_dimensions.denWidth;i++) {
         for (int j=1;j<=_dimensions.denHeight;j++) {
             if (i<_dimensions.denWidth/2) {
@@ -376,15 +391,15 @@ const GLubyte Indices[] = {
         }
     }
     
-    [self _prepareDensityShaders];
+    [self _prepareSolverShaders];
     
     glBindFramebuffer(GL_FRAMEBUFFER, _offscreenFBO);
     glBindTexture(GL_TEXTURE_2D, _inputTexture);
     
-    glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, _solverBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Solver_Vertices), Solver_Vertices, GL_STATIC_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Solver_Indices), Solver_Indices, GL_STATIC_DRAW);
     
     glClearColor(0.5, 0.5, 0.5, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -398,13 +413,13 @@ const GLubyte Indices[] = {
     glActiveTexture(GL_TEXTURE0);
     glUniform1i(_textureUniform, 0);
     
-    glDrawElements(GL_TRIANGLE_STRIP, sizeof(indices)/sizeof(indices[0]), GL_UNSIGNED_BYTE, 0);
+    glDrawElements(GL_TRIANGLE_STRIP, sizeof(Solver_Indices)/sizeof(Solver_Indices[0]), GL_UNSIGNED_BYTE, 0);
     
     glFinish();
     
     //glReadPixels(0, 0, 128, 128, GL_RGBA, GL_UNSIGNED_BYTE, _pixels);
     
-    [self _prepareSolverShaders];
+    [self _prepareDensityShaders];
 
     glBindFramebuffer(GL_FRAMEBUFFER, viewFramebuffer);
     glBindTexture(GL_TEXTURE_2D, _outputTexture);
@@ -412,7 +427,7 @@ const GLubyte Indices[] = {
     glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices), Indices, GL_STATIC_DRAW);
 
     glVertexAttribPointer(_positionSlot, 2, GL_FLOAT, GL_FALSE, sizeof(FMVertex), 0);
     glVertexAttribPointer(_colorSlot, 4, GL_FLOAT, GL_FALSE, sizeof(FMVertex), (GLvoid*) (sizeof(float) * 2));
@@ -421,7 +436,7 @@ const GLubyte Indices[] = {
     glActiveTexture(GL_TEXTURE0);
     glUniform1i(_textureUniform, 0);
     
-    glDrawElements(GL_TRIANGLE_STRIP, sizeof(indices)/sizeof(indices[0]), GL_UNSIGNED_BYTE, 0);
+    glDrawElements(GL_TRIANGLE_STRIP, sizeof(Indices)/sizeof(Indices[0]), GL_UNSIGNED_BYTE, 0);
     
     
     
@@ -525,6 +540,7 @@ const GLubyte Indices[] = {
         case FMRenderingModeTexture:
         {
             // Setup VBO
+            glGenBuffers(1, &_solverBuffer);
             glGenBuffers(1, &_vertexBuffer);
             glGenBuffers(1, &_indexBuffer);
             break;
