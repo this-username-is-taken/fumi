@@ -38,11 +38,6 @@ CG_INLINE CGFloat updateBenchmarkAvg(FMBenchmark *benchmark)
 
 @interface FMCanvasView : EAGLView
 {
-    int _positionSlot;
-    int _colorSlot;
-    
-    GLuint _texCoordSlot;
-    GLuint _textureUniform;
 }
 
 @property (nonatomic, assign) id<FMBenchmarkDelegate> delegate;

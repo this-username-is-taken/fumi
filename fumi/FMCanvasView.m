@@ -60,6 +60,15 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     GLuint _denShaderHandle;
     GLuint _velShaderHandle;
     
+    
+    int _positionSlot;
+    int _colorSlot;
+    int _centerSlot;
+    int _angleSlot;
+    
+    GLuint _texCoordSlot;
+    GLuint _textureUniform;
+    
     NSMutableArray *_events;
     
     FMBenchmark _benchmark;
@@ -103,6 +112,14 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
         
         _events = [[NSMutableArray alloc] init];
         _velocity = [[FMVelocity alloc] initWithFilename:@"velocity"];
+        
+        int tmp[1];
+        glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, tmp);
+        NSLog(@"Max Vertex Attrib: %d", tmp[0]);
+        glGetIntegerv(GL_MAX_VARYING_VECTORS, tmp);
+        NSLog(@"Max Varying Vectors: %d", tmp[0]);
+        glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, tmp);
+        NSLog(@"Max Textures in Fragment: %d", tmp[0]);
 
         [self _createGestureRecognizers];
     }
@@ -360,19 +377,23 @@ const GLubyte Indices[] = {
 
 typedef struct {
     float position[2];
-    float color[4];
+    float center[2];
     float texCoord[2];
+    float angle[2];
 } tmp_struct;
 
-const tmp_struct Solver_Vertices[] = {
-    {{0, 0}, {0, 0, 0, 1}, {0.0, 0.0}},
-    {{0, 128}, {0, 0, 0, 1}, {0.0, 0.75}},
-    {{128, 0}, {0, 0, 0, 1}, {1.0, 0.0}},
-    {{128, 128}, {0, 0, 0, 1}, {1.0, 0.75}}
+tmp_struct Solver_Vertices[] = {
+    {{0, 0}, {640, 640}, {0.0, 0.0}, {0.5, 0.5}},
+    {{0, 768}, {640, 640}, {0.0, 128}, {0.5, 0.5}},
+    {{1024, 0}, {640, 640}, {128, 0.0}, {0.5, 0.5}},
+    {{1024, 768}, {640, 640}, {128, 128}, {0.5, 0.5}}
 };
 
 const GLubyte Solver_Indices[] = {
-    0, 1, 2, 3
+    0, 1, 2,
+    2, 1, 3,
+    4, 5, 6,
+    6, 5, 7,
 };
 
 - (void)_renderTexture
@@ -380,16 +401,21 @@ const GLubyte Solver_Indices[] = {
     for (int i=1;i<=_dimensions.denWidth;i++) {
         for (int j=1;j<=_dimensions.denHeight;j++) {
             if (i<_dimensions.denWidth/2) {
-                _clr[I_CLR_3(i - 1, j - 1, R)] = 255;
+                _clr[I_CLR_3(i - 1, j - 1, R)] = 50+j;
                 _clr[I_CLR_3(i - 1, j - 1, G)] = 0;
                 _clr[I_CLR_3(i - 1, j - 1, B)] = 0;
             } else {
                 _clr[I_CLR_3(i - 1, j - 1, R)] = 0;
-                _clr[I_CLR_3(i - 1, j - 1, G)] = 255;
+                _clr[I_CLR_3(i - 1, j - 1, G)] = 50+j;
                 _clr[I_CLR_3(i - 1, j - 1, B)] = 0;
             }
         }
     }
+    static int global_x;
+    Solver_Vertices[0].center[0] = global_x++ % 1024;
+    Solver_Vertices[1].center[0] = global_x % 1024;
+    Solver_Vertices[2].center[0] = global_x % 1024;
+    Solver_Vertices[3].center[0] = global_x % 1024;
     
     [self _prepareSolverShaders];
     
@@ -407,13 +433,14 @@ const GLubyte Solver_Indices[] = {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _dimensions.textureSide, _dimensions.textureSide, 0, GL_RGB, GL_UNSIGNED_BYTE, _clr);
     
     glVertexAttribPointer(_positionSlot, 2, GL_FLOAT, GL_FALSE, sizeof(FMVertex), 0);
-    glVertexAttribPointer(_colorSlot, 4, GL_FLOAT, GL_FALSE, sizeof(FMVertex), (GLvoid*) (sizeof(float) * 2));
-    glVertexAttribPointer(_texCoordSlot, 2, GL_FLOAT, GL_FALSE, sizeof(FMVertex), (GLvoid*) (sizeof(float) * 6));
+    glVertexAttribPointer(_centerSlot, 2, GL_FLOAT, GL_FALSE, sizeof(FMVertex), (GLvoid*) (sizeof(float)*2));
+    glVertexAttribPointer(_texCoordSlot, 2, GL_FLOAT, GL_FALSE, sizeof(FMVertex), (GLvoid*) (sizeof(float)*4));
+    glVertexAttribPointer(_angleSlot, 2, GL_FLOAT, GL_FALSE, sizeof(FMVertex), (GLvoid*) (sizeof(float)*6));
     
     glActiveTexture(GL_TEXTURE0);
     glUniform1i(_textureUniform, 0);
     
-    glDrawElements(GL_TRIANGLE_STRIP, sizeof(Solver_Indices)/sizeof(Solver_Indices[0]), GL_UNSIGNED_BYTE, 0);
+    glDrawElements(GL_TRIANGLES, sizeof(Solver_Indices)/sizeof(Solver_Indices[0]), GL_UNSIGNED_BYTE, 0);
     
     glFinish();
     
@@ -503,9 +530,11 @@ const GLubyte Solver_Indices[] = {
     glUseProgram(_solverHandle);
     
     _positionSlot = glGetAttribLocation(_solverHandle, "Position");
-    _colorSlot = glGetAttribLocation(_solverHandle, "SourceColor");
+    _centerSlot = glGetAttribLocation(_solverHandle, "CenterIn");
+    _angleSlot = glGetAttribLocation(_solverHandle, "AngleIn");
     glEnableVertexAttribArray(_positionSlot);
-    glEnableVertexAttribArray(_colorSlot);
+    glEnableVertexAttribArray(_centerSlot);
+    glEnableVertexAttribArray(_angleSlot);
     
     _texCoordSlot = glGetAttribLocation(_solverHandle, "TexCoordIn");
     glEnableVertexAttribArray(_texCoordSlot);
