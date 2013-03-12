@@ -410,7 +410,7 @@ const GLubyte Solver_Indices[] = {
         
         loc = glGetUniformLocation(_solverHandle,
                                    [[NSString stringWithFormat:@"events[%d].angle", i] UTF8String]);
-        glProgramUniform1fEXT(_solverHandle, loc, angle);
+        glProgramUniform2fEXT(_solverHandle, loc, cos(angle), sin(angle));
         loc = glGetUniformLocation(_solverHandle,
                                    [[NSString stringWithFormat:@"events[%d].center", i] UTF8String]);
         glProgramUniform2fEXT(_solverHandle, loc, pan.position.x, pan.position.y);
