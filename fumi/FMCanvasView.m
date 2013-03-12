@@ -60,14 +60,17 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     GLuint _denShaderHandle;
     GLuint _velShaderHandle;
     
-    
     int _positionSlot;
     int _colorSlot;
-    int _centerSlot;
-    int _angleSlot;
+    
+    GLuint _centerSlot;
+    GLuint _angleSlot;
     
     GLuint _texCoordSlot;
     GLuint _textureUniform;
+    
+    CGPoint _panPosition;
+    CGPoint _panForce;
     
     NSMutableArray *_events;
     
@@ -206,7 +209,9 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     {
         FMReplayPan *pan = [[[FMReplayPan alloc] initWithPosition:end state:gestureRecognizer.state timestamp:_benchmark.frames] autorelease];
         pan.force = force;
-        [_events addObject:pan];
+        _panForce = force;
+        _panPosition = end;
+        //[_events addObject:pan];
         start = end;
     }
 }
@@ -383,10 +388,10 @@ typedef struct {
 } tmp_struct;
 
 tmp_struct Solver_Vertices[] = {
-    {{0, 0}, {640, 640}, {0.0, 0.0}, {0.5, 0.5}},
-    {{0, 768}, {640, 640}, {0.0, 128}, {0.5, 0.5}},
-    {{1024, 0}, {640, 640}, {128, 0.0}, {0.5, 0.5}},
-    {{1024, 768}, {640, 640}, {128, 128}, {0.5, 0.5}}
+    {{0, 0}, {0.0, 0.0}},
+    {{0, 768}, {0.0, 128}},
+    {{1024, 0}, {128, 0.0}},
+    {{1024, 768}, {128, 128}}
 };
 
 const GLubyte Solver_Indices[] = {
@@ -411,13 +416,14 @@ const GLubyte Solver_Indices[] = {
             }
         }
     }
-    static int global_x;
-    Solver_Vertices[0].center[0] = global_x++ % 1024;
-    Solver_Vertices[1].center[0] = global_x % 1024;
-    Solver_Vertices[2].center[0] = global_x % 1024;
-    Solver_Vertices[3].center[0] = global_x % 1024;
+
+    CGPoint v = FMUnitVectorFromCGPoint(_panForce);
+    CGFloat angle = -acosf(v.y);
+    if (v.x > 0) angle = -angle;
     
     [self _prepareSolverShaders];
+    
+    glProgramUniform1fEXT(_solverHandle, _angleSlot, angle);
     
     glBindFramebuffer(GL_FRAMEBUFFER, _offscreenFBO);
     glBindTexture(GL_TEXTURE_2D, _inputTexture);
@@ -433,9 +439,7 @@ const GLubyte Solver_Indices[] = {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _dimensions.textureSide, _dimensions.textureSide, 0, GL_RGB, GL_UNSIGNED_BYTE, _clr);
     
     glVertexAttribPointer(_positionSlot, 2, GL_FLOAT, GL_FALSE, sizeof(FMVertex), 0);
-    glVertexAttribPointer(_centerSlot, 2, GL_FLOAT, GL_FALSE, sizeof(FMVertex), (GLvoid*) (sizeof(float)*2));
-    glVertexAttribPointer(_texCoordSlot, 2, GL_FLOAT, GL_FALSE, sizeof(FMVertex), (GLvoid*) (sizeof(float)*4));
-    glVertexAttribPointer(_angleSlot, 2, GL_FLOAT, GL_FALSE, sizeof(FMVertex), (GLvoid*) (sizeof(float)*6));
+    glVertexAttribPointer(_texCoordSlot, 2, GL_FLOAT, GL_FALSE, sizeof(FMVertex), (GLvoid*) (sizeof(float)*2));
     
     glActiveTexture(GL_TEXTURE0);
     glUniform1i(_textureUniform, 0);
@@ -530,11 +534,11 @@ const GLubyte Solver_Indices[] = {
     glUseProgram(_solverHandle);
     
     _positionSlot = glGetAttribLocation(_solverHandle, "Position");
-    _centerSlot = glGetAttribLocation(_solverHandle, "CenterIn");
-    _angleSlot = glGetAttribLocation(_solverHandle, "AngleIn");
     glEnableVertexAttribArray(_positionSlot);
-    glEnableVertexAttribArray(_centerSlot);
-    glEnableVertexAttribArray(_angleSlot);
+    
+    _centerSlot = glGetUniformLocation(_solverHandle, "center");
+    glProgramUniform2fEXT(_solverHandle, _centerSlot, _panPosition.x, _panPosition.y);
+    _angleSlot = glGetUniformLocation(_solverHandle, "angle");
     
     _texCoordSlot = glGetAttribLocation(_solverHandle, "TexCoordIn");
     glEnableVertexAttribArray(_texCoordSlot);
