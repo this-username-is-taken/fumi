@@ -69,9 +69,6 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     GLuint _texCoordSlot;
     GLuint _textureUniform;
     
-    CGPoint _panPosition;
-    CGPoint _panForce;
-    
     NSMutableArray *_events;
     
     FMBenchmark _benchmark;
@@ -181,10 +178,6 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 
 - (void)_handleTapGesture:(UITapGestureRecognizer *)gestureRecognizer
 {
-//    _velX[I_VEL(_dimensions.velGridWidth/2, _dimensions.velGridHeight/2)] += (float)0.0 * kPhysicsForce;
-//    _velY[I_VEL(_dimensions.velGridWidth/2, _dimensions.velGridHeight/2)] += (float)50.0 * kPhysicsForce;
-//    
-//    [self _addVelocity:FMPointMake(40, 60) vector:CGPointMake(0, 30) frame:0];
 }
 
 // Pan gestures are interpreted as free interactions with ink
@@ -209,9 +202,9 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     {
         FMReplayPan *pan = [[[FMReplayPan alloc] initWithPosition:end state:gestureRecognizer.state timestamp:_benchmark.frames] autorelease];
         pan.force = force;
-        _panForce = force;
-        _panPosition = end;
-        //[_events addObject:pan];
+        if ([_events count] > 4)
+            [_events removeLastObject];
+        [_events insertObject:pan atIndex:0];
         start = end;
     }
 }
@@ -322,20 +315,8 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     
     // Physics
     _benchmark.physicsTime = CFAbsoluteTimeGetCurrent();
-    //vel_step(_dimensions.velWidth, _dimensions.velHeight, _velX, _velY, kPhysicsViscosity, kPhysicsTimestep);
     memset(_velX, 0, _dimensions.velGridCount * sizeof(CGFloat));
     memset(_velY, 0, _dimensions.velGridCount * sizeof(CGFloat));
-    for (FMReplayPan *event in _events) {
-        FMPoint origin = FMPointMakeWithCGPoint(event.position, _dimensions.velCellSize);
-        event.frame++;
-        [self _addVelocity:origin vector:event.force frame:0];
-    }
-    for (int i=0;i<[_events count];i++) {
-        FMReplayPan *event = [_events objectAtIndex:i];
-        if (event.frame >= _velocity.frames) {
-            [_events removeObjectAtIndex:i--];
-        }
-    }
     den_step(_dimensions.denWidth, _dimensions.denHeight, _den, _velX, _velY, kPhysicsTimestep);
     _benchmark.physicsTime = CFAbsoluteTimeGetCurrent() - _benchmark.physicsTime;
     
@@ -382,9 +363,7 @@ const GLubyte Indices[] = {
 
 typedef struct {
     float position[2];
-    float center[2];
     float texCoord[2];
-    float angle[2];
 } tmp_struct;
 
 tmp_struct Solver_Vertices[] = {
@@ -416,14 +395,26 @@ const GLubyte Solver_Indices[] = {
             }
         }
     }
-
-    CGPoint v = FMUnitVectorFromCGPoint(_panForce);
-    CGFloat angle = -acosf(v.y);
-    if (v.x > 0) angle = -angle;
     
     [self _prepareSolverShaders];
-    
-    glProgramUniform1fEXT(_solverHandle, _angleSlot, angle);
+    GLuint loc;
+
+    for (int i=0;i<4;i++) {
+        if ([_events count] <= i)
+            break;
+        FMReplayPan *pan = [_events objectAtIndex:i];
+        
+        CGPoint v = FMUnitVectorFromCGPoint(pan.force);
+        CGFloat angle = -acosf(v.y);
+        if (v.x > 0) angle = -angle;
+        
+        loc = glGetUniformLocation(_solverHandle,
+                                   [[NSString stringWithFormat:@"events[%d].angle", i] UTF8String]);
+        glProgramUniform1fEXT(_solverHandle, loc, angle);
+        loc = glGetUniformLocation(_solverHandle,
+                                   [[NSString stringWithFormat:@"events[%d].center", i] UTF8String]);
+        glProgramUniform2fEXT(_solverHandle, loc, pan.position.x, pan.position.y);
+    }
     
     glBindFramebuffer(GL_FRAMEBUFFER, _offscreenFBO);
     glBindTexture(GL_TEXTURE_2D, _inputTexture);
@@ -438,8 +429,8 @@ const GLubyte Solver_Indices[] = {
     
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _dimensions.textureSide, _dimensions.textureSide, 0, GL_RGB, GL_UNSIGNED_BYTE, _clr);
     
-    glVertexAttribPointer(_positionSlot, 2, GL_FLOAT, GL_FALSE, sizeof(FMVertex), 0);
-    glVertexAttribPointer(_texCoordSlot, 2, GL_FLOAT, GL_FALSE, sizeof(FMVertex), (GLvoid*) (sizeof(float)*2));
+    glVertexAttribPointer(_positionSlot, 2, GL_FLOAT, GL_FALSE, sizeof(tmp_struct), 0);
+    glVertexAttribPointer(_texCoordSlot, 2, GL_FLOAT, GL_FALSE, sizeof(tmp_struct), (GLvoid*) (sizeof(float)*2));
     
     glActiveTexture(GL_TEXTURE0);
     glUniform1i(_textureUniform, 0);
@@ -468,8 +459,6 @@ const GLubyte Solver_Indices[] = {
     glUniform1i(_textureUniform, 0);
     
     glDrawElements(GL_TRIANGLE_STRIP, sizeof(Indices)/sizeof(Indices[0]), GL_UNSIGNED_BYTE, 0);
-    
-    
     
     NSLog(@"%d", glGetError());
 }
@@ -535,10 +524,6 @@ const GLubyte Solver_Indices[] = {
     
     _positionSlot = glGetAttribLocation(_solverHandle, "Position");
     glEnableVertexAttribArray(_positionSlot);
-    
-    _centerSlot = glGetUniformLocation(_solverHandle, "center");
-    glProgramUniform2fEXT(_solverHandle, _centerSlot, _panPosition.x, _panPosition.y);
-    _angleSlot = glGetUniformLocation(_solverHandle, "angle");
     
     _texCoordSlot = glGetAttribLocation(_solverHandle, "TexCoordIn");
     glEnableVertexAttribArray(_texCoordSlot);
@@ -637,42 +622,6 @@ const GLubyte Solver_Indices[] = {
 - (void)clearDensity
 {
     memset(_den, 0, _dimensions.denGridCount * sizeof(CGFloat));
-}
-
-- (void)_addVelocity:(FMPoint)index vector:(CGPoint)vector frame:(int)frame
-{
-    CGFloat mag = FMMagnitude(vector);
-    CGPoint v = FMUnitVectorFromCGPoint(vector);
-    CGFloat angle = acosf(v.y);
-    if (v.x > 0) angle = -angle;
-    CGFloat c_angle = cosf(angle);
-    CGFloat s_angle = sinf(angle);
-    
-    CGFloat new_angle = -acosf(v.y);
-    if (v.x > 0) new_angle = -new_angle;
-    CGFloat new_c_angle = cosf(new_angle);
-    CGFloat new_s_angle = sinf(new_angle);
-    
-    CGFloat factor = 1.0f + fabsf(angle)/M_PI_2;
-    
-    for (int i=0;i<_dimensions.velGridWidth;i++) {
-        for (int j=0;j<_dimensions.velGridHeight;j++) {
-            int x = i - index.x;
-            int y = j - index.y;
-            int new_x = x * new_c_angle - y * new_s_angle;
-            int new_y = x * new_s_angle + y * new_c_angle;
-            x = new_x + _velocity.center.x;
-            y = new_y + _velocity.center.y;
-            if (x >= _velocity.size.width) continue;
-            if (x < 0) continue;
-            if (y >= _velocity.size.height) continue;
-            if (y < 0) continue;
-            CGFloat val_x = _velocity.velocity[frame][I_VEL2(x,y,0)];
-            CGFloat val_y = _velocity.velocity[frame][I_VEL2(x,y,1)];
-            _velX[I_VEL(i, j)] += (val_x * c_angle - val_y * s_angle) * mag * kPhysicsForce * factor * 100;
-            _velY[I_VEL(i, j)] += (val_x * s_angle + val_y * c_angle) * mag * kPhysicsForce * factor * 100;
-        }
-    }
 }
 
 @end
