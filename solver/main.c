@@ -23,13 +23,13 @@ void print_vel(float *u, float *v, int size)
 int main(int argc, const char * argv[])
 {
     int i;
-    int Nx = 60;
-    int Ny = 100;
-    int center_x = 30;
-    int center_y = 50;
-    int frames = 10;
-    float dt = 0.1f;
-    float visc = 0.002f;
+    int Nx = 64;
+    int Ny = 128;
+    int center_x = 32;
+    int center_y = 64;
+    int frames = 8;
+    float dt = 0.5f;
+    float visc = 0.001f;
     
     float *u, *v;
     
@@ -43,7 +43,7 @@ int main(int argc, const char * argv[])
     
     start_solver((Nx+2)*(Ny+2));
     
-    v[IX(center_x, center_y)] = 1.0;
+    v[IX(center_x, center_y)] = 100.0;
     for (i=0;i<frames;i++) {
         vel_step(Nx, Ny, u, v, visc, dt);
         print_vel(u, v, size);

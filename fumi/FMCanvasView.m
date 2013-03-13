@@ -30,10 +30,12 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 #define B 2
 #define kRGB 3
 
-#define I_CLR_3(i,j,k) ((i)*kRGB+(j)*_dimensions.textureSide*kRGB+(k))
+#define I_CLR_3(i,j,k) ((i)*kRGB+(j)*256*kRGB+(k))
 #define I_VEL(i,j) ((i)+(j)*_dimensions.velGridWidth)
 #define I_VEL2(i,j,k) ((i*2)+(j)*(int)(_velocity.size.width+2)*2+k)
 #define I_DEN(i,j) ((i)+(j)*_dimensions.denGridWidth)
+
+#define VEL_TEX_SIDE 256
 
 @interface FMCanvasView ()
 {
@@ -43,7 +45,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     CGFloat *_velX;
     CGFloat *_velY;
     CGFloat *_den;
-    GLubyte *_clr;
+    CGFloat *_clr;
     
     CGFloat *_velVertices;
     GLuint *_velIndices;
@@ -102,8 +104,8 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
         
         start_solver(_dimensions.velGridCount);
         
-        _clr = calloc(_dimensions.textureSide * _dimensions.textureSide * kRGB, sizeof(GLubyte));
-        memset(_clr, 0, _dimensions.textureSide * _dimensions.textureSide * kRGB);
+        _clr = calloc(VEL_TEX_SIDE * VEL_TEX_SIDE * kRGB, sizeof(CGFloat));
+        memset(_clr, 0, VEL_TEX_SIDE * VEL_TEX_SIDE * kRGB);
         
         _velVertices = (GLfloat *)calloc(_dimensions.velCount * 4, sizeof(GLfloat));
         _velIndices = (GLuint *)calloc(_dimensions.velCount * 2, sizeof(GLuint));
@@ -202,7 +204,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     {
         FMReplayPan *pan = [[[FMReplayPan alloc] initWithPosition:end state:gestureRecognizer.state timestamp:_benchmark.frames] autorelease];
         pan.force = force;
-        if ([_events count] > 4)
+        if ([_events count] > 6)
             [_events removeLastObject];
         [_events insertObject:pan atIndex:0];
         start = end;
@@ -368,9 +370,9 @@ typedef struct {
 
 tmp_struct Solver_Vertices[] = {
     {{0, 0}, {0.0, 0.0}},
-    {{0, 768}, {0.0, 128}},
-    {{1024, 0}, {128, 0.0}},
-    {{1024, 768}, {128, 128}}
+    {{0, 768}, {0.0, VEL_TEX_SIDE}},
+    {{1024, 0}, {VEL_TEX_SIDE, 0.0}},
+    {{1024, 768}, {VEL_TEX_SIDE, VEL_TEX_SIDE}}
 };
 
 const GLubyte Solver_Indices[] = {
@@ -382,24 +384,10 @@ const GLubyte Solver_Indices[] = {
 
 - (void)_renderTexture
 {
-    for (int i=1;i<=_dimensions.denWidth;i++) {
-        for (int j=1;j<=_dimensions.denHeight;j++) {
-            if (i<_dimensions.denWidth/2) {
-                _clr[I_CLR_3(i - 1, j - 1, R)] = 50+j;
-                _clr[I_CLR_3(i - 1, j - 1, G)] = 0;
-                _clr[I_CLR_3(i - 1, j - 1, B)] = 0;
-            } else {
-                _clr[I_CLR_3(i - 1, j - 1, R)] = 0;
-                _clr[I_CLR_3(i - 1, j - 1, G)] = 50+j;
-                _clr[I_CLR_3(i - 1, j - 1, B)] = 0;
-            }
-        }
-    }
-    
     [self _prepareSolverShaders];
     GLuint loc;
 
-    for (int i=0;i<4;i++) {
+    for (int i=0;i<6;i++) {
         if ([_events count] <= i)
             break;
         FMReplayPan *pan = [_events objectAtIndex:i];
@@ -426,8 +414,6 @@ const GLubyte Solver_Indices[] = {
     
     glClearColor(0.5, 0.5, 0.5, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
-    
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _dimensions.textureSide, _dimensions.textureSide, 0, GL_RGB, GL_UNSIGNED_BYTE, _clr);
     
     glVertexAttribPointer(_positionSlot, 2, GL_FLOAT, GL_FALSE, sizeof(tmp_struct), 0);
     glVertexAttribPointer(_texCoordSlot, 2, GL_FLOAT, GL_FALSE, sizeof(tmp_struct), (GLvoid*) (sizeof(float)*2));
@@ -617,6 +603,25 @@ const GLubyte Solver_Indices[] = {
     _velShaderHandle = [FMShaderManager programHandle:@"velocity"];
     (_renderingMode == FMRenderingModeTexture) ? [self _prepareDensityShaders] : [self _prepareVelocityShaders];
     [self _setupVBO];
+    
+    // Texture input
+    for (int i=0;i<4;i++) [self fillTextureWithFrame:i atRow:0 atCol:i*64];
+    for (int i=0;i<4;i++) [self fillTextureWithFrame:i+4 atRow:128 atCol:i*64];
+    [self fillTextureWithFrame:1 atRow:0 atCol:0];
+
+    glBindTexture(GL_TEXTURE_2D, _inputTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, VEL_TEX_SIDE, VEL_TEX_SIDE, 0, GL_RGB, GL_FLOAT, _clr);
+}
+
+- (void)fillTextureWithFrame:(int)frame atRow:(int)row atCol:(int)col
+{
+    for (int i=0;i<64;i++) {
+        for (int j=0;j<128;j++) {
+            _clr[I_CLR_3(i + col, j + row, 0)] = _velocity.velocity[frame][I_VEL2(i, j, 0)];
+            _clr[I_CLR_3(i + col, j + row, 1)] = _velocity.velocity[frame][I_VEL2(i, j, 1)];
+            _clr[I_CLR_3(i + col, j + row, 2)] = 0;
+        }
+    }
 }
 
 - (void)clearDensity
