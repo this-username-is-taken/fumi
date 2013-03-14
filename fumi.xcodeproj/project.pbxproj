@@ -117,8 +117,8 @@
 		2BCF704816D57AB000E8A9AD /* FMCanvas.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMCanvas.m; sourceTree = "<group>"; };
 		2BCF704B16DA5A6400E8A9AD /* FMShaderManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMShaderManager.h; sourceTree = "<group>"; };
 		2BCF704C16DA5A6400E8A9AD /* FMShaderManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMShaderManager.m; sourceTree = "<group>"; };
-		2BCF704E16DA8D2D00E8A9AD /* solver.vsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = solver.vsh; sourceTree = "<group>"; };
-		2BCF705016DA8D3C00E8A9AD /* solver.fsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = solver.fsh; sourceTree = "<group>"; };
+		2BCF704E16DA8D2D00E8A9AD /* solver.vsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = solver.vsh; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.glsl; };
+		2BCF705016DA8D3C00E8A9AD /* solver.fsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = solver.fsh; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.glsl; };
 		2BF9CDED1618AD9D005169D5 /* FMReplayObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMReplayObject.h; sourceTree = "<group>"; };
 		2BF9CDEE1618AD9D005169D5 /* FMReplayObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMReplayObject.m; sourceTree = "<group>"; };
 		2BF9CDF01618AE04005169D5 /* FMReplayLongPress.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMReplayLongPress.h; sourceTree = "<group>"; };

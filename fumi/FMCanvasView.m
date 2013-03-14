@@ -397,8 +397,13 @@ const GLubyte Solver_Indices[] = {
         FMReplayPan *pan = [_events objectAtIndex:i];
         
         CGPoint v = FMUnitVectorFromCGPoint(pan.force);
-        CGFloat angle = -acosf(v.y);
+        CGFloat new_angle = -acosf(v.y);
+        if (v.x > 0) new_angle = -new_angle;
+        
+        CGFloat angle = acosf(v.y);
         if (v.x > 0) angle = -angle;
+        CGFloat c_angle = cosf(angle);
+        CGFloat s_angle = sinf(angle);
         
         float offset_x = 0, offset_y = 0;
         switch (pan.frame++) {
@@ -427,13 +432,14 @@ const GLubyte Solver_Indices[] = {
                 offset_x = 192;
                 break;
             default:
+                offset_x = -1;
                 break;
         }
         
         // TODO: replace program uniform with uniform
         loc = glGetUniformLocation(_solverHandle,
                                    [[NSString stringWithFormat:@"events[%d].angle", i] UTF8String]);
-        glProgramUniform2fEXT(_solverHandle, loc, cos(angle), sin(angle));
+        glProgramUniform4fEXT(_solverHandle, loc, cos(new_angle), sin(new_angle), c_angle, s_angle);
         loc = glGetUniformLocation(_solverHandle,
                                    [[NSString stringWithFormat:@"events[%d].center", i] UTF8String]);
         glProgramUniform2fEXT(_solverHandle, loc, pan.position.x, pan.position.y);
