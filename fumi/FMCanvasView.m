@@ -31,6 +31,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 #define kRGB 3
 
 #define I_CLR_3(i,j,k) ((i)*kRGB+(j)*256*kRGB+(k))
+#define I_DEN_3(i,j,k) ((i)*kRGB+(j)*1024*kRGB+(k))
 #define I_VEL(i,j) ((i)+(j)*_dimensions.velGridWidth)
 #define I_VEL2(i,j,k) ((i*2)+(j)*(int)(_velocity.size.width+2)*2+k)
 #define I_DEN(i,j) ((i)+(j)*_dimensions.denGridWidth)
@@ -51,8 +52,8 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     GLuint *_velIndices;
     
     GLuint _offscreenFBO;
-    GLuint _inputTexture;
-    GLuint _outputTexture;
+    GLuint _velTexture;
+    GLuint _denTexture[2];
     
     GLuint _solverBuffer;
     GLuint _vertexBuffer;
@@ -387,6 +388,8 @@ const GLubyte Solver_Indices[] = {
 {
     [self _prepareSolverShaders];
     GLuint loc;
+    static BOOL outputTex = 0;
+    outputTex = !outputTex;
 
     for (int i=0;i<6;i++) {
         if ([_events count] <= i)
@@ -440,10 +443,13 @@ const GLubyte Solver_Indices[] = {
     }
     
     glUniform1i(_textureUniform, 0);
-    glUniform1i(_texDenUniform, 1);
+    if (outputTex)
+        glUniform1i(_texDenUniform, 1);
+    else
+        glUniform1i(_texDenUniform, 2);
     
     glBindFramebuffer(GL_FRAMEBUFFER, _offscreenFBO);
-    glActiveTexture(GL_TEXTURE1);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _denTexture[outputTex], 0);
     
     glBindBuffer(GL_ARRAY_BUFFER, _solverBuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(Solver_Vertices), Solver_Vertices, GL_STATIC_DRAW);
@@ -475,7 +481,10 @@ const GLubyte Solver_Indices[] = {
     glVertexAttribPointer(_colorSlot, 4, GL_FLOAT, GL_FALSE, sizeof(FMVertex), (GLvoid*) (sizeof(float) * 2));
     glVertexAttribPointer(_texCoordSlot, 2, GL_FLOAT, GL_FALSE, sizeof(FMVertex), (GLvoid*) (sizeof(float) * 6));
     
-    glUniform1i(_textureUniform, 1);
+    if (outputTex)
+        glUniform1i(_textureUniform, 2);
+    else
+        glUniform1i(_textureUniform, 1);
     
     glDrawElements(GL_TRIANGLE_STRIP, sizeof(Indices)/sizeof(Indices[0]), GL_UNSIGNED_BYTE, 0);
     
@@ -611,23 +620,36 @@ const GLubyte Solver_Indices[] = {
     glBlendFunc(GL_ONE, GL_SRC_COLOR);
     
     // Generate and bind texture
-    glGenTextures(1, &_inputTexture);
-    glGenTextures(1, &_outputTexture);
+    glGenTextures(1, &_velTexture);
+    glGenTextures(2, _denTexture);
     
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, _inputTexture);
+    glBindTexture(GL_TEXTURE_2D, _velTexture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, _outputTexture);
+    glBindTexture(GL_TEXTURE_2D, _denTexture[0]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    GLubyte *density = calloc(1024 * 1024 * kRGB, sizeof(GLubyte));
+    for (int i=400;i<500;i++)
+        for (int j=400;j<500;j++) {
+            density[I_DEN_3(i, j, 0)] = 255;
+            density[I_DEN_3(i, j, 1)] = 255;
+            density[I_DEN_3(i, j, 2)] = 255;
+        }
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _dimensions.textureSide * 8, _dimensions.textureSide * 8, 0,  GL_RGB, GL_UNSIGNED_BYTE, density);
+    
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, _denTexture[1]);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _dimensions.textureSide * 8, _dimensions.textureSide * 8, 0,  GL_RGB, GL_UNSIGNED_BYTE, NULL);
     
     glGenFramebuffers(1, &_offscreenFBO);
     glBindFramebuffer(GL_FRAMEBUFFER, _offscreenFBO);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _outputTexture, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _denTexture[0], 0);
     
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     {
