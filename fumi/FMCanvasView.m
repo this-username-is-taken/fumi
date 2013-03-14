@@ -396,12 +396,45 @@ const GLubyte Solver_Indices[] = {
         CGFloat angle = -acosf(v.y);
         if (v.x > 0) angle = -angle;
         
+        float offset_x = 0, offset_y = 0;
+        switch (pan.frame++) {
+            case 1:
+                offset_x = 64;
+                break;
+            case 2:
+                offset_x = 128;
+                break;
+            case 3:
+                offset_x = 192;
+                break;
+            case 4:
+                offset_y = 128;
+                break;
+            case 5:
+                offset_y = 128;
+                offset_x = 64;
+                break;
+            case 6:
+                offset_y = 128;
+                offset_x = 128;
+                break;
+            case 7:
+                offset_y = 128;
+                offset_x = 192;
+                break;
+            default:
+                break;
+        }
+        
         loc = glGetUniformLocation(_solverHandle,
                                    [[NSString stringWithFormat:@"events[%d].angle", i] UTF8String]);
         glProgramUniform2fEXT(_solverHandle, loc, cos(angle), sin(angle));
         loc = glGetUniformLocation(_solverHandle,
                                    [[NSString stringWithFormat:@"events[%d].center", i] UTF8String]);
         glProgramUniform2fEXT(_solverHandle, loc, pan.position.x, pan.position.y);
+        loc = glGetUniformLocation(_solverHandle,
+                                   [[NSString stringWithFormat:@"events[%d].frame", i] UTF8String]);
+        glProgramUniform2fEXT(_solverHandle, loc, offset_x, offset_y);
     }
     
     glBindFramebuffer(GL_FRAMEBUFFER, _offscreenFBO);
@@ -607,7 +640,7 @@ const GLubyte Solver_Indices[] = {
     // Texture input
     for (int i=0;i<4;i++) [self fillTextureWithFrame:i atRow:0 atCol:i*64];
     for (int i=0;i<4;i++) [self fillTextureWithFrame:i+4 atRow:128 atCol:i*64];
-    [self fillTextureWithFrame:1 atRow:0 atCol:0];
+    //[self fillTextureWithFrame:0 atRow:0 atCol:0];
 
     glBindTexture(GL_TEXTURE_2D, _inputTexture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, VEL_TEX_SIDE, VEL_TEX_SIDE, 0, GL_RGB, GL_FLOAT, _clr);
