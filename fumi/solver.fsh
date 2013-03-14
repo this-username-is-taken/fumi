@@ -1,5 +1,6 @@
 varying lowp vec2 TexCoordOut;
 uniform sampler2D Texture;
+uniform sampler2D Density;
 
 struct Event {
     lowp vec2 angle;
@@ -10,7 +11,7 @@ struct Event {
 uniform Event events[6];
 
 void main(void) {
-    gl_FragColor = vec4(0,0,0,1);
+    gl_FragColor = texture2D(Density, vec2(gl_FragCoord.x/1024.0, gl_FragCoord.y/1024.0));
     lowp float x, y, n_x, n_y;
     lowp float vel;
     lowp vec4 color;

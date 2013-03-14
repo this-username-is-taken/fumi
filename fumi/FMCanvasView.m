@@ -70,6 +70,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     
     GLuint _texCoordSlot;
     GLuint _textureUniform;
+    GLuint _texDenUniform;
     
     NSMutableArray *_events;
     
@@ -426,6 +427,7 @@ const GLubyte Solver_Indices[] = {
                 break;
         }
         
+        // TODO: replace program uniform with uniform
         loc = glGetUniformLocation(_solverHandle,
                                    [[NSString stringWithFormat:@"events[%d].angle", i] UTF8String]);
         glProgramUniform2fEXT(_solverHandle, loc, cos(angle), sin(angle));
@@ -437,8 +439,11 @@ const GLubyte Solver_Indices[] = {
         glProgramUniform2fEXT(_solverHandle, loc, offset_x, offset_y);
     }
     
+    glUniform1i(_textureUniform, 0);
+    glUniform1i(_texDenUniform, 1);
+    
     glBindFramebuffer(GL_FRAMEBUFFER, _offscreenFBO);
-    glBindTexture(GL_TEXTURE_2D, _inputTexture);
+    glActiveTexture(GL_TEXTURE1);
     
     glBindBuffer(GL_ARRAY_BUFFER, _solverBuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(Solver_Vertices), Solver_Vertices, GL_STATIC_DRAW);
@@ -451,9 +456,6 @@ const GLubyte Solver_Indices[] = {
     glVertexAttribPointer(_positionSlot, 2, GL_FLOAT, GL_FALSE, sizeof(tmp_struct), 0);
     glVertexAttribPointer(_texCoordSlot, 2, GL_FLOAT, GL_FALSE, sizeof(tmp_struct), (GLvoid*) (sizeof(float)*2));
     
-    glActiveTexture(GL_TEXTURE0);
-    glUniform1i(_textureUniform, 0);
-    
     glDrawElements(GL_TRIANGLES, sizeof(Solver_Indices)/sizeof(Solver_Indices[0]), GL_UNSIGNED_BYTE, 0);
     
     glFinish();
@@ -463,7 +465,6 @@ const GLubyte Solver_Indices[] = {
     [self _prepareDensityShaders];
 
     glBindFramebuffer(GL_FRAMEBUFFER, viewFramebuffer);
-    glBindTexture(GL_TEXTURE_2D, _outputTexture);
     
     glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
@@ -474,8 +475,7 @@ const GLubyte Solver_Indices[] = {
     glVertexAttribPointer(_colorSlot, 4, GL_FLOAT, GL_FALSE, sizeof(FMVertex), (GLvoid*) (sizeof(float) * 2));
     glVertexAttribPointer(_texCoordSlot, 2, GL_FLOAT, GL_FALSE, sizeof(FMVertex), (GLvoid*) (sizeof(float) * 6));
     
-    glActiveTexture(GL_TEXTURE0);
-    glUniform1i(_textureUniform, 0);
+    glUniform1i(_textureUniform, 1);
     
     glDrawElements(GL_TRIANGLE_STRIP, sizeof(Indices)/sizeof(Indices[0]), GL_UNSIGNED_BYTE, 0);
     
@@ -546,7 +546,9 @@ const GLubyte Solver_Indices[] = {
     
     _texCoordSlot = glGetAttribLocation(_solverHandle, "TexCoordIn");
     glEnableVertexAttribArray(_texCoordSlot);
+    
     _textureUniform = glGetUniformLocation(_solverHandle, "Texture");
+    _texDenUniform = glGetUniformLocation(_solverHandle, "Density");
 }
 
 - (void)_prepareDensityShaders
@@ -612,10 +614,12 @@ const GLubyte Solver_Indices[] = {
     glGenTextures(1, &_inputTexture);
     glGenTextures(1, &_outputTexture);
     
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, _inputTexture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     
+    glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, _outputTexture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -641,8 +645,8 @@ const GLubyte Solver_Indices[] = {
     for (int i=0;i<4;i++) [self fillTextureWithFrame:i atRow:0 atCol:i*64];
     for (int i=0;i<4;i++) [self fillTextureWithFrame:i+4 atRow:128 atCol:i*64];
     //[self fillTextureWithFrame:0 atRow:0 atCol:0];
-
-    glBindTexture(GL_TEXTURE_2D, _inputTexture);
+    
+    glActiveTexture(GL_TEXTURE0);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, VEL_TEX_SIDE, VEL_TEX_SIDE, 0, GL_RGB, GL_FLOAT, _clr);
 }
 
