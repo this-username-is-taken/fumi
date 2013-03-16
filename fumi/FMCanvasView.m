@@ -43,9 +43,6 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     FMReplayManager *_replayManager;
     FMDimensions _dimensions;
     
-    CGFloat *_velX;
-    CGFloat *_velY;
-    CGFloat *_den;
     CGFloat *_clr;
     
     CGFloat *_velVertices;
@@ -87,24 +84,8 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     self = [super initWithFrame:frame];
     if (self) {
         _dimensions = [FMSettings dimensions];
-
-        // allocate memory for velocity
-        _velX = (CGFloat *)calloc(_dimensions.velGridCount, sizeof(CGFloat));
-        _velY = (CGFloat *)calloc(_dimensions.velGridCount, sizeof(CGFloat));
-        
-        // allocate memory for density
-        _den  = (CGFloat *)calloc(_dimensions.denGridCount, sizeof(CGFloat));
-        
-        if (_velX == NULL || _velY == NULL || _den == NULL) {
-            DDLogError(@"FMCanvas unable to allocate enough memory");
-        } else {
-            DDLogInfo(@"Initialized memory for velocity at dimension: %dx%d", _dimensions.velWidth, _dimensions.velHeight);
-            DDLogInfo(@"Initialized memory for density at dimension: %dx%d", _dimensions.denWidth, _dimensions.denHeight);
-        }
         
         _replayManager = [[FMReplayManager alloc] init];
-        
-        start_solver(_dimensions.velGridCount);
         
         _clr = calloc(VEL_TEX_SIDE * VEL_TEX_SIDE * kRGB, sizeof(CGFloat));
         memset(_clr, 0, VEL_TEX_SIDE * VEL_TEX_SIDE * kRGB);
@@ -135,11 +116,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     [_replayManager release];
     [_events release];
     [_velocity release];
-    end_solver();
     
-    free(_velX);
-	free(_velY);
-	free(_den);
     free(_clr);
     
     free(_velVertices);
@@ -233,21 +210,21 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 - (void)_injectInkAtPoint:(FMPoint)p
 {
     // TODO: handle boundary cases; stack density; or even rewrite this
-    int radius = 50;
-    for (float x=-radius; x<=radius; x++) {
-        for (float y=-radius; y<=radius; y++) {
-            float dist = x*x/10+y*y/10;
-            int index = I_DEN(p.x+(int)x, p.y+(int)y);
-            if (dist > radius*radius) {
-                continue;
-            } else if (dist == 0) {
-                _den[index] += 255.0;
-            } else {
-                float amount = 255.0/dist*20.0;
-                _den[index] += (amount > 255.0) ? 255.0 : amount;
-            }
-        }
-    }
+//    int radius = 50;
+//    for (float x=-radius; x<=radius; x++) {
+//        for (float y=-radius; y<=radius; y++) {
+//            float dist = x*x/10+y*y/10;
+//            int index = I_DEN(p.x+(int)x, p.y+(int)y);
+//            if (dist > radius*radius) {
+//                continue;
+//            } else if (dist == 0) {
+//                _den[index] += 255.0;
+//            } else {
+//                float amount = 255.0/dist*20.0;
+//                _den[index] += (amount > 255.0) ? 255.0 : amount;
+//            }
+//        }
+//    }
     
     DDLogInfo(@"Injected ink at %@", NSStringFromFMPoint(p));
 }
@@ -319,9 +296,6 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     
     // Physics
     _benchmark.physicsTime = CFAbsoluteTimeGetCurrent();
-    memset(_velX, 0, _dimensions.velGridCount * sizeof(CGFloat));
-    memset(_velY, 0, _dimensions.velGridCount * sizeof(CGFloat));
-    den_step(_dimensions.denWidth, _dimensions.denHeight, _den, _velX, _velY, kPhysicsTimestep);
     _benchmark.physicsTime = CFAbsoluteTimeGetCurrent() - _benchmark.physicsTime;
     
     // Drawing
@@ -472,8 +446,6 @@ const GLubyte Solver_Indices[] = {
     
     glFinish();
     
-    //glReadPixels(0, 0, 128, 128, GL_RGBA, GL_UNSIGNED_BYTE, _pixels);
-    
     [self _prepareDensityShaders];
 
     glBindFramebuffer(GL_FRAMEBUFFER, viewFramebuffer);
@@ -499,54 +471,10 @@ const GLubyte Solver_Indices[] = {
 
 - (void)_renderVelocity
 {
-    glClearColor(1.0, 1.0, 1.0, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    for (int i=1; i<=_dimensions.velWidth; i++) {
-        GLfloat x = (i-0.5f) * (1.0/_dimensions.velWidth) * 2.0 - 1.0;
-        for (int j=1; j<=_dimensions.velHeight; j++) {
-            GLfloat y = (j-0.5f) * (1.0/_dimensions.velHeight) * 2.0 - 1.0;
-            
-            _velVertices[(i-1)*4+(j-1)*_dimensions.velWidth*4] = x;
-            _velVertices[(i-1)*4+(j-1)*_dimensions.velWidth*4+1] = y;
-            _velVertices[(i-1)*4+(j-1)*_dimensions.velWidth*4+2] = x+_velX[I_VEL(i, j)];
-            _velVertices[(i-1)*4+(j-1)*_dimensions.velWidth*4+3] = y+_velY[I_VEL(i, j)];
-        }
-    }
-    glBufferData(GL_ARRAY_BUFFER, _dimensions.velCount * 4 * sizeof(GLfloat), _velVertices, GL_STREAM_DRAW);
-    
-    glVertexAttribPointer(_positionSlot, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat)*2, 0);
-    
-    glDrawElements(GL_LINES, _dimensions.velCount * 2, GL_UNSIGNED_INT, 0);
 }
 
 - (void)_renderDensity
 {
-    /*
-    glEnableClientState(GL_VERTEX_ARRAY);
-    
-    glPointSize(5);
-    
-    for (int i=1; i<=_dimensions.denWidth; i++) {
-        GLfloat x = (i-0.5f) * _dimensions.denCellSize;
-        for (int j=1; j<=_dimensions.denHeight; j++) {
-            GLfloat y = (j-0.5f) * _dimensions.denCellSize;
-            
-            CGFloat vertices[2];
-            vertices[0] = x;
-            vertices[1] = y;
-            
-            float density = _den[I_DEN(i, j)];
-            if (density > 255.0) density = 255.0;
-            glColor4ub(255, 255-density, 255-density, 255);
-            
-            glVertexPointer(2, GL_FLOAT, 0, vertices);
-            glDrawArrays(GL_POINTS, 0, 1);
-        }
-    }
-    
-    glDisableClientState(GL_VERTEX_ARRAY);
-     */
 }
 
 #pragma mark -
@@ -691,7 +619,6 @@ const GLubyte Solver_Indices[] = {
 
 - (void)clearDensity
 {
-    memset(_den, 0, _dimensions.denGridCount * sizeof(CGFloat));
 }
 
 @end
