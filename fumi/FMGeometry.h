@@ -28,29 +28,6 @@ CG_INLINE CGPoint FMUnitVectorFromCGPoint(CGPoint v)
 }
 
 #pragma mark -
-#pragma mark FMVertex
-
-typedef struct {
-    float position[2];
-    float color[4];
-    float texCoord[2];
-} FMVertex;
-
-CG_INLINE FMVertex FMVertexMake(float p0, float p1, float c0, float c1, float c2, float c3, float t0, float t1)
-{
-    FMVertex vertex;
-    vertex.position[0] = p0;
-    vertex.position[1] = p1;
-    vertex.color[0] = c0;
-    vertex.color[1] = c1;
-    vertex.color[2] = c2;
-    vertex.color[3] = c3;
-    vertex.texCoord[0] = t0;
-    vertex.texCoord[1] = t1;
-    return vertex;
-}
-
-#pragma mark -
 #pragma mark FMPoint
 
 typedef struct {

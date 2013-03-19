@@ -45,31 +45,15 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     
     CGFloat *_clr;
     
-    CGFloat *_velVertices;
-    GLuint *_velIndices;
-    
     GLuint _offscreenFBO;
-    GLuint _velTexture;
+    
+    GLuint _inputVelTex;
+    GLuint _outputVelTex;
     GLuint _denTexture[2];
     
-    GLuint _solverBuffer;
-    GLuint _vertexBuffer;
-    GLuint _indexBuffer;
-    
-    GLuint _solverHandle;
-    GLuint _denShaderHandle;
-    GLuint _velShaderHandle;
-    
-    int _positionSlot;
-    int _colorSlot;
-    int _transformSlot;
-    
-    GLuint _centerSlot;
-    GLuint _angleSlot;
-    
-    GLuint _texCoordSlot;
-    GLuint _textureUniform;
-    GLuint _texDenUniform;
+    GLuint _velocityShaderHandle;
+    GLuint _displayShaderHandle;
+    GLuint _densityShaderHandle;
     
     NSMutableArray *_events;
     
@@ -90,11 +74,6 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
         
         _clr = calloc(VEL_TEX_SIDE * VEL_TEX_SIDE * kRGB, sizeof(CGFloat));
         memset(_clr, 0, VEL_TEX_SIDE * VEL_TEX_SIDE * kRGB);
-        
-        _velVertices = (GLfloat *)calloc(_dimensions.velCount * 4, sizeof(GLfloat));
-        _velIndices = (GLuint *)calloc(_dimensions.velCount * 2, sizeof(GLuint));
-        for (int i=0;i<_dimensions.velCount * 2;i++)
-            _velIndices[i] = i;
         
         _events = [[NSMutableArray alloc] init];
         _velocity = [[FMVelocity alloc] initWithFilename:@"velocity"];
@@ -120,8 +99,6 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     
     free(_clr);
     
-    free(_velVertices);
-    
     [super dealloc];
 }
 
@@ -132,9 +109,6 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 {
     DDLogInfo(@"Rendering mode: %d -> %d", _renderingMode, mode);
     _renderingMode = mode;
-    
-    (_renderingMode == FMRenderingModeTexture) ? [self _prepareDensityShaders] : [self _prepareVelocityShaders];
-    [self _setupVBO];
 }
 
 #pragma mark -
@@ -302,19 +276,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     // Drawing
     _benchmark.graphicsTime = CFAbsoluteTimeGetCurrent();
     
-    switch (_renderingMode) {
-        case FMRenderingModeTexture:
-            [self _renderTexture];
-            break;
-        case FMRenderingModeVelocity:
-            [self _renderVelocity];
-            break;
-        case FMRenderingModeDensity:
-            [self _renderDensity];
-            break;
-        default:
-            break;
-    }
+    [self _render];
     
     glBindRenderbuffer(GL_RENDERBUFFER, viewRenderbuffer);
     [self.glContext presentRenderbuffer:GL_RENDERBUFFER];
@@ -329,46 +291,53 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     [_delegate updateBenchmark:&_benchmark];
 }
 
-const FMVertex Vertices[] = {
-    {{-1, -1}, {1, 0, 0, 1}, {0.0, 0.0}},
-    {{-1, 1}, {0, 1, 0, 1}, {0.0, 0.75}},
-    {{1, -1}, {0, 0, 1, 1}, {1.0, 0.0}},
-    {{1, 1}, {0, 0, 0, 1}, {1.0, 0.75}}
-};
-
-const GLubyte Indices[] = {
-    0, 1, 2, 3
-};
+#pragma mark -
 
 typedef struct {
     float position[4];
     float transform[4];
-} tmp_struct;
+} FMVelocityVertex;
 
-tmp_struct Solver_Vertices[] = {
+FMVelocityVertex VelocityVertices[] = {
     {{-1, -1, 0, 0}, {256, 128, M_PI_4, 1.0}},
     {{-1,  1, 0, 1}, {256, 128, M_PI_4, 1.0}},
     {{ 1, -1, 1, 0}, {256, 128, M_PI_4, 1.0}},
     {{ 1,  1, 1, 1}, {256, 128, M_PI_4, 1.0}},
 };
 
-const GLubyte Solver_Indices[] = {
+const GLubyte VelocityIndices[] = {
     0, 1, 2,
     2, 1, 3,
+};
+
+typedef struct {
+    float position[2];
+    float texCoord[2];
+} FMDisplayVertex;
+
+const FMDisplayVertex DisplayVertices[] = {
+    {{-1, -1}, {0.0, 0.0}},
+    {{-1, 1}, {0.0, 0.75}},
+    {{1, -1}, {1.0, 0.0}},
+    {{1, 1}, {1.0, 0.75}}
+};
+
+const GLubyte DisplayIndices[] = {
+    0, 1, 2, 3
 };
 
 - (void)_fillTextureIndices:(int)frame
 {
     switch (frame) {
         case 0:
-            Solver_Vertices[0].position[2] = 0.0;
-            Solver_Vertices[0].position[3] = 0.0;
-            Solver_Vertices[1].position[2] = 0.0;
-            Solver_Vertices[1].position[3] = 0.5;
-            Solver_Vertices[2].position[2] = 0.25;
-            Solver_Vertices[2].position[3] = 0.0;
-            Solver_Vertices[3].position[2] = 0.25;
-            Solver_Vertices[3].position[3] = 0.5;
+            VelocityVertices[0].position[2] = 0.0;
+            VelocityVertices[0].position[3] = 0.0;
+            VelocityVertices[1].position[2] = 0.0;
+            VelocityVertices[1].position[3] = 0.5;
+            VelocityVertices[2].position[2] = 0.25;
+            VelocityVertices[2].position[3] = 0.0;
+            VelocityVertices[3].position[2] = 0.25;
+            VelocityVertices[3].position[3] = 0.5;
             break;
             
         default:
@@ -376,11 +345,25 @@ const GLubyte Solver_Indices[] = {
     }
 }
 
-- (void)_renderTexture
+BOOL outputTex;
+
+- (void)_render
 {
-    [self _prepareSolverShaders];
-    static BOOL outputTex = 0;
     outputTex = !outputTex;
+    
+    [self _useVelocityShader];
+    glFinish();
+    [self _useDisplayShader];
+    
+    NSLog(@"%d", glGetError());
+}
+
+#pragma mark -
+#pragma mark Helper Functions
+
+- (void)_useVelocityShader
+{
+    glUseProgram(_velocityShaderHandle);
     
     if ([_events count] != 0) {
         FMReplayPan *pan = [_events objectAtIndex:0];
@@ -390,135 +373,86 @@ const GLubyte Solver_Indices[] = {
         if (v.x > 0) new_angle = -new_angle;
         
         for (int i=0;i<4;i++) {
-            Solver_Vertices[i].transform[0] = pan.position.x;
-            Solver_Vertices[i].transform[1] = pan.position.y;
-            Solver_Vertices[i].transform[2] = new_angle;
-            Solver_Vertices[i].transform[3] = FMMagnitude(pan.force)/20.0;
+            VelocityVertices[i].transform[0] = pan.position.x;
+            VelocityVertices[i].transform[1] = pan.position.y;
+            VelocityVertices[i].transform[2] = new_angle;
+            VelocityVertices[i].transform[3] = FMMagnitude(pan.force)/20.0;
         }
         
         [self _fillTextureIndices:pan.frame];
     }
     
-    glUniform1i(_textureUniform, 0);
-    if (outputTex)
-        glUniform1i(_texDenUniform, 1);
-    else
-        glUniform1i(_texDenUniform, 2);
-    
     glBindFramebuffer(GL_FRAMEBUFFER, _offscreenFBO);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _denTexture[outputTex], 0);
     
-    glBindBuffer(GL_ARRAY_BUFFER, _solverBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(Solver_Vertices), Solver_Vertices, GL_STATIC_DRAW);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Solver_Indices), Solver_Indices, GL_STATIC_DRAW);
+    GLuint vertexBuffer, indexBuffer;
+    glGenBuffers(1, &vertexBuffer);
+    glGenBuffers(1, &indexBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(VelocityVertices), VelocityVertices, GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(VelocityIndices), VelocityIndices, GL_STATIC_DRAW);
     
     glClearColor(0, 0, 0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
     
-    glVertexAttribPointer(_positionSlot, 4, GL_FLOAT, GL_FALSE, sizeof(tmp_struct), 0);
-    glVertexAttribPointer(_transformSlot, 4, GL_FLOAT, GL_FALSE, sizeof(tmp_struct), (GLvoid*) (sizeof(float)*4));
+    GLuint textureUniform = glGetUniformLocation(_velocityShaderHandle, "Texture");
+    GLuint texDenUniform = glGetUniformLocation(_velocityShaderHandle, "Density");
+    glUniform1i(textureUniform, 0);
+    if (outputTex)
+        glUniform1i(texDenUniform, 2);
+    else
+        glUniform1i(texDenUniform, 3);
     
-    glDrawElements(GL_TRIANGLES, sizeof(Solver_Indices)/sizeof(Solver_Indices[0]), GL_UNSIGNED_BYTE, 0);
+    GLuint positionAttribute = glGetAttribLocation(_velocityShaderHandle, "Position");
+    glEnableVertexAttribArray(positionAttribute);
+    glVertexAttribPointer(positionAttribute, 4, GL_FLOAT, GL_FALSE, sizeof(FMVelocityVertex), 0);
     
-    glFinish();
+    GLuint transformAttribute = glGetAttribLocation(_velocityShaderHandle, "Transform");
+    glEnableVertexAttribArray(transformAttribute);
+    glVertexAttribPointer(transformAttribute, 4, GL_FLOAT, GL_FALSE, sizeof(FMVelocityVertex), (GLvoid*) (sizeof(float)*4));
     
-    [self _prepareDensityShaders];
+    glDrawElements(GL_TRIANGLES, sizeof(VelocityIndices)/sizeof(VelocityIndices[0]), GL_UNSIGNED_BYTE, 0);
+}
+
+- (void)_useDensityShader
+{
+    glUseProgram(_densityShaderHandle);
+    
+    GLuint positionAttribute = glGetAttribLocation(_densityShaderHandle, "Position");
+    glEnableVertexAttribArray(positionAttribute);
+}
+
+- (void)_useDisplayShader
+{
+    glUseProgram(_displayShaderHandle);
 
     glBindFramebuffer(GL_FRAMEBUFFER, viewFramebuffer);
     
-    glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices), Indices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(_positionSlot, 2, GL_FLOAT, GL_FALSE, sizeof(FMVertex), 0);
-    glVertexAttribPointer(_colorSlot, 4, GL_FLOAT, GL_FALSE, sizeof(FMVertex), (GLvoid*) (sizeof(float) * 2));
-    glVertexAttribPointer(_texCoordSlot, 2, GL_FLOAT, GL_FALSE, sizeof(FMVertex), (GLvoid*) (sizeof(float) * 6));
+    GLuint vertexBuffer, indexBuffer;
+    glGenBuffers(1, &vertexBuffer);
+    glGenBuffers(1, &indexBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(DisplayVertices), DisplayVertices, GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(DisplayIndices), DisplayIndices, GL_STATIC_DRAW);
     
+    GLuint positionAttribute = glGetAttribLocation(_displayShaderHandle, "Position");
+    glEnableVertexAttribArray(positionAttribute);
+    glVertexAttribPointer(positionAttribute, 2, GL_FLOAT, GL_FALSE, sizeof(FMDisplayVertex), 0);
+    
+    GLuint textureAttribute = glGetAttribLocation(_displayShaderHandle, "TexCoordIn");
+    glEnableVertexAttribArray(textureAttribute);
+    glVertexAttribPointer(textureAttribute, 2, GL_FLOAT, GL_FALSE, sizeof(FMDisplayVertex), (GLvoid*) (sizeof(float) * 2));
+
+    GLuint textureUniform = glGetUniformLocation(_displayShaderHandle, "Texture");
     if (outputTex)
-        glUniform1i(_textureUniform, 2);
+        glUniform1i(textureUniform, 3);
     else
-        glUniform1i(_textureUniform, 1);
+        glUniform1i(textureUniform, 2);
     
-    glDrawElements(GL_TRIANGLE_STRIP, sizeof(Indices)/sizeof(Indices[0]), GL_UNSIGNED_BYTE, 0);
-    
-    NSLog(@"%d", glGetError());
-}
-
-- (void)_renderVelocity
-{
-}
-
-- (void)_renderDensity
-{
-}
-
-#pragma mark -
-#pragma mark Helper Functions
-
-- (void)_prepareSolverShaders
-{
-    glUseProgram(_solverHandle);
-    
-    _positionSlot = glGetAttribLocation(_solverHandle, "Position");
-    glEnableVertexAttribArray(_positionSlot);
-    
-    _transformSlot = glGetAttribLocation(_solverHandle, "Transform");
-    glEnableVertexAttribArray(_transformSlot);
-    
-    _textureUniform = glGetUniformLocation(_solverHandle, "Texture");
-    _texDenUniform = glGetUniformLocation(_solverHandle, "Density");
-}
-
-- (void)_prepareDensityShaders
-{
-    glUseProgram(_denShaderHandle);
-    
-    _positionSlot = glGetAttribLocation(_denShaderHandle, "Position");
-    _colorSlot = glGetAttribLocation(_denShaderHandle, "SourceColor");
-    glEnableVertexAttribArray(_positionSlot);
-    glEnableVertexAttribArray(_colorSlot);
-    
-    _texCoordSlot = glGetAttribLocation(_denShaderHandle, "TexCoordIn");
-    glEnableVertexAttribArray(_texCoordSlot);
-    _textureUniform = glGetUniformLocation(_denShaderHandle, "Texture");
-}
-
-- (void)_prepareVelocityShaders
-{
-    glUseProgram(_velShaderHandle);
-    
-    _positionSlot = glGetAttribLocation(_velShaderHandle, "Position");
-    glEnableVertexAttribArray(_positionSlot);
-}
-
-- (void)_setupVBO
-{
-    switch (_renderingMode) {
-        case FMRenderingModeTexture:
-        {
-            // Setup VBO
-            glGenBuffers(1, &_solverBuffer);
-            glGenBuffers(1, &_vertexBuffer);
-            glGenBuffers(1, &_indexBuffer);
-            break;
-        }
-        case FMRenderingModeVelocity:
-        {
-            // Setup VBO
-            glGenBuffers(1, &_vertexBuffer);
-            glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);
-            glBufferData(GL_ARRAY_BUFFER, _dimensions.velCount * 4 * sizeof(GLfloat), _velVertices, GL_STREAM_DRAW);
-            
-            glGenBuffers(1, &_indexBuffer);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, _dimensions.velCount * 2 * sizeof(GLuint), _velIndices, GL_STREAM_DRAW);
-            break;
-        }
-        default:
-            break;
-    }
+    glDrawElements(GL_TRIANGLE_STRIP, sizeof(DisplayIndices)/sizeof(DisplayIndices[0]), GL_UNSIGNED_BYTE, 0);
 }
 
 - (void)_setupView
@@ -531,15 +465,23 @@ const GLubyte Solver_Indices[] = {
     glBlendFunc(GL_ONE, GL_ONE);
     
     // Generate and bind texture
-    glGenTextures(1, &_velTexture);
+    glGenTextures(1, &_inputVelTex);
+    glGenTextures(1, &_outputVelTex);
     glGenTextures(2, _denTexture);
+    NSLog(@"%d %d %d %d", _inputVelTex, _outputVelTex, _denTexture[0], _denTexture[1]);
     
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, _velTexture);
+    glBindTexture(GL_TEXTURE_2D, _inputVelTex);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     
     glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, _outputVelTex);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _dimensions.textureSide * 8, _dimensions.textureSide * 8, 0,  GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    
+    glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, _denTexture[0]);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -552,7 +494,7 @@ const GLubyte Solver_Indices[] = {
         }
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _dimensions.textureSide * 8, _dimensions.textureSide * 8, 0,  GL_RGB, GL_UNSIGNED_BYTE, density);
     
-    glActiveTexture(GL_TEXTURE2);
+    glActiveTexture(GL_TEXTURE3);
     glBindTexture(GL_TEXTURE_2D, _denTexture[1]);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -561,26 +503,23 @@ const GLubyte Solver_Indices[] = {
     glGenFramebuffers(1, &_offscreenFBO);
     glBindFramebuffer(GL_FRAMEBUFFER, _offscreenFBO);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _denTexture[0], 0);
-    
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     {
         NSLog(@"failed to make complete framebuffer object %x", glCheckFramebufferStatus(GL_FRAMEBUFFER));
         return;
     }
     
-    _solverHandle = [FMShaderManager programHandle:@"solver"];
-    _denShaderHandle = [FMShaderManager programHandle:@"density"];
-    _velShaderHandle = [FMShaderManager programHandle:@"velocity"];
-    (_renderingMode == FMRenderingModeTexture) ? [self _prepareDensityShaders] : [self _prepareVelocityShaders];
-    [self _setupVBO];
-    
     // Texture input
     for (int i=0;i<4;i++) [self fillTextureWithFrame:i atRow:0 atCol:i*64];
     for (int i=0;i<4;i++) [self fillTextureWithFrame:i+4 atRow:128 atCol:i*64];
     //[self fillTextureWithFrame:0 atRow:0 atCol:0];
-    
     glActiveTexture(GL_TEXTURE0);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, VEL_TEX_SIDE, VEL_TEX_SIDE, 0, GL_RGB, GL_FLOAT, _clr);
+    
+    // compile shaders
+    _velocityShaderHandle = [FMShaderManager programHandle:@"velocity"];
+    _densityShaderHandle = [FMShaderManager programHandle:@"density"];
+    _displayShaderHandle = [FMShaderManager programHandle:@"render"];
 }
 
 - (void)fillTextureWithFrame:(int)frame atRow:(int)row atCol:(int)col

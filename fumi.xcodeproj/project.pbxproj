@@ -24,8 +24,8 @@
 		2B1B7712160966BF002A3A50 /* FMSolver.c in Sources */ = {isa = PBXBuildFile; fileRef = 2B1B7711160966BF002A3A50 /* FMSolver.c */; };
 		2B28050016519FB60057D8CB /* density.vsh in Resources */ = {isa = PBXBuildFile; fileRef = 2B2804FF16519FB60057D8CB /* density.vsh */; };
 		2B28050216519FC90057D8CB /* density.fsh in Resources */ = {isa = PBXBuildFile; fileRef = 2B28050116519FC90057D8CB /* density.fsh */; };
-		2B28050416519FD40057D8CB /* velocity.vsh in Resources */ = {isa = PBXBuildFile; fileRef = 2B28050316519FD40057D8CB /* velocity.vsh */; };
-		2B28050616519FE00057D8CB /* velocity.fsh in Resources */ = {isa = PBXBuildFile; fileRef = 2B28050516519FE00057D8CB /* velocity.fsh */; };
+		2B28050416519FD40057D8CB /* render.vsh in Resources */ = {isa = PBXBuildFile; fileRef = 2B28050316519FD40057D8CB /* render.vsh */; };
+		2B28050616519FE00057D8CB /* render.fsh in Resources */ = {isa = PBXBuildFile; fileRef = 2B28050516519FE00057D8CB /* render.fsh */; };
 		2B2B685A16BE47E7000F0591 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 2B2B685916BE47E7000F0591 /* main.c */; };
 		2B2B686116BE48A3000F0591 /* FMSolver.c in Sources */ = {isa = PBXBuildFile; fileRef = 2B1B7711160966BF002A3A50 /* FMSolver.c */; };
 		2B2B686516BE4D71000F0591 /* velocity.fm in Resources */ = {isa = PBXBuildFile; fileRef = 2B2B686416BE4D71000F0591 /* velocity.fm */; };
@@ -40,10 +40,10 @@
 		2B9E3D3316AF2C6700ED1B50 /* FMVelocity.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B9E3D3216AF2C6700ED1B50 /* FMVelocity.m */; };
 		2BCF704916D57AB000E8A9AD /* FMCanvas.m in Sources */ = {isa = PBXBuildFile; fileRef = 2BCF704816D57AB000E8A9AD /* FMCanvas.m */; };
 		2BCF704D16DA5A6400E8A9AD /* FMShaderManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2BCF704C16DA5A6400E8A9AD /* FMShaderManager.m */; };
-		2BCF704F16DA8D2D00E8A9AD /* solver.vsh in Sources */ = {isa = PBXBuildFile; fileRef = 2BCF704E16DA8D2D00E8A9AD /* solver.vsh */; };
-		2BCF705116DA8D3C00E8A9AD /* solver.fsh in Sources */ = {isa = PBXBuildFile; fileRef = 2BCF705016DA8D3C00E8A9AD /* solver.fsh */; };
-		2BCF705D16DA91D800E8A9AD /* solver.vsh in Resources */ = {isa = PBXBuildFile; fileRef = 2BCF704E16DA8D2D00E8A9AD /* solver.vsh */; };
-		2BCF705F16DA91DE00E8A9AD /* solver.fsh in Resources */ = {isa = PBXBuildFile; fileRef = 2BCF705016DA8D3C00E8A9AD /* solver.fsh */; };
+		2BCF704F16DA8D2D00E8A9AD /* velocity.vsh in Sources */ = {isa = PBXBuildFile; fileRef = 2BCF704E16DA8D2D00E8A9AD /* velocity.vsh */; };
+		2BCF705116DA8D3C00E8A9AD /* velocity.fsh in Sources */ = {isa = PBXBuildFile; fileRef = 2BCF705016DA8D3C00E8A9AD /* velocity.fsh */; };
+		2BCF705D16DA91D800E8A9AD /* velocity.vsh in Resources */ = {isa = PBXBuildFile; fileRef = 2BCF704E16DA8D2D00E8A9AD /* velocity.vsh */; };
+		2BCF705F16DA91DE00E8A9AD /* velocity.fsh in Resources */ = {isa = PBXBuildFile; fileRef = 2BCF705016DA8D3C00E8A9AD /* velocity.fsh */; };
 		2BF9CDEF1618AD9D005169D5 /* FMReplayObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2BF9CDEE1618AD9D005169D5 /* FMReplayObject.m */; };
 		2BF9CDF21618AE04005169D5 /* FMReplayLongPress.m in Sources */ = {isa = PBXBuildFile; fileRef = 2BF9CDF11618AE04005169D5 /* FMReplayLongPress.m */; };
 		2BF9CDF61618AE84005169D5 /* FMReplayPan.m in Sources */ = {isa = PBXBuildFile; fileRef = 2BF9CDF51618AE84005169D5 /* FMReplayPan.m */; };
@@ -93,8 +93,8 @@
 		2B1B7719160AA3F5002A3A50 /* demo.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = demo.c; path = ../demo.c; sourceTree = "<group>"; };
 		2B2804FF16519FB60057D8CB /* density.vsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = density.vsh; sourceTree = "<group>"; };
 		2B28050116519FC90057D8CB /* density.fsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = density.fsh; sourceTree = "<group>"; };
-		2B28050316519FD40057D8CB /* velocity.vsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = velocity.vsh; sourceTree = "<group>"; };
-		2B28050516519FE00057D8CB /* velocity.fsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = velocity.fsh; sourceTree = "<group>"; };
+		2B28050316519FD40057D8CB /* render.vsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = render.vsh; sourceTree = "<group>"; };
+		2B28050516519FE00057D8CB /* render.fsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = render.fsh; sourceTree = "<group>"; };
 		2B2B685616BE47E7000F0591 /* solver */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = solver; sourceTree = BUILT_PRODUCTS_DIR; };
 		2B2B685916BE47E7000F0591 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		2B2B686416BE4D71000F0591 /* velocity.fm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = velocity.fm; sourceTree = "<group>"; };
@@ -117,8 +117,8 @@
 		2BCF704816D57AB000E8A9AD /* FMCanvas.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMCanvas.m; sourceTree = "<group>"; };
 		2BCF704B16DA5A6400E8A9AD /* FMShaderManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMShaderManager.h; sourceTree = "<group>"; };
 		2BCF704C16DA5A6400E8A9AD /* FMShaderManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMShaderManager.m; sourceTree = "<group>"; };
-		2BCF704E16DA8D2D00E8A9AD /* solver.vsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = solver.vsh; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.glsl; };
-		2BCF705016DA8D3C00E8A9AD /* solver.fsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = solver.fsh; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.glsl; };
+		2BCF704E16DA8D2D00E8A9AD /* velocity.vsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = velocity.vsh; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.glsl; };
+		2BCF705016DA8D3C00E8A9AD /* velocity.fsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = velocity.fsh; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.glsl; };
 		2BF9CDED1618AD9D005169D5 /* FMReplayObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMReplayObject.h; sourceTree = "<group>"; };
 		2BF9CDEE1618AD9D005169D5 /* FMReplayObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMReplayObject.m; sourceTree = "<group>"; };
 		2BF9CDF01618AE04005169D5 /* FMReplayLongPress.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMReplayLongPress.h; sourceTree = "<group>"; };
@@ -297,12 +297,12 @@
 		2B9E3D2F16AF2BB100ED1B50 /* Shaders */ = {
 			isa = PBXGroup;
 			children = (
-				2BCF704E16DA8D2D00E8A9AD /* solver.vsh */,
-				2BCF705016DA8D3C00E8A9AD /* solver.fsh */,
+				2BCF704E16DA8D2D00E8A9AD /* velocity.vsh */,
+				2BCF705016DA8D3C00E8A9AD /* velocity.fsh */,
 				2B2804FF16519FB60057D8CB /* density.vsh */,
 				2B28050116519FC90057D8CB /* density.fsh */,
-				2B28050316519FD40057D8CB /* velocity.vsh */,
-				2B28050516519FE00057D8CB /* velocity.fsh */,
+				2B28050316519FD40057D8CB /* render.vsh */,
+				2B28050516519FE00057D8CB /* render.fsh */,
 			);
 			name = Shaders;
 			sourceTree = "<group>";
@@ -404,12 +404,12 @@
 				2B37E77815BFC25B00D21E55 /* InfoPlist.strings in Resources */,
 				2B66EE08160E51BF003B5F83 /* input.fm in Resources */,
 				2B2B686516BE4D71000F0591 /* velocity.fm in Resources */,
-				2BCF705F16DA91DE00E8A9AD /* solver.fsh in Resources */,
-				2BCF705D16DA91D800E8A9AD /* solver.vsh in Resources */,
+				2BCF705F16DA91DE00E8A9AD /* velocity.fsh in Resources */,
+				2BCF705D16DA91D800E8A9AD /* velocity.vsh in Resources */,
 				2B28050016519FB60057D8CB /* density.vsh in Resources */,
 				2B28050216519FC90057D8CB /* density.fsh in Resources */,
-				2B28050416519FD40057D8CB /* velocity.vsh in Resources */,
-				2B28050616519FE00057D8CB /* velocity.fsh in Resources */,
+				2B28050416519FD40057D8CB /* render.vsh in Resources */,
+				2B28050616519FE00057D8CB /* render.fsh in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -451,8 +451,8 @@
 				2B9E3D3316AF2C6700ED1B50 /* FMVelocity.m in Sources */,
 				2BCF704916D57AB000E8A9AD /* FMCanvas.m in Sources */,
 				2BCF704D16DA5A6400E8A9AD /* FMShaderManager.m in Sources */,
-				2BCF704F16DA8D2D00E8A9AD /* solver.vsh in Sources */,
-				2BCF705116DA8D3C00E8A9AD /* solver.fsh in Sources */,
+				2BCF704F16DA8D2D00E8A9AD /* velocity.vsh in Sources */,
+				2BCF705116DA8D3C00E8A9AD /* velocity.fsh in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

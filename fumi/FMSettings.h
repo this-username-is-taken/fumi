@@ -38,9 +38,6 @@ typedef struct {
     unsigned int denGridCount;
     
     unsigned int textureSide;
-    
-    FMVertex texVertices[4];
-    GLubyte texIndices[4];
 } FMDimensions;
 
 @interface FMSettings : NSObject
