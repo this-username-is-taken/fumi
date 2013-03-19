@@ -313,6 +313,22 @@ const GLubyte VelocityIndices[] = {
 typedef struct {
     float position[2];
     float texCoord[2];
+} FMDensityVertex;
+
+const FMDensityVertex DensityVertices[] = {
+    {{-1, -1}, {0.0, 0.0}},
+    {{-1, 1}, {0.0, 0.75}},
+    {{1, -1}, {1.0, 0.0}},
+    {{1, 1}, {1.0, 0.75}}
+};
+
+const GLubyte DensityIndices[] = {
+    0, 1, 2, 3
+};
+
+typedef struct {
+    float position[2];
+    float texCoord[2];
 } FMDisplayVertex;
 
 const FMDisplayVertex DisplayVertices[] = {
@@ -353,6 +369,8 @@ BOOL outputTex;
     
     [self _useVelocityShader];
     glFinish();
+    [self _useDensityShader];
+    glFinish();
     [self _useDisplayShader];
     
     NSLog(@"%d", glGetError());
@@ -383,7 +401,7 @@ BOOL outputTex;
     }
     
     glBindFramebuffer(GL_FRAMEBUFFER, _offscreenFBO);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _denTexture[outputTex], 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _outputVelTex, 0);
     
     GLuint vertexBuffer, indexBuffer;
     glGenBuffers(1, &vertexBuffer);
@@ -397,12 +415,7 @@ BOOL outputTex;
     glClear(GL_COLOR_BUFFER_BIT);
     
     GLuint textureUniform = glGetUniformLocation(_velocityShaderHandle, "Texture");
-    GLuint texDenUniform = glGetUniformLocation(_velocityShaderHandle, "Density");
     glUniform1i(textureUniform, 0);
-    if (outputTex)
-        glUniform1i(texDenUniform, 2);
-    else
-        glUniform1i(texDenUniform, 3);
     
     GLuint positionAttribute = glGetAttribLocation(_velocityShaderHandle, "Position");
     glEnableVertexAttribArray(positionAttribute);
@@ -419,8 +432,35 @@ BOOL outputTex;
 {
     glUseProgram(_densityShaderHandle);
     
+    glBindFramebuffer(GL_FRAMEBUFFER, _offscreenFBO);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _denTexture[outputTex], 0);
+    
+    GLuint vertexBuffer, indexBuffer;
+    glGenBuffers(1, &vertexBuffer);
+    glGenBuffers(1, &indexBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(DensityVertices), DensityVertices, GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(DensityIndices), DensityIndices, GL_STATIC_DRAW);
+    
     GLuint positionAttribute = glGetAttribLocation(_densityShaderHandle, "Position");
     glEnableVertexAttribArray(positionAttribute);
+    glVertexAttribPointer(positionAttribute, 2, GL_FLOAT, GL_FALSE, sizeof(FMDensityVertex), 0);
+    
+    GLuint textureAttribute = glGetAttribLocation(_densityShaderHandle, "TexCoordIn");
+    glEnableVertexAttribArray(textureAttribute);
+    glVertexAttribPointer(textureAttribute, 2, GL_FLOAT, GL_FALSE, sizeof(FMDensityVertex), (GLvoid*) (sizeof(float) * 2));
+    
+    GLuint textureUniform = glGetUniformLocation(_densityShaderHandle, "Texture");
+    GLuint densityUniform = glGetUniformLocation(_densityShaderHandle, "Density");
+    glUniform1i(textureUniform, 0);
+    if (outputTex)
+        glUniform1i(densityUniform, 2);
+    else
+        glUniform1i(densityUniform, 3);
+    
+    glDrawElements(GL_TRIANGLE_STRIP, sizeof(DensityIndices)/sizeof(DensityIndices[0]), GL_UNSIGNED_BYTE, 0);
 }
 
 - (void)_useDisplayShader
@@ -447,10 +487,12 @@ BOOL outputTex;
     glVertexAttribPointer(textureAttribute, 2, GL_FLOAT, GL_FALSE, sizeof(FMDisplayVertex), (GLvoid*) (sizeof(float) * 2));
 
     GLuint textureUniform = glGetUniformLocation(_displayShaderHandle, "Texture");
+    /*
     if (outputTex)
         glUniform1i(textureUniform, 3);
     else
-        glUniform1i(textureUniform, 2);
+        glUniform1i(textureUniform, 2);*/
+    glUniform1i(textureUniform, 1);
     
     glDrawElements(GL_TRIANGLE_STRIP, sizeof(DisplayIndices)/sizeof(DisplayIndices[0]), GL_UNSIGNED_BYTE, 0);
 }
