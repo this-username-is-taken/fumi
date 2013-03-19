@@ -6,7 +6,7 @@ varying vec2 TexCoord;
 void main(void) {
     // MOFO OpenGL column-major matrices
     mat3 projectionMatrix = mat3(2.0/1024.0, 0.0, 0.0,
-                                 0.0, 2.0/768.0, 0.0,
+                                 0.0, 2.0/1024.0, 0.0,
                                  -1.0, -1.0, 1.0);
     mat3 rotationMatrix = mat3( cos(Transform.z), -sin(Transform.z), 0.0,
                                sin(Transform.z), cos(Transform.z), 0.0,

@@ -317,9 +317,9 @@ typedef struct {
 
 const FMDensityVertex DensityVertices[] = {
     {{-1, -1}, {0.0, 0.0}},
-    {{-1, 1}, {0.0, 0.75}},
+    {{-1, 1.0}, {0.0, 1.0}},
     {{1, -1}, {1.0, 0.0}},
-    {{1, 1}, {1.0, 0.75}}
+    {{1, 1.0}, {1.0, 1.0}}
 };
 
 const GLubyte DensityIndices[] = {
@@ -333,9 +333,9 @@ typedef struct {
 
 const FMDisplayVertex DisplayVertices[] = {
     {{-1, -1}, {0.0, 0.0}},
-    {{-1, 1}, {0.0, 0.75}},
+    {{-1, 1}, {0.0, 1.0}},
     {{1, -1}, {1.0, 0.0}},
-    {{1, 1}, {1.0, 0.75}}
+    {{1, 1}, {1.0, 1.0}}
 };
 
 const GLubyte DisplayIndices[] = {
@@ -452,9 +452,10 @@ BOOL outputTex;
     glEnableVertexAttribArray(textureAttribute);
     glVertexAttribPointer(textureAttribute, 2, GL_FLOAT, GL_FALSE, sizeof(FMDensityVertex), (GLvoid*) (sizeof(float) * 2));
     
-    GLuint textureUniform = glGetUniformLocation(_densityShaderHandle, "Texture");
+    GLuint velocityUniform = glGetUniformLocation(_densityShaderHandle, "Velocity");
+    glUniform1i(velocityUniform, 1);
+    
     GLuint densityUniform = glGetUniformLocation(_densityShaderHandle, "Density");
-    glUniform1i(textureUniform, 0);
     if (outputTex)
         glUniform1i(densityUniform, 2);
     else
@@ -487,12 +488,10 @@ BOOL outputTex;
     glVertexAttribPointer(textureAttribute, 2, GL_FLOAT, GL_FALSE, sizeof(FMDisplayVertex), (GLvoid*) (sizeof(float) * 2));
 
     GLuint textureUniform = glGetUniformLocation(_displayShaderHandle, "Texture");
-    /*
     if (outputTex)
         glUniform1i(textureUniform, 3);
     else
-        glUniform1i(textureUniform, 2);*/
-    glUniform1i(textureUniform, 1);
+        glUniform1i(textureUniform, 2);
     
     glDrawElements(GL_TRIANGLE_STRIP, sizeof(DisplayIndices)/sizeof(DisplayIndices[0]), GL_UNSIGNED_BYTE, 0);
 }
@@ -500,8 +499,8 @@ BOOL outputTex;
 - (void)_setupView
 {
     // Matrix & viewport initialization
-    CGRect bounds = [FMSettings canvasDimensions];
-    glViewport(CGRectGetMinX(bounds), CGRectGetMinY(bounds), CGRectGetMaxX(bounds), CGRectGetMaxY(bounds));
+    // CGRect bounds = [FMSettings canvasDimensions];
+    glViewport(0, 0, 1024, 1024);
     
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE, GL_ONE);
@@ -510,7 +509,6 @@ BOOL outputTex;
     glGenTextures(1, &_inputVelTex);
     glGenTextures(1, &_outputVelTex);
     glGenTextures(2, _denTexture);
-    NSLog(@"%d %d %d %d", _inputVelTex, _outputVelTex, _denTexture[0], _denTexture[1]);
     
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, _inputVelTex);
@@ -561,7 +559,7 @@ BOOL outputTex;
     // compile shaders
     _velocityShaderHandle = [FMShaderManager programHandle:@"velocity"];
     _densityShaderHandle = [FMShaderManager programHandle:@"density"];
-    _displayShaderHandle = [FMShaderManager programHandle:@"render"];
+    _displayShaderHandle = [FMShaderManager programHandle:@"display"];
 }
 
 - (void)fillTextureWithFrame:(int)frame atRow:(int)row atCol:(int)col

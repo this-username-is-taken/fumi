@@ -24,8 +24,8 @@
 		2B1B7712160966BF002A3A50 /* FMSolver.c in Sources */ = {isa = PBXBuildFile; fileRef = 2B1B7711160966BF002A3A50 /* FMSolver.c */; };
 		2B28050016519FB60057D8CB /* density.vsh in Resources */ = {isa = PBXBuildFile; fileRef = 2B2804FF16519FB60057D8CB /* density.vsh */; };
 		2B28050216519FC90057D8CB /* density.fsh in Resources */ = {isa = PBXBuildFile; fileRef = 2B28050116519FC90057D8CB /* density.fsh */; };
-		2B28050416519FD40057D8CB /* render.vsh in Resources */ = {isa = PBXBuildFile; fileRef = 2B28050316519FD40057D8CB /* render.vsh */; };
-		2B28050616519FE00057D8CB /* render.fsh in Resources */ = {isa = PBXBuildFile; fileRef = 2B28050516519FE00057D8CB /* render.fsh */; };
+		2B28050416519FD40057D8CB /* display.vsh in Resources */ = {isa = PBXBuildFile; fileRef = 2B28050316519FD40057D8CB /* display.vsh */; };
+		2B28050616519FE00057D8CB /* display.fsh in Resources */ = {isa = PBXBuildFile; fileRef = 2B28050516519FE00057D8CB /* display.fsh */; };
 		2B2B685A16BE47E7000F0591 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 2B2B685916BE47E7000F0591 /* main.c */; };
 		2B2B686116BE48A3000F0591 /* FMSolver.c in Sources */ = {isa = PBXBuildFile; fileRef = 2B1B7711160966BF002A3A50 /* FMSolver.c */; };
 		2B2B686516BE4D71000F0591 /* velocity.fm in Resources */ = {isa = PBXBuildFile; fileRef = 2B2B686416BE4D71000F0591 /* velocity.fm */; };
@@ -91,10 +91,10 @@
 		2B1B770E16096697002A3A50 /* FMSolver.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FMSolver.h; sourceTree = "<group>"; };
 		2B1B7711160966BF002A3A50 /* FMSolver.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = FMSolver.c; sourceTree = "<group>"; };
 		2B1B7719160AA3F5002A3A50 /* demo.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = demo.c; path = ../demo.c; sourceTree = "<group>"; };
-		2B2804FF16519FB60057D8CB /* density.vsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = density.vsh; sourceTree = "<group>"; };
-		2B28050116519FC90057D8CB /* density.fsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = density.fsh; sourceTree = "<group>"; };
-		2B28050316519FD40057D8CB /* render.vsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = render.vsh; sourceTree = "<group>"; };
-		2B28050516519FE00057D8CB /* render.fsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = render.fsh; sourceTree = "<group>"; };
+		2B2804FF16519FB60057D8CB /* density.vsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = density.vsh; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.glsl; };
+		2B28050116519FC90057D8CB /* density.fsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = density.fsh; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.glsl; };
+		2B28050316519FD40057D8CB /* display.vsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = display.vsh; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.glsl; };
+		2B28050516519FE00057D8CB /* display.fsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = display.fsh; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.glsl; };
 		2B2B685616BE47E7000F0591 /* solver */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = solver; sourceTree = BUILT_PRODUCTS_DIR; };
 		2B2B685916BE47E7000F0591 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		2B2B686416BE4D71000F0591 /* velocity.fm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = velocity.fm; sourceTree = "<group>"; };
@@ -301,8 +301,8 @@
 				2BCF705016DA8D3C00E8A9AD /* velocity.fsh */,
 				2B2804FF16519FB60057D8CB /* density.vsh */,
 				2B28050116519FC90057D8CB /* density.fsh */,
-				2B28050316519FD40057D8CB /* render.vsh */,
-				2B28050516519FE00057D8CB /* render.fsh */,
+				2B28050316519FD40057D8CB /* display.vsh */,
+				2B28050516519FE00057D8CB /* display.fsh */,
 			);
 			name = Shaders;
 			sourceTree = "<group>";
@@ -408,8 +408,8 @@
 				2BCF705D16DA91D800E8A9AD /* velocity.vsh in Resources */,
 				2B28050016519FB60057D8CB /* density.vsh in Resources */,
 				2B28050216519FC90057D8CB /* density.fsh in Resources */,
-				2B28050416519FD40057D8CB /* render.vsh in Resources */,
-				2B28050616519FE00057D8CB /* render.fsh in Resources */,
+				2B28050416519FD40057D8CB /* display.vsh in Resources */,
+				2B28050616519FE00057D8CB /* display.fsh in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
