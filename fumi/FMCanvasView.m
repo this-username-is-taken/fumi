@@ -62,6 +62,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     
     int _positionSlot;
     int _colorSlot;
+    int _transformSlot;
     
     GLuint _centerSlot;
     GLuint _angleSlot;
@@ -291,7 +292,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     glBindFramebuffer(GL_FRAMEBUFFER, viewFramebuffer);
     
     // Clear background color
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     
     // Physics
@@ -340,86 +341,62 @@ const GLubyte Indices[] = {
 };
 
 typedef struct {
-    float position[2];
-    float texCoord[2];
+    float position[4];
+    float transform[4];
 } tmp_struct;
 
 tmp_struct Solver_Vertices[] = {
-    {{0, 0}, {0.0, 0.0}},
-    {{0, 768}, {0.0, VEL_TEX_SIDE}},
-    {{1024, 0}, {VEL_TEX_SIDE, 0.0}},
-    {{1024, 768}, {VEL_TEX_SIDE, VEL_TEX_SIDE}}
+    {{-1, -1, 0, 0}, {256, 128, M_PI_4, 1.0}},
+    {{-1,  1, 0, 1}, {256, 128, M_PI_4, 1.0}},
+    {{ 1, -1, 1, 0}, {256, 128, M_PI_4, 1.0}},
+    {{ 1,  1, 1, 1}, {256, 128, M_PI_4, 1.0}},
 };
 
 const GLubyte Solver_Indices[] = {
     0, 1, 2,
     2, 1, 3,
-    4, 5, 6,
-    6, 5, 7,
 };
+
+- (void)_fillTextureIndices:(int)frame
+{
+    switch (frame) {
+        case 0:
+            Solver_Vertices[0].position[2] = 0.0;
+            Solver_Vertices[0].position[3] = 0.0;
+            Solver_Vertices[1].position[2] = 0.0;
+            Solver_Vertices[1].position[3] = 0.5;
+            Solver_Vertices[2].position[2] = 0.25;
+            Solver_Vertices[2].position[3] = 0.0;
+            Solver_Vertices[3].position[2] = 0.25;
+            Solver_Vertices[3].position[3] = 0.5;
+            break;
+            
+        default:
+            break;
+    }
+}
 
 - (void)_renderTexture
 {
     [self _prepareSolverShaders];
-    GLuint loc;
     static BOOL outputTex = 0;
     outputTex = !outputTex;
-
-    for (int i=0;i<6;i++) {
-        if ([_events count] <= i)
-            break;
-        FMReplayPan *pan = [_events objectAtIndex:i];
+    
+    if ([_events count] != 0) {
+        FMReplayPan *pan = [_events objectAtIndex:0];
         
         CGPoint v = FMUnitVectorFromCGPoint(pan.force);
         CGFloat new_angle = -acosf(v.y);
         if (v.x > 0) new_angle = -new_angle;
         
-        CGFloat angle = acosf(v.y);
-        if (v.x > 0) angle = -angle;
-        CGFloat c_angle = cosf(angle);
-        CGFloat s_angle = sinf(angle);
-        
-        float offset_x = 0, offset_y = 0;
-        switch (pan.frame++) {
-            case 1:
-                offset_x = 64;
-                break;
-            case 2:
-                offset_x = 128;
-                break;
-            case 3:
-                offset_x = 192;
-                break;
-            case 4:
-                offset_y = 128;
-                break;
-            case 5:
-                offset_y = 128;
-                offset_x = 64;
-                break;
-            case 6:
-                offset_y = 128;
-                offset_x = 128;
-                break;
-            case 7:
-                offset_y = 128;
-                offset_x = 192;
-                break;
-            default:
-                offset_x = -1;
-                break;
+        for (int i=0;i<4;i++) {
+            Solver_Vertices[i].transform[0] = pan.position.x;
+            Solver_Vertices[i].transform[1] = pan.position.y;
+            Solver_Vertices[i].transform[2] = new_angle;
+            Solver_Vertices[i].transform[3] = FMMagnitude(pan.force)/20.0;
         }
         
-        // TODO: replace program uniform with uniform
-        loc = glGetUniformLocation(_solverHandle,
-                                   [[NSString stringWithFormat:@"events[%d].angle", i] UTF8String]);
-        glProgramUniform4fEXT(_solverHandle, loc, cos(new_angle), sin(new_angle), c_angle, s_angle);
-        loc = glGetUniformLocation(_solverHandle,
-                                   [[NSString stringWithFormat:@"events[%d].center", i] UTF8String]);
-        glProgramUniform2fEXT(_solverHandle, loc, pan.position.x, pan.position.y);
-        loc = glGetUniformLocation(_solverHandle,
-                                   [[NSString stringWithFormat:@"events[%d].frame", i] UTF8String]);
-        glProgramUniform2fEXT(_solverHandle, loc, offset_x, offset_y);
+        [self _fillTextureIndices:pan.frame];
     }
     
     glUniform1i(_textureUniform, 0);
@@ -436,11 +413,11 @@ const GLubyte Solver_Indices[] = {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Solver_Indices), Solver_Indices, GL_STATIC_DRAW);
     
-    glClearColor(0.5, 0.5, 0.5, 1.0);
+    glClearColor(0, 0, 0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
     
-    glVertexAttribPointer(_positionSlot, 2, GL_FLOAT, GL_FALSE, sizeof(tmp_struct), 0);
-    glVertexAttribPointer(_texCoordSlot, 2, GL_FLOAT, GL_FALSE, sizeof(tmp_struct), (GLvoid*) (sizeof(float)*2));
+    glVertexAttribPointer(_positionSlot, 4, GL_FLOAT, GL_FALSE, sizeof(tmp_struct), 0);
+    glVertexAttribPointer(_transformSlot, 4, GL_FLOAT, GL_FALSE, sizeof(tmp_struct), (GLvoid*) (sizeof(float)*4));
     
     glDrawElements(GL_TRIANGLES, sizeof(Solver_Indices)/sizeof(Solver_Indices[0]), GL_UNSIGNED_BYTE, 0);
     
@@ -487,8 +464,8 @@ const GLubyte Solver_Indices[] = {
     _positionSlot = glGetAttribLocation(_solverHandle, "Position");
     glEnableVertexAttribArray(_positionSlot);
     
-    _texCoordSlot = glGetAttribLocation(_solverHandle, "TexCoordIn");
-    glEnableVertexAttribArray(_texCoordSlot);
+    _transformSlot = glGetAttribLocation(_solverHandle, "Transform");
+    glEnableVertexAttribArray(_transformSlot);
     
     _textureUniform = glGetUniformLocation(_solverHandle, "Texture");
     _texDenUniform = glGetUniformLocation(_solverHandle, "Density");
@@ -551,7 +528,7 @@ const GLubyte Solver_Indices[] = {
     glViewport(CGRectGetMinX(bounds), CGRectGetMinY(bounds), CGRectGetMaxX(bounds), CGRectGetMaxY(bounds));
     
     glEnable(GL_BLEND);
-    glBlendFunc(GL_ONE, GL_SRC_COLOR);
+    glBlendFunc(GL_ONE, GL_ONE);
     
     // Generate and bind texture
     glGenTextures(1, &_velTexture);
@@ -612,7 +589,7 @@ const GLubyte Solver_Indices[] = {
         for (int j=0;j<128;j++) {
             _clr[I_CLR_3(i + col, j + row, 0)] = _velocity.velocity[frame][I_VEL2(i, j, 0)];
             _clr[I_CLR_3(i + col, j + row, 1)] = _velocity.velocity[frame][I_VEL2(i, j, 1)];
-            _clr[I_CLR_3(i + col, j + row, 2)] = 0;
+            _clr[I_CLR_3(i + col, j + row, 2)] = 0.0;
         }
     }
 }
