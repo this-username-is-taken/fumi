@@ -73,7 +73,6 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
         _replayManager = [[FMReplayManager alloc] init];
         
         _clr = calloc(VEL_TEX_SIDE * VEL_TEX_SIDE * kRGB, sizeof(CGFloat));
-        memset(_clr, 0, VEL_TEX_SIDE * VEL_TEX_SIDE * kRGB);
         
         _events = [[NSMutableArray alloc] init];
         _velocity = [[FMVelocity alloc] initWithFilename:@"velocity"];
@@ -383,12 +382,16 @@ BOOL outputTex;
 {
     glUseProgram(_velocityShaderHandle);
     
+    CGFloat angle = 0.0;
+    
     if ([_events count] != 0) {
         FMReplayPan *pan = [_events objectAtIndex:0];
         
         CGPoint v = FMUnitVectorFromCGPoint(pan.force);
         CGFloat new_angle = -acosf(v.y);
         if (v.x > 0) new_angle = -new_angle;
+        angle = acosf(v.y);
+        if (v.x > 0) angle = -angle;
         
         for (int i=0;i<4;i++) {
             VelocityVertices[i].transform[0] = pan.position.x;
@@ -416,6 +419,9 @@ BOOL outputTex;
     
     GLuint textureUniform = glGetUniformLocation(_velocityShaderHandle, "Texture");
     glUniform1i(textureUniform, 0);
+    
+    GLuint angleUniform = glGetUniformLocation(_velocityShaderHandle, "Angle");
+    glUniform2f(angleUniform, cosf(angle), sinf(angle));
     
     GLuint positionAttribute = glGetAttribLocation(_velocityShaderHandle, "Position");
     glEnableVertexAttribArray(positionAttribute);
@@ -502,8 +508,8 @@ BOOL outputTex;
     // CGRect bounds = [FMSettings canvasDimensions];
     glViewport(0, 0, 1024, 1024);
     
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_ONE, GL_ONE);
+    //glEnable(GL_BLEND);
+    //glBlendFunc(GL_ONE, GL_ONE);
     
     // Generate and bind texture
     glGenTextures(1, &_inputVelTex);
@@ -519,7 +525,7 @@ BOOL outputTex;
     glBindTexture(GL_TEXTURE_2D, _outputVelTex);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _dimensions.textureSide * 8, _dimensions.textureSide * 8, 0,  GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _dimensions.textureSide * 8, _dimensions.textureSide * 8, 0,  GL_RGB, GL_HALF_FLOAT_OES, NULL);
     
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, _denTexture[0]);
@@ -539,7 +545,7 @@ BOOL outputTex;
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _dimensions.textureSide * 8, _dimensions.textureSide * 8, 0,  GL_RGB, GL_UNSIGNED_BYTE, NULL);
-    
+
     glGenFramebuffers(1, &_offscreenFBO);
     glBindFramebuffer(GL_FRAMEBUFFER, _offscreenFBO);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _denTexture[0], 0);
@@ -548,7 +554,7 @@ BOOL outputTex;
         NSLog(@"failed to make complete framebuffer object %x", glCheckFramebufferStatus(GL_FRAMEBUFFER));
         return;
     }
-    
+
     // Texture input
     for (int i=0;i<4;i++) [self fillTextureWithFrame:i atRow:0 atCol:i*64];
     for (int i=0;i<4;i++) [self fillTextureWithFrame:i+4 atRow:128 atCol:i*64];
