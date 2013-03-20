@@ -91,25 +91,34 @@ const GLubyte DisplayIndices[] = {
     0, 1, 2, 3
 };
 
+const float TextureCoordinates[][8] = {
+    {0.0, 0.0, 0.0, 0.5, 0.25, 0.0, 0.25, 0.5},
+    {0.25, 0.0, 0.25, 0.5, 0.5, 0.0, 0.5, 0.5},
+    {0.5, 0.0, 0.5, 0.5, 0.75, 0.0, 0.75, 0.5},
+    {0.75, 0.0, 0.75, 0.5, 1.0, 0.0, 1.0, 0.5},
+    {0.0, 0.5, 0.0, 1.0, 0.25, 0.5, 0.25, 1.0},
+    {0.25, 0.5, 0.25, 1.0, 0.5, 0.5, 0.5, 1.0},
+    {0.5, 0.5, 0.5, 1.0, 0.75, 0.5, 0.75, 1.0},
+    {0.75, 0.5, 0.75, 1.0, 1.0, 0.5, 1.0, 1.0},
+};
+
 #pragma mark Helpers
 
 void fillTextureIndices(int frame)
 {
-    switch (frame) {
-        case 0:
-            VelocityVertices[0].position[2] = 0.0;
-            VelocityVertices[0].position[3] = 0.0;
-            VelocityVertices[1].position[2] = 0.0;
-            VelocityVertices[1].position[3] = 0.5;
-            VelocityVertices[2].position[2] = 0.25;
-            VelocityVertices[2].position[3] = 0.0;
-            VelocityVertices[3].position[2] = 0.25;
-            VelocityVertices[3].position[3] = 0.5;
-            break;
-            
-        default:
-            break;
+    if (frame < 0 || frame >= MAX_FRAME) {
+        NSLog(@"frame exceeded bounds: %d", frame);
+        return;
     }
+    
+    VelocityVertices[0].position[2] = TextureCoordinates[frame][0];
+    VelocityVertices[0].position[3] = TextureCoordinates[frame][1];
+    VelocityVertices[1].position[2] = TextureCoordinates[frame][2];
+    VelocityVertices[1].position[3] = TextureCoordinates[frame][3];
+    VelocityVertices[2].position[2] = TextureCoordinates[frame][4];
+    VelocityVertices[2].position[3] = TextureCoordinates[frame][5];
+    VelocityVertices[3].position[2] = TextureCoordinates[frame][6];
+    VelocityVertices[3].position[3] = TextureCoordinates[frame][7];
 }
 
 #pragma mark FMCanvasView
@@ -416,7 +425,7 @@ BOOL outputTex;
         VelocityVertices[i].transform[0] = pan.position.x;
         VelocityVertices[i].transform[1] = pan.position.y;
         VelocityVertices[i].transform[2] = new_angle;
-        VelocityVertices[i].transform[3] = 1.0;
+        VelocityVertices[i].transform[3] = FMMagnitude(pan.force)*0.05;
     }
     
     fillTextureIndices(pan.frame);
