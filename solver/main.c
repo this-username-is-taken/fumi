@@ -28,8 +28,8 @@ int main(int argc, const char * argv[])
     int center_x = 32;
     int center_y = 64;
     int frames = 8;
-    float dt = 0.5f;
-    float visc = 0.001f;
+    float dt = 0.1f;
+    float visc = 0.004f;
     
     float *u, *v;
     
@@ -44,7 +44,14 @@ int main(int argc, const char * argv[])
     start_solver((Nx+2)*(Ny+2));
     
     v[IX(center_x, center_y)] = 100.0;
+    vel_step(Nx, Ny, u, v, visc, dt);
+    vel_step(Nx, Ny, u, v, visc, dt);
+    vel_step(Nx, Ny, u, v, visc, dt);
+    vel_step(Nx, Ny, u, v, visc, dt);
     for (i=0;i<frames;i++) {
+        vel_step(Nx, Ny, u, v, visc, dt);
+        vel_step(Nx, Ny, u, v, visc, dt);
+        vel_step(Nx, Ny, u, v, visc, dt);
         vel_step(Nx, Ny, u, v, visc, dt);
         print_vel(u, v, size);
     }

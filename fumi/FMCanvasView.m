@@ -425,7 +425,7 @@ BOOL outputTex;
         VelocityVertices[i].transform[0] = pan.position.x;
         VelocityVertices[i].transform[1] = pan.position.y;
         VelocityVertices[i].transform[2] = new_angle;
-        VelocityVertices[i].transform[3] = FMMagnitude(pan.force)*0.05;
+        VelocityVertices[i].transform[3] = 1.0;
     }
     
     fillTextureIndices(pan.frame);
