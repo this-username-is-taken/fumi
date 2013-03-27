@@ -30,13 +30,13 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 #define B 2
 #define kRGB 3
 
-#define I_CLR_3(i,j,k) ((i)*kRGB+(j)*256*kRGB+(k))
+#define I_CLR_3(i,j,k) ((i)*kRGB+(j)*512*kRGB+(k))
 #define I_DEN_3(i,j,k) ((i)*kRGB+(j)*1024*kRGB+(k))
 #define I_VEL(i,j) ((i)+(j)*_dimensions.velGridWidth)
 #define I_VEL2(i,j,k) ((i*2)+(j)*(int)(_velocity.size.width+2)*2+k)
 #define I_DEN(i,j) ((i)+(j)*_dimensions.denGridWidth)
 
-#define VEL_TEX_SIDE 256
+#define VEL_TEX_SIDE 512
 #define MAX_EVENTS 6
 #define MAX_FRAME 8
 
@@ -129,6 +129,7 @@ void fillTextureIndices(int frame)
     FMDimensions _dimensions;
     
     CGFloat *_clr;
+    GLubyte *_density;
     
     GLuint _offscreenFBO;
     
@@ -239,7 +240,7 @@ void fillTextureIndices(int frame)
         return;
     }
     
-    if (FMMagnitude(force) > 3.0)
+    if (FMMagnitude(force) > 1.0)
     {
         FMReplayPan *pan = [[[FMReplayPan alloc] initWithPosition:end state:gestureRecognizer.state timestamp:_benchmark.frames] autorelease];
         pan.force = force;
@@ -396,12 +397,11 @@ BOOL outputTex;
         [self _useVelocityShader:[_events objectAtIndex:i]];
     }
     
-    glFinish();
     [self _useDensityShader];
-    glFinish();
     [self _useDisplayShader];
     
-    NSLog(@"%d", glGetError());
+    if (glGetError() != 0)
+        NSLog(@"%d", glGetError());
 }
 
 #pragma mark -
@@ -425,7 +425,8 @@ BOOL outputTex;
         VelocityVertices[i].transform[0] = pan.position.x;
         VelocityVertices[i].transform[1] = pan.position.y;
         VelocityVertices[i].transform[2] = new_angle;
-        VelocityVertices[i].transform[3] = 1.0;
+        CGFloat mag = FMMagnitude(pan.force) * 0.1;
+        VelocityVertices[i].transform[3] = (mag > 1.0) ? 1.0 : mag;
     }
     
     fillTextureIndices(pan.frame);
@@ -547,14 +548,14 @@ BOOL outputTex;
     glBindTexture(GL_TEXTURE_2D, _denTexture[0]);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    GLubyte *density = calloc(1024 * 1024 * kRGB, sizeof(GLubyte));
+    _density = calloc(1024 * 1024 * kRGB, sizeof(GLubyte));
     for (int i=400;i<500;i++)
         for (int j=400;j<500;j++) {
-            density[I_DEN_3(i, j, 0)] = 255;
-            density[I_DEN_3(i, j, 1)] = 255;
-            density[I_DEN_3(i, j, 2)] = 255;
+            _density[I_DEN_3(i, j, 0)] = 255;
+            _density[I_DEN_3(i, j, 1)] = 255;
+            _density[I_DEN_3(i, j, 2)] = 255;
         }
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _dimensions.textureSide * 8, _dimensions.textureSide * 8, 0,  GL_RGB, GL_UNSIGNED_BYTE, density);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _dimensions.textureSide * 8, _dimensions.textureSide * 8, 0,  GL_RGB, GL_UNSIGNED_BYTE, _density);
     
     glActiveTexture(GL_TEXTURE3);
     glBindTexture(GL_TEXTURE_2D, _denTexture[1]);
@@ -572,8 +573,8 @@ BOOL outputTex;
     }
 
     // Texture input
-    for (int i=0;i<4;i++) [self fillTextureWithFrame:i atRow:0 atCol:i*64];
-    for (int i=0;i<4;i++) [self fillTextureWithFrame:i+4 atRow:128 atCol:i*64];
+    for (int i=0;i<4;i++) [self fillTextureWithFrame:i atRow:0 atCol:i*128];
+    for (int i=0;i<4;i++) [self fillTextureWithFrame:i+4 atRow:256 atCol:i*128];
     glActiveTexture(GL_TEXTURE0);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, VEL_TEX_SIDE, VEL_TEX_SIDE, 0, GL_RGB, GL_FLOAT, _clr);
     
@@ -593,8 +594,8 @@ BOOL outputTex;
 
 - (void)fillTextureWithFrame:(int)frame atRow:(int)row atCol:(int)col
 {
-    for (int i=0;i<64;i++) {
-        for (int j=0;j<128;j++) {
+    for (int i=0;i<128;i++) {
+        for (int j=0;j<256;j++) {
             _clr[I_CLR_3(i + col, j + row, 0)] = _velocity.velocity[frame][I_VEL2(i, j, 0)];
             _clr[I_CLR_3(i + col, j + row, 1)] = _velocity.velocity[frame][I_VEL2(i, j, 1)];
             _clr[I_CLR_3(i + col, j + row, 2)] = 0.0;
@@ -604,6 +605,10 @@ BOOL outputTex;
 
 - (void)clearDensity
 {
+    glActiveTexture(GL_TEXTURE2);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _dimensions.textureSide * 8, _dimensions.textureSide * 8, 0,  GL_RGB, GL_UNSIGNED_BYTE, _density);
+    glActiveTexture(GL_TEXTURE3);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _dimensions.textureSide * 8, _dimensions.textureSide * 8, 0,  GL_RGB, GL_UNSIGNED_BYTE, _density);
 }
 
 @end
