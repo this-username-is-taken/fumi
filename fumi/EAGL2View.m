@@ -1,5 +1,5 @@
 //
-//  EAGLView.m
+//  EAGL2View.m
 //  fumi
 //
 //  Created by Vincent Wen on 8/25/12.
@@ -9,19 +9,19 @@
 #import <QuartzCore/QuartzCore.h>
 #import <OpenGLES/EAGLDrawable.h>
 
-#import "EAGLView.h"
+#import "EAGL2View.h"
 #import "DDLog.h"
 
 static const int ddLogLevel = LOG_LEVEL_INFO;
 
-@interface EAGLView ()
+@interface EAGL2View ()
 {
     NSTimer *_animationTimer;
 }
 
 @end
 
-@implementation EAGLView
+@implementation EAGL2View
 
 // You must implement this method
 + (Class)layerClass
@@ -42,7 +42,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
                                         kEAGLDrawablePropertyColorFormat,
                                         nil];
         
-        _glContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
+        _glContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
         
         if (!_glContext || ![EAGLContext setCurrentContext:_glContext])
         {
@@ -88,20 +88,20 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 
 - (BOOL)_createFramebuffer
 {
-    glGenFramebuffersOES(1, &viewFramebuffer);
-    glGenRenderbuffersOES(1, &viewRenderbuffer);
+    glGenFramebuffers(1, &viewFramebuffer);
+    glGenRenderbuffers(1, &viewRenderbuffer);
     
-    glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
-    glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
-    [_glContext renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:(CAEAGLLayer *)self.layer];
-    glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_RENDERBUFFER_OES, viewRenderbuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, viewFramebuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, viewRenderbuffer);
+    [_glContext renderbufferStorage:GL_RENDERBUFFER fromDrawable:(CAEAGLLayer *)self.layer];
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, viewRenderbuffer);
     
-    glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
-    glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
+    glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &backingWidth);
+    glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &backingHeight);
     
-    if (glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES)
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     {
-        DDLogError(@"Failed to create framebuffer %x", glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES));
+        DDLogError(@"Failed to create framebuffer %x", glCheckFramebufferStatus(GL_FRAMEBUFFER));
         return NO;
     }
     DDLogInfo(@"Created frame buffer: %@", self);
@@ -111,9 +111,9 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 
 - (void)_destroyFramebuffer
 {
-    glDeleteFramebuffersOES(1, &viewFramebuffer);
+    glDeleteFramebuffers(1, &viewFramebuffer);
     viewFramebuffer = 0;
-    glDeleteRenderbuffersOES(1, &viewRenderbuffer);
+    glDeleteRenderbuffers(1, &viewRenderbuffer);
     viewRenderbuffer = 0;
     
     DDLogInfo(@"Destroyed frame buffer: %@", self);
@@ -135,45 +135,12 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 // overriden by subclasses
 - (void)drawView
 {
-    // Define the square vertices
-    const GLfloat squareVertices[] = {
-        0, 0,
-        0, backingHeight,
-        backingWidth, 0,
-        backingWidth, backingHeight
-    };
-    
-    // Define the colors of the square vertices
-    const GLubyte squareColors[] = {
-        255, 255,   0, 255,
-        0,   255, 255, 255,
-        0,     0,   0,   0,
-        255,   0, 255, 255,
-    };
-    
-    // Setting up drawing content
-    [EAGLContext setCurrentContext:_glContext];
-    glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
-    
-    // Matrix & viewport initialization
-    glLoadIdentity();
-    glMatrixMode(GL_PROJECTION);
-    glOrthof(0, backingWidth, 0, backingHeight, -1.0f, 1.0f);
-    glViewport(0, 0, backingWidth, backingHeight);
-    
-    // Clear background color
-    glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+    glClearColor(129.0/255.0, 216.0/255.0, 208.0/255.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
     
-    // Drawing
-    glVertexPointer(2, GL_FLOAT, 0, squareVertices);
-    glColorPointer(4, GL_UNSIGNED_BYTE, 0, squareColors);
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_COLOR_ARRAY);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glViewport(0, 0, backingWidth, backingHeight);
     
-    glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
-    [_glContext presentRenderbuffer:GL_RENDERBUFFER_OES];
+    [_glContext presentRenderbuffer:GL_RENDERBUFFER];
 }
 
 @end

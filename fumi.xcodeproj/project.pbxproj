@@ -42,6 +42,8 @@
 		2BCF3D651703414200DE04BA /* FMSolver.c in Sources */ = {isa = PBXBuildFile; fileRef = 2B1B7711160966BF002A3A50 /* FMSolver.c */; };
 		2BCF3D671703430E00DE04BA /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2BCF3D661703430E00DE04BA /* OpenGL.framework */; };
 		2BCF3D691703432000DE04BA /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2BCF3D681703432000DE04BA /* GLUT.framework */; };
+		2BCF3D7D1703471B00DE04BA /* FMReplayView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2BCF3D7C1703471B00DE04BA /* FMReplayView.m */; };
+		2BCF3D801703693B00DE04BA /* EAGL2View.m in Sources */ = {isa = PBXBuildFile; fileRef = 2BCF3D7F1703693B00DE04BA /* EAGL2View.m */; };
 		2BCF704916D57AB000E8A9AD /* FMCanvas.m in Sources */ = {isa = PBXBuildFile; fileRef = 2BCF704816D57AB000E8A9AD /* FMCanvas.m */; };
 		2BCF704D16DA5A6400E8A9AD /* FMShaderManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2BCF704C16DA5A6400E8A9AD /* FMShaderManager.m */; };
 		2BCF704F16DA8D2D00E8A9AD /* velocity.vsh in Sources */ = {isa = PBXBuildFile; fileRef = 2BCF704E16DA8D2D00E8A9AD /* velocity.vsh */; };
@@ -129,6 +131,10 @@
 		2BCF3D5E1703411400DE04BA /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		2BCF3D661703430E00DE04BA /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk/System/Library/Frameworks/OpenGL.framework; sourceTree = DEVELOPER_DIR; };
 		2BCF3D681703432000DE04BA /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk/System/Library/Frameworks/GLUT.framework; sourceTree = DEVELOPER_DIR; };
+		2BCF3D7B1703471B00DE04BA /* FMReplayView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMReplayView.h; sourceTree = "<group>"; };
+		2BCF3D7C1703471B00DE04BA /* FMReplayView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMReplayView.m; sourceTree = "<group>"; };
+		2BCF3D7E1703693B00DE04BA /* EAGL2View.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EAGL2View.h; sourceTree = "<group>"; };
+		2BCF3D7F1703693B00DE04BA /* EAGL2View.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EAGL2View.m; sourceTree = "<group>"; };
 		2BCF704716D57AB000E8A9AD /* FMCanvas.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMCanvas.h; sourceTree = "<group>"; };
 		2BCF704816D57AB000E8A9AD /* FMCanvas.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMCanvas.m; sourceTree = "<group>"; };
 		2BCF704B16DA5A6400E8A9AD /* FMShaderManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMShaderManager.h; sourceTree = "<group>"; };
@@ -204,6 +210,8 @@
 			children = (
 				2B066F8715E9330500AF1122 /* EAGLView.h */,
 				2B066F8815E9330500AF1122 /* EAGLView.m */,
+				2BCF3D7E1703693B00DE04BA /* EAGL2View.h */,
+				2BCF3D7F1703693B00DE04BA /* EAGL2View.m */,
 				2B082D0C15C2593F00A5ADA9 /* FMGeometry.h */,
 				2B082D0D15C2593F00A5ADA9 /* FMGeometry.m */,
 				2B9E3D3116AF2C6700ED1B50 /* FMVelocity.h */,
@@ -363,6 +371,8 @@
 				2BF9CDF11618AE04005169D5 /* FMReplayLongPress.m */,
 				2B66EE0A160E5269003B5F83 /* FMReplayManager.h */,
 				2B66EE0B160E5269003B5F83 /* FMReplayManager.m */,
+				2BCF3D7B1703471B00DE04BA /* FMReplayView.h */,
+				2BCF3D7C1703471B00DE04BA /* FMReplayView.m */,
 			);
 			name = Replay;
 			sourceTree = "<group>";
@@ -507,6 +517,8 @@
 				2BCF704D16DA5A6400E8A9AD /* FMShaderManager.m in Sources */,
 				2BCF704F16DA8D2D00E8A9AD /* velocity.vsh in Sources */,
 				2BCF705116DA8D3C00E8A9AD /* velocity.fsh in Sources */,
+				2BCF3D7D1703471B00DE04BA /* FMReplayView.m in Sources */,
+				2BCF3D801703693B00DE04BA /* EAGL2View.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

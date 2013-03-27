@@ -12,7 +12,11 @@
 #import "FMGeometry.h"
 #import "FMSettings.h"
 
+#import "FMReplayView.h"
+
 #import "DDLog.h"
+
+//#define REPLAY
 
 static const int ddLogLevel = LOG_LEVEL_INFO;
 
@@ -67,6 +71,11 @@ static const CGRect kBenchmarkLabelFrame = {10, 10, 800, 30};
     
     self.view.backgroundColor = [UIColor whiteColor];
     
+#ifdef REPLAY
+    FMReplayView *view = [[FMReplayView alloc] initWithFrame:[FMSettings canvasDimensions]];
+    [self.view addSubview:view];
+    [view startAnimation];
+#else
     _canvasView = [[FMCanvasView alloc] initWithFrame:[FMSettings canvasDimensions]];
     _canvasView.delegate = self;
     [self.view addSubview:_canvasView];
@@ -99,6 +108,7 @@ static const CGRect kBenchmarkLabelFrame = {10, 10, 800, 30};
     _benchmarkLabel = [[UILabel alloc] initWithFrame:kBenchmarkLabelFrame];
     _benchmarkLabel.font = [UIFont systemFontOfSize:12];
     [self.view addSubview:_benchmarkLabel];
+#endif
     
     DDLogInfo(@"Created canvas view: %@", _canvasView);
 }

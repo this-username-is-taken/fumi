@@ -6,7 +6,7 @@
 //  Copyright (c) 2012 fumi. All rights reserved.
 //
 
-#import "EAGLView.h"
+#import "EAGL2View.h"
 
 typedef struct {
     unsigned long long frames;  // # of displayed frames
@@ -36,7 +36,7 @@ CG_INLINE CGFloat updateBenchmarkAvg(FMBenchmark *benchmark)
 - (void)updateBenchmark:(FMBenchmark *)benchmark;
 @end
 
-@interface FMCanvasView : EAGLView
+@interface FMCanvasView : EAGL2View
 {
 }
 
