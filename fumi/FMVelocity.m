@@ -26,7 +26,7 @@
         _size.height = [[items objectAtIndex:2] intValue];
         _center.x = [[items objectAtIndex:3] intValue];
         _center.y = [[items objectAtIndex:4] intValue];
-        int count = (_size.width+2) * (_size.height+2) * 2;
+        int count = _size.width * _size.height * 2;
         
         // malloc for the frames
         _velocity = (CGFloat **)malloc(_frames * sizeof(CGFloat **));

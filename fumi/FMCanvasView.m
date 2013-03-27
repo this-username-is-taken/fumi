@@ -33,7 +33,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 #define I_CLR_3(i,j,k) ((i)*kRGB+(j)*512*kRGB+(k))
 #define I_DEN_3(i,j,k) ((i)*kRGB+(j)*1024*kRGB+(k))
 #define I_VEL(i,j) ((i)+(j)*_dimensions.velGridWidth)
-#define I_VEL2(i,j,k) ((i*2)+(j)*(int)(_velocity.size.width+2)*2+k)
+#define I_VEL2(i,j,k) ((i*2)+(j)*(int)(_velocity.size.width)*2+k)
 #define I_DEN(i,j) ((i)+(j)*_dimensions.denGridWidth)
 
 #define VEL_TEX_SIDE 512

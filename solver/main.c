@@ -12,11 +12,12 @@
 
 #define IX(i,j) ((i)+(Nx+2)*(j))
 
-void print_vel(float *u, float *v, int size)
+void print_vel(float *u, float *v, int Nx, int Ny)
 {
-    int i;
-    for (i=0;i<size;i++)
-        printf("%f %f ", u[i], v[i]);
+    int i, j;
+    for (j=1;j<=Ny;j++)
+        for (i=1;i<=Nx;i++)
+            printf("%f %f ", u[IX(i, j)], v[IX(i, j)]);
     printf("\n");
 }
 
@@ -53,7 +54,7 @@ int main(int argc, const char * argv[])
         vel_step(Nx, Ny, u, v, visc, dt);
         vel_step(Nx, Ny, u, v, visc, dt);
         vel_step(Nx, Ny, u, v, visc, dt);
-        print_vel(u, v, size);
+        print_vel(u, v, Nx, Ny);
     }
     
     end_solver();
