@@ -36,7 +36,7 @@
 #include <GLUT/glut.h>
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
-#include "fumi/FMSolver.h"
+#include "FMSolver.h"
 
 #define IX(i,j) ((i)+(Nx+2)*(j))
 
@@ -45,7 +45,7 @@
 static int Nx, Ny;
 static float dt, visc;
 static float force, source;
-static int dvel;
+static int mode;
 
 static float *u, *v, *d;
 
@@ -53,28 +53,6 @@ static int win_id;
 static int win_x, win_y;
 static int mouse_down[3];
 static int omx, omy, mx, my;
-
-/*
- ----------------------------------------------------------------------
- time-related functions
- ----------------------------------------------------------------------
- */
-
-//#define SHOW_TIME
-
-struct timeval timeval_subtract(struct timeval *t2, struct timeval *t1)
-{
-    struct timeval result;
-    long int diff = (t2->tv_usec + 1000000 * t2->tv_sec) - (t1->tv_usec + 1000000 * t1->tv_sec);
-    result.tv_sec = diff / 1000000;
-    result.tv_usec = diff % 1000000;
-    return result;
-}
-
-void timeval_print(struct timeval *tv)
-{
-    printf("%ld.%06d\n", tv->tv_sec, tv->tv_usec);
-}
 
 /*
  ----------------------------------------------------------------------
@@ -105,7 +83,7 @@ static int allocate_data ( void )
 	u = (float *) malloc ( size*sizeof(float) );
 	v = (float *) malloc ( size*sizeof(float) );
 	d = (float *) malloc ( size*sizeof(float) );
-
+    
 	if ( !u || !v || !d ) {
 		fprintf ( stderr, "cannot allocate data\n" );
 		return ( 0 );
@@ -121,50 +99,49 @@ static int allocate_data ( void )
  ----------------------------------------------------------------------
  */
 
-static void pre_display ( void )
+static void pre_display()
 {
-	glViewport ( 0, 0, win_x, win_y );
-	glMatrixMode ( GL_PROJECTION );
-	glLoadIdentity ();
-	gluOrtho2D ( 0.0, 1.0, 0.0, 1.0 );
-	glClearColor ( 0.0f, 0.0f, 0.0f, 1.0f );
-	glClear ( GL_COLOR_BUFFER_BIT );
+	glViewport(0, 0, win_x, win_y);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluOrtho2D(0.0, 1.0, 0.0, 1.0);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
 }
 
-static void post_display ( void )
+static void post_display()
 {
-	glutSwapBuffers ();
+	glutSwapBuffers();
 }
 
-static void draw_velocity ( void )
+static void draw_velocity()
 {
 	int i, j;
 	float x, y;
     
-	glColor3f ( 1.0f, 1.0f, 1.0f );
-	glLineWidth ( 1.0f );
+	glColor3f(1.0f, 1.0f, 1.0f);
+	glLineWidth(1.0f);
     
-	glBegin ( GL_LINES );
-    
-    for ( i=1 ; i<=Nx ; i++ ) {
+	glBegin(GL_LINES);
+    for (i=1;i<=Nx;i++) {
         x = (i-0.5f)/Nx;
-        for ( j=1 ; j<=Ny ; j++ ) {
+        for (j=1;j<=Ny;j++) {
             y = (j-0.5f)/Ny;
             
-            glVertex2f ( x, y );
-            glVertex2f ( x+u[IX(i,j)], y+v[IX(i,j)] );
+            glVertex2f(x, y);
+            glVertex2f(x+u[IX(i,j)], y+v[IX(i,j)]);
         }
     }
     
-	glEnd ();
+	glEnd();
 }
 
-static void draw_density ( void )
+static void draw_density()
 {
 	int i, j;
 	float x, y, d00, d01, d10, d11;
-        
-	glBegin ( GL_QUADS );
+    
+	glBegin(GL_QUADS);
     
     for ( i=0 ; i<=Nx ; i++ ) {
         x = (i-0.5f)/Nx;
@@ -183,7 +160,7 @@ static void draw_density ( void )
         }
     }
     
-	glEnd ();
+	glEnd();
 }
 
 /*
@@ -192,23 +169,23 @@ static void draw_density ( void )
  ----------------------------------------------------------------------
  */
 
-static void get_from_UI ()
+static void get_from_UI()
 {
 	int i, j, size = (Nx+2)*(Ny+2);
     
-	if ( !mouse_down[0] && !mouse_down[2] ) return;
+	if (!mouse_down[0] && !mouse_down[2]) return;
     
 	i = (int)((       mx /(float)win_x)*Nx+1);
 	j = (int)(((win_y-my)/(float)win_y)*Ny+1);
-
-	if ( i<1 || i>Nx || j<1 || j>Ny ) return;
     
-	if ( mouse_down[0] ) {
+	if (i<1 || i>Nx || j<1 || j>Ny) return;
+    
+	if (mouse_down[0]) {
 		u[IX(i,j)] = force * (mx-omx);
 		v[IX(i,j)] = force * (omy-my);
 	}
     
-	if ( mouse_down[2] ) {
+	if (mouse_down[2]) {
 		d[IX(i,j)] = source;
 	}
     
@@ -224,24 +201,22 @@ static void get_from_UI ()
  ----------------------------------------------------------------------
  */
 
-static void key_func ( unsigned char key, int x, int y )
+static void key_func(unsigned char key, int x, int y)
 {
-	switch ( key )
+	switch (key)
 	{
 		case 'c':
 		case 'C':
-			clear_data ();
+			clear_data();
 			break;
-            
 		case 'q':
 		case 'Q':
-			free_data ();
-			exit ( 0 );
+			free_data();
+			exit(0);
 			break;
-            
 		case 'v':
 		case 'V':
-			dvel = !dvel;
+			mode = !mode;
 			break;
 	}
 }
@@ -260,28 +235,28 @@ static void motion_func ( int x, int y )
 	my = y;
 }
 
-static void reshape_func ( int width, int height )
+static void reshape_func(int width, int height)
 {
-	glutSetWindow ( win_id );
-	glutReshapeWindow ( width, height );
+	glutSetWindow(win_id);
+	glutReshapeWindow(width, height);
     
 	win_x = width;
 	win_y = height;
 }
 
-static void idle_func ( void )
+static void idle_func()
 {
 #ifdef SHOW_TIME
     struct timeval tvStart, tvEnd, tvDiff;
     gettimeofday(&tvStart, NULL);
 #endif
     
-	get_from_UI ();
-	vel_step ( Nx, Ny, u, v, visc, dt );
-	dens_step ( Nx, Ny, d, u, v, dt );
+	get_from_UI();
+	vel_step(Nx, Ny, u, v, visc, dt);
+	den_step(Nx, Ny, d, u, v, dt);
     
-	glutSetWindow ( win_id );
-	glutPostRedisplay ();
+	glutSetWindow(win_id);
+	glutPostRedisplay();
     
 #ifdef SHOW_TIME
     gettimeofday(&tvEnd, NULL);
@@ -290,14 +265,16 @@ static void idle_func ( void )
 #endif
 }
 
-static void display_func ( void )
+static void display_func()
 {
-	pre_display ();
+	pre_display();
     
-    if ( dvel ) draw_velocity ();
-    else		draw_density ();
+    if (mode)
+    	draw_velocity();
+    else
+    	draw_density();
     
-	post_display ();
+	post_display();
 }
 
 /*
@@ -306,28 +283,20 @@ static void display_func ( void )
  ----------------------------------------------------------------------
  */
 
-static void open_glut_window ( void )
+static void open_glut_window()
 {
-	glutInitDisplayMode ( GLUT_RGBA | GLUT_DOUBLE );
+	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
     
-	glutInitWindowPosition ( 0, 0 );
-	glutInitWindowSize ( win_x, win_y );
-	win_id = glutCreateWindow ( "fumi" );
+	glutInitWindowPosition(0, 0);
+	glutInitWindowSize(win_x, win_y);
+	win_id = glutCreateWindow("Fluid");
     
-	glClearColor ( 0.0f, 0.0f, 0.0f, 1.0f );
-	glClear ( GL_COLOR_BUFFER_BIT );
-	glutSwapBuffers ();
-	glClear ( GL_COLOR_BUFFER_BIT );
-	glutSwapBuffers ();
-    
-	pre_display ();
-    
-	glutKeyboardFunc ( key_func );
-	glutMouseFunc ( mouse_func );
-	glutMotionFunc ( motion_func );
-	glutReshapeFunc ( reshape_func );
-	glutIdleFunc ( idle_func );
-	glutDisplayFunc ( display_func );
+	glutKeyboardFunc(key_func);
+	glutMouseFunc(mouse_func);
+	glutMotionFunc(motion_func);
+	glutReshapeFunc(reshape_func);
+	glutIdleFunc(idle_func);
+	glutDisplayFunc(display_func);
 }
 
 /*
@@ -340,15 +309,16 @@ int main(int argc, char **argv)
 {
     glutInit(&argc, argv);
     
-    Nx = 256;
-    Ny = 192;
+    Nx = 128;
+    Ny = 128;
     dt = 0.1f;
-    visc = 0.002f;
+    visc = 0.001f;
     force = 1.0f;
     source = 100.0f;
     printf("Settings: N=%dx%d dt=%g visc=%g force = %g source=%g\n", Nx, Ny, dt, visc, force, source);
     
-	dvel = 0;
+    // 0 for density, 1 for velocity
+	mode = 0;
     
     start_solver((Nx+2)*(Ny+2));
 	if (!allocate_data())
@@ -357,7 +327,7 @@ int main(int argc, char **argv)
 	clear_data();
     
 	win_x = 512;
-	win_y = 384;
+	win_y = 512;
 	open_glut_window();
     
 	glutMainLoop();
