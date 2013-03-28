@@ -17,8 +17,17 @@
 
 #pragma mark FMCanvasView
 
+#define I_VEL2(i,j,k) ((i*2)+(j)*(int)(_velocity.size.width)*2+k)
+
+static const CGRect kPrevButtonFrame = {25, 25, 50, 30};
+static const CGRect kNextButtonFrame = {100, 25, 50, 30};
+static const CGRect kFrameLabelFrame = {175, 25, 50, 30};
+
 @interface FMReplayView ()
 {
+    int _frame;
+    FMVelocity *_velocity;
+    UILabel *_frameLabel;
 }
 @end
 
@@ -28,6 +37,26 @@
 {
     self = [super initWithFrame:frame];
     if (self) {
+        _velocity = [[FMVelocity alloc] initWithFilename:@"velocity"];
+        
+        UIButton *prevButton = [[UIButton buttonWithType:UIButtonTypeRoundedRect] retain];
+        prevButton.frame = kPrevButtonFrame;
+        [prevButton setTitle:@"Prev" forState:UIControlStateNormal];
+        [prevButton addTarget:self action:@selector(_prevFrame:) forControlEvents:UIControlEventTouchUpInside];
+        [self addSubview:prevButton];
+        [prevButton release];
+        
+        UIButton *nextButton = [[UIButton buttonWithType:UIButtonTypeRoundedRect] retain];
+        nextButton.frame = kNextButtonFrame;
+        [nextButton setTitle:@"Next" forState:UIControlStateNormal];
+        [nextButton addTarget:self action:@selector(_nextFrame:) forControlEvents:UIControlEventTouchUpInside];
+        [self addSubview:nextButton];
+        [nextButton release];
+        
+        _frameLabel = [[UILabel alloc] initWithFrame:kFrameLabelFrame];
+        _frameLabel.text = @"0";
+        [self addSubview:_frameLabel];
+        [_frameLabel release];
     }
     return self;
 }
@@ -61,19 +90,18 @@
     glEnableClientState(GL_VERTEX_ARRAY);
     
     // Drawing
-    FMDimensions _dimensions = [FMSettings dimensions];
-    
-    CGFloat size = _dimensions.velCellSize;
-    for (int i=1; i<=_dimensions.velWidth; i++) {
-        GLfloat x = (i-0.5f) * size;
-        for (int j=1; j<=_dimensions.velHeight; j++) {
-            GLfloat y = (j-0.5f) * size;
+    int grid_size = 4;
+    CGFloat width = _velocity.size.width, height = _velocity.size.height;
+    for (int i=0; i<width; i++) {
+        GLfloat x = (i-0.5f) * grid_size;
+        for (int j=0; j<height; j++) {
+            GLfloat y = (j-0.5f) * grid_size - 200;
             
             CGFloat vertices[4];
             vertices[0] = x;
             vertices[1] = y;
-            vertices[2] = x + 10;//_velX[I_VEL(i, j)] * size * 10;
-            vertices[3] = y + 10;//_velY[I_VEL(i, j)] * size * 10;
+            vertices[2] = x + _velocity.velocity[_frame][I_VEL2(i, j, 0)]*2000;
+            vertices[3] = y + _velocity.velocity[_frame][I_VEL2(i, j, 1)]*2000;
             
             glVertexPointer(2, GL_FLOAT, 0, vertices);
             glDrawArrays(GL_LINES, 0, 2);
@@ -82,6 +110,19 @@
 
     glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
     [self.glContext presentRenderbuffer:GL_RENDERBUFFER_OES];
+}
+
+#pragma mark -
+#pragma mark Selector Callbacks
+
+- (void)_prevFrame:(UIButton *)sender
+{
+    _frameLabel.text = [NSString stringWithFormat:@"%d", --_frame];
+}
+
+- (void)_nextFrame:(UIButton *)sender
+{
+    _frameLabel.text = [NSString stringWithFormat:@"%d", ++_frame];
 }
 
 @end

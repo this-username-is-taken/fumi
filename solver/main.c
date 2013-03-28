@@ -12,13 +12,15 @@
 
 #define IX(i,j) ((i)+(Nx+2)*(j))
 
+FILE *file;
+
 void print_vel(float *u, float *v, int Nx, int Ny)
 {
     int i, j;
     for (j=1;j<=Ny;j++)
         for (i=1;i<=Nx;i++)
-            printf("%f %f ", u[IX(i, j)], v[IX(i, j)]);
-    printf("\n");
+            fprintf(file, "%f %f ", u[IX(i, j)], v[IX(i, j)]);
+    fprintf(file, "\n");
 }
 
 int main(int argc, const char * argv[])
@@ -30,7 +32,7 @@ int main(int argc, const char * argv[])
     int center_y = 128;
     int frames = 8;
     float dt = 0.1f;
-    float visc = 0.0005f;
+    float visc = 0.001f;
     
     float *u, *v;
     
@@ -40,7 +42,8 @@ int main(int argc, const char * argv[])
 	v = calloc(size, sizeof(float));
 	if (!u || !v) printf("Cannot allocate data\n");
     
-    printf("%d %d %d %d %d\n", frames, Nx, Ny, center_x, center_y);
+    file = fopen("output.txt","w");
+    fprintf(file, "%d %d %d %d %d\n", frames, Nx, Ny, center_x, center_y);
     
     start_solver((Nx+2)*(Ny+2));
     
@@ -58,6 +61,7 @@ int main(int argc, const char * argv[])
     }
     
     end_solver();
+    fclose(file);
     
     return 0;
 }
