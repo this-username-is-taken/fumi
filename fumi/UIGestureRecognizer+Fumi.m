@@ -11,7 +11,7 @@
 
 @implementation UIGestureRecognizer (Fumi)
 
-- (CGPoint)locationInGLView:(EAGLView *)view
+- (CGPoint)locationInGLView:(EAGL2View *)view
 {
     CGPoint p = [self locationInView:view];
     p.y = (CGRectGetHeight(view.bounds) - p.y); // flip coordinates

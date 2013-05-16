@@ -7,11 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "EAGLView.h"
+#import "EAGL2View.h"
 #import "FMGeometry.h"
 
 @interface UIGestureRecognizer (Fumi)
 
-- (CGPoint)locationInGLView:(EAGLView *)view;
+- (CGPoint)locationInGLView:(EAGL2View *)view;
 
 @end

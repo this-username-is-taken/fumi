@@ -36,8 +36,17 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 #define I_VEL2(i,j,k) ((i*2)+(j)*(int)(_velocity.size.width)*2+k)
 #define I_DEN(i,j) ((i)+(j)*_dimensions.denGridWidth)
 
+#define SETPIXEL(i, j) \
+            (_density[I_DEN_3(i, j, 0)] = 255, \
+             _density[I_DEN_3(i, j, 1)] = 255, \
+             _density[I_DEN_3(i, j, 2)] = 255)
+
+//#define SETPIXELS(i, j) SETPIXEL(i-1,j);SETPIXEL(i,j-1);SETPIXEL(i,j);SETPIXEL(i,j+1);SETPIXEL(i+1,j);
+
+#define SETPIXELS(i,j) [circleVertices addObject:[NSNumber numberWithInt:i]];[circleVertices addObject:[NSNumber numberWithInt:j]];
+
 #define VEL_TEX_SIDE 512
-#define MAX_EVENTS 6
+#define MAX_EVENTS 20
 #define MAX_FRAME 8
 
 #pragma mark -
@@ -131,6 +140,10 @@ void fillTextureIndices(int frame)
     CGFloat *_clr;
     GLubyte *_density;
     
+    int circleRadius;
+    FMPoint circleCenter;
+    NSMutableArray *circleVertices;
+    
     GLuint _offscreenFBO;
     
     GLuint _inputVelTex;
@@ -140,10 +153,12 @@ void fillTextureIndices(int frame)
     GLuint _velocityVertexBuffer, _velocityIndexBuffer;
     GLuint _densityVertexBuffer, _densityIndexBuffer;
     GLuint _displayVertexBuffer, _displayIndexBuffer;
+    GLuint _inputVertexBuffer, _inputIndexBuffer;
     
     GLuint _velocityShaderHandle;
     GLuint _displayShaderHandle;
     GLuint _densityShaderHandle;
+    GLuint _inputShaderHandle;
     
     NSMutableArray *_events;
     
@@ -166,6 +181,7 @@ void fillTextureIndices(int frame)
         _clr = calloc(VEL_TEX_SIDE * VEL_TEX_SIDE * kRGB, sizeof(CGFloat));
         
         _events = [[NSMutableArray alloc] init];
+        circleVertices = [[NSMutableArray alloc] init];
         _velocity = [[FMVelocity alloc] initWithFilename:@"velocity"];
         
         int tmp[1];
@@ -237,10 +253,23 @@ void fillTextureIndices(int frame)
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan)
     {
         start = end;
+        NSLog(@"===============================");
         return;
     }
     
-    if (FMMagnitude(force) > 1.0)
+    CGFloat mag = FMMagnitude(force);
+    NSLog(@"%d === %@", (int)FMMagnitude(force), NSStringFromCGPoint(end));
+    if (mag > 10.0) {
+        int n = mag/10+1;
+        force = CGPointMake(force.x/n, force.y/n);
+        for (int i=1;i<=n;i++) {
+            end = CGPointMake(start.x+i*force.x, start.y+i*force.y);
+            FMReplayPan *pan = [[[FMReplayPan alloc] initWithPosition:end state:gestureRecognizer.state timestamp:_benchmark.frames] autorelease];
+            pan.force = force;
+            [_events insertObject:pan atIndex:0];
+        }
+        start = end;
+    } else if (mag > 1.0)
     {
         FMReplayPan *pan = [[[FMReplayPan alloc] initWithPosition:end state:gestureRecognizer.state timestamp:_benchmark.frames] autorelease];
         pan.force = force;
@@ -257,13 +286,18 @@ void fillTextureIndices(int frame)
 
 // Long press gestures are interpreted as ink injection
 - (void)_handlePressGesture:(UILongPressGestureRecognizer *)gestureRecognizer
-{
+{    
     CGPoint p = [gestureRecognizer locationInGLView:self];
     FMReplayLongPress *lp = [[[FMReplayLongPress alloc] initWithPosition:p state:gestureRecognizer.state timestamp:_benchmark.frames] autorelease];
     
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan) {
-        [self _injectInkAtPoint:FMPointMakeWithCGPoint(lp.position, _dimensions.denCellSize)];
+        circleRadius = 1;
+        circleCenter = FMPointMake(p.x, p.y);
     }
+    if (gestureRecognizer.state == UIGestureRecognizerStateEnded) {
+        circleRadius = 0;
+    }
+    DDLogInfo(@"Injected ink at %f, %f", p.x, p.y);
 }
 
 - (void)_updateEvents
@@ -271,30 +305,28 @@ void fillTextureIndices(int frame)
     [_events enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         ((FMReplayPan *)obj).frame++;
     }];
-    if (((FMReplayPan *)[_events lastObject]).frame >= MAX_FRAME)
-        [_events removeLastObject];
+    BOOL more = YES;
+    while (more) {
+        if (((FMReplayPan *)[_events lastObject]).frame >= MAX_FRAME) {
+            [_events removeLastObject];
+        } else {
+            more = NO;
+        }
+    }
 }
 
-- (void)_injectInkAtPoint:(FMPoint)p
+- (void)_updatePoints
 {
     // TODO: handle boundary cases; stack density; or even rewrite this
-//    int radius = 50;
-//    for (float x=-radius; x<=radius; x++) {
-//        for (float y=-radius; y<=radius; y++) {
-//            float dist = x*x/10+y*y/10;
-//            int index = I_DEN(p.x+(int)x, p.y+(int)y);
-//            if (dist > radius*radius) {
-//                continue;
-//            } else if (dist == 0) {
-//                _den[index] += 255.0;
-//            } else {
-//                float amount = 255.0/dist*20.0;
-//                _den[index] += (amount > 255.0) ? 255.0 : amount;
-//            }
-//        }
-//    }
-    
-    DDLogInfo(@"Injected ink at %@", NSStringFromFMPoint(p));
+    if (circleRadius == 1) {
+        [circleVertices removeAllObjects];
+        for (int i=1;i<10;i++) {
+            [self _rasterCircle:circleRadius++ x:circleCenter.x y:circleCenter.y];
+        }
+    } else if (circleRadius != 0) {
+        [circleVertices removeAllObjects];
+        [self _rasterCircle:circleRadius++ x:circleCenter.x y:circleCenter.y];
+    }
 }
 
 #pragma mark -
@@ -365,6 +397,7 @@ void fillTextureIndices(int frame)
     _benchmark.graphicsTime = CFAbsoluteTimeGetCurrent();
     
     [self _updateEvents];
+    [self _updatePoints];
     [self _render];
     
     glBindRenderbuffer(GL_RENDERBUFFER, viewRenderbuffer);
@@ -398,6 +431,8 @@ BOOL outputTex;
     }
     
     [self _useDensityShader];
+    if (circleRadius != 0)
+        [self _useInputShader];
     [self _useDisplayShader];
     
     if (glGetError() != 0)
@@ -466,7 +501,6 @@ BOOL outputTex;
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _denTexture[outputTex], 0);
 
     glBindBuffer(GL_ARRAY_BUFFER, _densityVertexBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, _densityVertexBuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(DensityVertices), DensityVertices, GL_STATIC_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _densityIndexBuffer);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(DensityIndices), DensityIndices, GL_STATIC_DRAW);
@@ -498,7 +532,6 @@ BOOL outputTex;
     glBindFramebuffer(GL_FRAMEBUFFER, viewFramebuffer);
 
     glBindBuffer(GL_ARRAY_BUFFER, _displayVertexBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, _displayVertexBuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(DisplayVertices), DisplayVertices, GL_STATIC_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _displayIndexBuffer);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(DisplayIndices), DisplayIndices, GL_STATIC_DRAW);
@@ -518,6 +551,63 @@ BOOL outputTex;
         glUniform1i(textureUniform, 2);
     
     glDrawElements(GL_TRIANGLE_STRIP, sizeof(DisplayIndices)/sizeof(DisplayIndices[0]), GL_UNSIGNED_BYTE, 0);
+}
+
+void fillInputVertex(float vertex[5][2], float x, float y, float d)
+{
+    vertex[0][0] = x;
+    vertex[0][1] = y+d;
+    vertex[1][0] = x-d;
+    vertex[1][1] = y;
+    vertex[2][0] = x;
+    vertex[2][1] = y;
+    vertex[3][0] = x+d;
+    vertex[3][1] = y;
+    vertex[4][0] = x;
+    vertex[4][1] = y-d;
+}
+
+- (void)_useInputShader
+{
+    glUseProgram(_inputShaderHandle);
+    
+    glDisable(GL_BLEND);
+    
+    float x = circleCenter.x/512.0-1.0;
+    float y = circleCenter.y/512.0-1.0;
+    float d = 0.004;
+    int n = circleVertices.count/2;
+    float InputVertices[n][5][2];
+    for (int i=0;i<n;i++) {
+        x = [[circleVertices objectAtIndex:i*2+0] intValue];
+        y = [[circleVertices objectAtIndex:i*2+1] intValue];
+        x = x/512.0-1.0;
+        y = y/512.0-1.0;
+        fillInputVertex(InputVertices[i], x, y, d);
+    }
+    GLuint InputIndices[n][6];
+    for (int i=0;i<n;i++) {
+        InputIndices[i][0] = i*5+1;
+        InputIndices[i][1] = i*5;
+        InputIndices[i][2] = i*5+2;
+        InputIndices[i][3] = i*5+2;
+        InputIndices[i][4] = i*5+3;
+        InputIndices[i][5] = i*5+4;
+    }
+    
+    glBindFramebuffer(GL_FRAMEBUFFER, _offscreenFBO);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _denTexture[outputTex], 0);
+    
+    glBindBuffer(GL_ARRAY_BUFFER, _inputVertexBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(InputVertices), InputVertices, GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _inputIndexBuffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(InputIndices), InputIndices, GL_STATIC_DRAW);
+    
+    GLuint positionAttribute = glGetAttribLocation(_inputShaderHandle, "Position");
+    glEnableVertexAttribArray(positionAttribute);
+    glVertexAttribPointer(positionAttribute, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+    
+    glDrawElements(GL_TRIANGLES, n*6, GL_UNSIGNED_INT, 0);
 }
 
 - (void)_setupView
@@ -549,12 +639,8 @@ BOOL outputTex;
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     _density = calloc(1024 * 1024 * kRGB, sizeof(GLubyte));
-    for (int i=400;i<500;i++)
-        for (int j=400;j<500;j++) {
-            _density[I_DEN_3(i, j, 0)] = 255;
-            _density[I_DEN_3(i, j, 1)] = 255;
-            _density[I_DEN_3(i, j, 2)] = 255;
-        }
+    //for (int i=0;i<15;i++)
+    //    [self _rasterCircle:150+i x:400 y:300];
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _dimensions.textureSide * 8, _dimensions.textureSide * 8, 0,  GL_RGB, GL_UNSIGNED_BYTE, _density);
     
     glActiveTexture(GL_TEXTURE3);
@@ -585,11 +671,42 @@ BOOL outputTex;
     glGenBuffers(1, &_densityIndexBuffer);
     glGenBuffers(1, &_displayVertexBuffer);
     glGenBuffers(1, &_displayIndexBuffer);
+    glGenBuffers(1, &_inputVertexBuffer);
+    glGenBuffers(1, &_inputIndexBuffer);
     
     // Compile shaders
     _velocityShaderHandle = [FMShaderManager programHandle:@"velocity"];
     _densityShaderHandle = [FMShaderManager programHandle:@"density"];
     _displayShaderHandle = [FMShaderManager programHandle:@"display"];
+    _inputShaderHandle = [FMShaderManager programHandle:@"input"];
+}
+
+- (void)_rasterCircle:(int)radius x:(int)x0 y:(int)y0
+{
+    // http://en.wikipedia.org/wiki/Midpoint_circle_algorithm
+    int x = radius, y = 0;
+    int radiusError = 1-x;
+    
+    while(x >= y)
+    {
+        SETPIXELS(x + x0, y + y0);
+        SETPIXELS(y + x0, x + y0);
+        SETPIXELS(-x + x0, y + y0);
+        SETPIXELS(-y + x0, x + y0);
+        SETPIXELS(-x + x0, -y + y0);
+        SETPIXELS(-y + x0, -x + y0);
+        SETPIXELS(x + x0, -y + y0);
+        SETPIXELS(y + x0, -x + y0);
+        
+        y++;
+        if(radiusError<0)
+            radiusError+=2*y+1;
+        else
+        {
+            x--;
+            radiusError+=2*(y-x)+1;
+        }
+    }
 }
 
 - (void)fillTextureWithFrame:(int)frame atRow:(int)row atCol:(int)col

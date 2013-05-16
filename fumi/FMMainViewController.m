@@ -16,7 +16,7 @@
 
 #import "DDLog.h"
 
-#define REPLAY
+//#define REPLAY
 
 static const int ddLogLevel = LOG_LEVEL_INFO;
 

@@ -16,10 +16,10 @@
 		2B082CFB15C1094600A5ADA9 /* FMMainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B082CFA15C1094600A5ADA9 /* FMMainViewController.m */; };
 		2B082CFE15C10C4E00A5ADA9 /* UIColor+Fumi.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B082CFD15C10C4E00A5ADA9 /* UIColor+Fumi.m */; };
 		2B082D0E15C2593F00A5ADA9 /* FMGeometry.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B082D0D15C2593F00A5ADA9 /* FMGeometry.m */; };
-		2B08309B15C44F9A00A5ADA9 /* DDLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B08309515C44D2C00A5ADA9 /* DDLog.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		2B08309C15C44F9D00A5ADA9 /* DDASLLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B08309115C44D2C00A5ADA9 /* DDASLLogger.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		2B08309D15C44FA000A5ADA9 /* DDFileLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B08309315C44D2C00A5ADA9 /* DDFileLogger.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		2B08309E15C44FA400A5ADA9 /* DDTTYLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B08309715C44D2C00A5ADA9 /* DDTTYLogger.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		2B08309B15C44F9A00A5ADA9 /* DDLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B08309515C44D2C00A5ADA9 /* DDLog.m */; settings = {COMPILER_FLAGS = "-fobjc-arc -w"; }; };
+		2B08309C15C44F9D00A5ADA9 /* DDASLLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B08309115C44D2C00A5ADA9 /* DDASLLogger.m */; settings = {COMPILER_FLAGS = "-fobjc-arc -w"; }; };
+		2B08309D15C44FA000A5ADA9 /* DDFileLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B08309315C44D2C00A5ADA9 /* DDFileLogger.m */; settings = {COMPILER_FLAGS = "-fobjc-arc -w"; }; };
+		2B08309E15C44FA400A5ADA9 /* DDTTYLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B08309715C44D2C00A5ADA9 /* DDTTYLogger.m */; settings = {COMPILER_FLAGS = "-fobjc-arc -w"; }; };
 		2B122622161019E3009DD484 /* FMSettings.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B122621161019E3009DD484 /* FMSettings.m */; };
 		2B1B7712160966BF002A3A50 /* FMSolver.c in Sources */ = {isa = PBXBuildFile; fileRef = 2B1B7711160966BF002A3A50 /* FMSolver.c */; };
 		2B28050016519FB60057D8CB /* density.vsh in Resources */ = {isa = PBXBuildFile; fileRef = 2B2804FF16519FB60057D8CB /* density.vsh */; };
@@ -50,6 +50,10 @@
 		2BCF705116DA8D3C00E8A9AD /* velocity.fsh in Sources */ = {isa = PBXBuildFile; fileRef = 2BCF705016DA8D3C00E8A9AD /* velocity.fsh */; };
 		2BCF705D16DA91D800E8A9AD /* velocity.vsh in Resources */ = {isa = PBXBuildFile; fileRef = 2BCF704E16DA8D2D00E8A9AD /* velocity.vsh */; };
 		2BCF705F16DA91DE00E8A9AD /* velocity.fsh in Resources */ = {isa = PBXBuildFile; fileRef = 2BCF705016DA8D3C00E8A9AD /* velocity.fsh */; };
+		2BDDBC851741B11600973F00 /* input.vsh in Resources */ = {isa = PBXBuildFile; fileRef = 2BF71BF11741AC1D009C4AED /* input.vsh */; };
+		2BDDBC861741B11600973F00 /* input.fsh in Resources */ = {isa = PBXBuildFile; fileRef = 2BF71BF31741AC27009C4AED /* input.fsh */; };
+		2BF71BF21741AC1D009C4AED /* input.vsh in Sources */ = {isa = PBXBuildFile; fileRef = 2BF71BF11741AC1D009C4AED /* input.vsh */; };
+		2BF71BF41741AC27009C4AED /* input.fsh in Sources */ = {isa = PBXBuildFile; fileRef = 2BF71BF31741AC27009C4AED /* input.fsh */; };
 		2BF9CDEF1618AD9D005169D5 /* FMReplayObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2BF9CDEE1618AD9D005169D5 /* FMReplayObject.m */; };
 		2BF9CDF21618AE04005169D5 /* FMReplayLongPress.m in Sources */ = {isa = PBXBuildFile; fileRef = 2BF9CDF11618AE04005169D5 /* FMReplayLongPress.m */; };
 		2BF9CDF61618AE84005169D5 /* FMReplayPan.m in Sources */ = {isa = PBXBuildFile; fileRef = 2BF9CDF51618AE84005169D5 /* FMReplayPan.m */; };
@@ -127,7 +131,7 @@
 		2B66EE0B160E5269003B5F83 /* FMReplayManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMReplayManager.m; sourceTree = "<group>"; };
 		2B9E3D3116AF2C6700ED1B50 /* FMVelocity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMVelocity.h; sourceTree = "<group>"; };
 		2B9E3D3216AF2C6700ED1B50 /* FMVelocity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMVelocity.m; sourceTree = "<group>"; };
-		2BCF3D5B1703411400DE04BA /* velocity */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = velocity; sourceTree = BUILT_PRODUCTS_DIR; };
+		2BCF3D5B1703411400DE04BA /* velocity */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = velocity; path = demo; sourceTree = BUILT_PRODUCTS_DIR; };
 		2BCF3D5E1703411400DE04BA /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		2BCF3D661703430E00DE04BA /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk/System/Library/Frameworks/OpenGL.framework; sourceTree = DEVELOPER_DIR; };
 		2BCF3D681703432000DE04BA /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk/System/Library/Frameworks/GLUT.framework; sourceTree = DEVELOPER_DIR; };
@@ -141,6 +145,8 @@
 		2BCF704C16DA5A6400E8A9AD /* FMShaderManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMShaderManager.m; sourceTree = "<group>"; };
 		2BCF704E16DA8D2D00E8A9AD /* velocity.vsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = velocity.vsh; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.glsl; };
 		2BCF705016DA8D3C00E8A9AD /* velocity.fsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = velocity.fsh; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.glsl; };
+		2BF71BF11741AC1D009C4AED /* input.vsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = input.vsh; sourceTree = "<group>"; };
+		2BF71BF31741AC27009C4AED /* input.fsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = input.fsh; sourceTree = "<group>"; };
 		2BF9CDED1618AD9D005169D5 /* FMReplayObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMReplayObject.h; sourceTree = "<group>"; };
 		2BF9CDEE1618AD9D005169D5 /* FMReplayObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMReplayObject.m; sourceTree = "<group>"; };
 		2BF9CDF01618AE04005169D5 /* FMReplayLongPress.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMReplayLongPress.h; sourceTree = "<group>"; };
@@ -337,6 +343,8 @@
 				2B28050116519FC90057D8CB /* density.fsh */,
 				2B28050316519FD40057D8CB /* display.vsh */,
 				2B28050516519FE00057D8CB /* display.fsh */,
+				2BF71BF11741AC1D009C4AED /* input.vsh */,
+				2BF71BF31741AC27009C4AED /* input.fsh */,
 			);
 			name = Shaders;
 			sourceTree = "<group>";
@@ -465,6 +473,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2BDDBC851741B11600973F00 /* input.vsh in Resources */,
+				2BDDBC861741B11600973F00 /* input.fsh in Resources */,
 				2B37E77815BFC25B00D21E55 /* InfoPlist.strings in Resources */,
 				2B66EE08160E51BF003B5F83 /* input.fm in Resources */,
 				2B2B686516BE4D71000F0591 /* velocity.fm in Resources */,
@@ -519,6 +529,8 @@
 				2BCF705116DA8D3C00E8A9AD /* velocity.fsh in Sources */,
 				2BCF3D7D1703471B00DE04BA /* FMReplayView.m in Sources */,
 				2BCF3D801703693B00DE04BA /* EAGL2View.m in Sources */,
+				2BF71BF21741AC1D009C4AED /* input.vsh in Sources */,
+				2BF71BF41741AC27009C4AED /* input.fsh in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -709,6 +721,7 @@
 				2BCF3D641703411400DE04BA /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
